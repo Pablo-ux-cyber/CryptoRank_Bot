@@ -18,7 +18,7 @@ try:
 except ImportError:
     SELENIUM_AVAILABLE = False
     
-from config import SENSORTOWER_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT
+from config import SENSORTOWER_URL, SENSORTOWER_DETAILED_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT
 from logger import logger
 
 # Константы для iTunes API
@@ -297,15 +297,115 @@ class SensorTowerScraper:
             logger.error(f"Fallback scraping failed: {str(e)}")
             return self._create_test_data()
     
+    def scrape_sensortower_detailed(self):
+        """
+        Scrape detailed category rankings directly from SensorTower detailed analysis page
+        This method specifically targets the URL provided by the user to extract exact ranking information
+        """
+        if not SELENIUM_AVAILABLE:
+            logger.warning("Selenium is not available for detailed scraping")
+            return None
+            
+        if not self.initialize_driver():
+            logger.warning("Failed to initialize Selenium driver for detailed scraping")
+            return None
+        
+        try:
+            detailed_url = SENSORTOWER_DETAILED_URL
+            logger.info(f"Navigating to detailed SensorTower URL: {detailed_url}")
+            self.driver.get(detailed_url)
+            
+            # Give enough time for the page to load completely
+            time.sleep(10)
+            
+            # Take a screenshot for debugging
+            logger.info("Taking screenshot of the detailed page")
+            self.driver.save_screenshot("sensortower_detailed_debug.png")
+            
+            # Let's look for the rankings in the table or chart
+            # Target specifically the "US - iPhone - Top Free" data for Apps, Finance, and Overall
+            rankings_data = {
+                "source": "SensorTower Detailed Analysis",
+                "app_name": "Coinbase",
+                "categories": []
+            }
+            
+            # Find table rows or chart elements containing ranking data
+            try:
+                # Wait for table to be fully loaded
+                WebDriverWait(self.driver, 15).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "table, .chart-container, .rankings-table"))
+                )
+                
+                # Extract page content for analysis
+                page_content = self.driver.page_source
+                logger.info("Page content loaded, searching for ranking data")
+                
+                # Look for specific category data - these selectors need to be adjusted based on actual page structure
+                # First, try to find specific text patterns for iPhone Free Apps category
+                iphone_free_apps_pattern = re.compile(r'US\s*-\s*iPhone\s*-\s*Top\s*Free.*?(\d+)', re.IGNORECASE)
+                iphone_free_finance_pattern = re.compile(r'US\s*-\s*iPhone\s*-\s*Top\s*Free\s*Finance.*?(\d+)', re.IGNORECASE)
+                iphone_free_overall_pattern = re.compile(r'US\s*-\s*iPhone\s*-\s*Free\s*Overall.*?(\d+)', re.IGNORECASE)
+                
+                # Try to extract the ranks using regex from the page source
+                apps_match = iphone_free_apps_pattern.search(page_content)
+                finance_match = iphone_free_finance_pattern.search(page_content)
+                overall_match = iphone_free_overall_pattern.search(page_content)
+                
+                # Add the data we found
+                if apps_match:
+                    apps_rank = apps_match.group(1)
+                    logger.info(f"Found Apps rank: {apps_rank}")
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Apps",
+                        "rank": apps_rank
+                    })
+                
+                if finance_match:
+                    finance_rank = finance_match.group(1)
+                    logger.info(f"Found Finance rank: {finance_rank}")
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Finance",
+                        "rank": finance_rank
+                    })
+                
+                if overall_match:
+                    overall_rank = overall_match.group(1)
+                    logger.info(f"Found Overall rank: {overall_rank}")
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Overall",
+                        "rank": overall_rank
+                    })
+                
+                # If we found any categories, return the data
+                if rankings_data["categories"]:
+                    logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from detailed SensorTower page")
+                    return rankings_data
+                else:
+                    logger.warning("No rankings found in detailed SensorTower page")
+                    return None
+                
+            except Exception as e:
+                logger.error(f"Error extracting rankings from detailed page: {str(e)}")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error navigating to detailed SensorTower page: {str(e)}")
+            return None
+        finally:
+            # Always close the driver to avoid memory leaks
+            self.close_driver()
+    
     def scrape_category_rankings(self):
         """
         Get category rankings data for the specified app, prioritizing official Apple API
         
         Steps:
         1. Try to get data from Apple iTunes API (most reliable)
-        2. If that fails, try Selenium scraping of SensorTower
-        3. If Selenium fails, try Trafilatura scraping
-        4. If all else fails, return test data
+        2. Try to get detailed data directly from SensorTower detailed page
+        3. If that fails, try Selenium scraping of SensorTower
+        4. If Selenium fails, try Trafilatura scraping
+        5. If all else fails, return test data
         
         Returns:
             dict: A dictionary containing the rankings data
@@ -323,7 +423,23 @@ class SensorTowerScraper:
             logger.error(f"Error fetching from Apple API: {str(e)}")
             logger.info("Falling back to SensorTower scraping")
             
-        # If Apple API fails, try Selenium scraping
+        # First try to get detailed SensorTower data from the specific page
+        try:
+            logger.info("Attempting to fetch detailed data from SensorTower analysis page")
+            detailed_data = self.scrape_sensortower_detailed()
+            if detailed_data and detailed_data.get("categories"):
+                logger.info("Successfully retrieved detailed data from SensorTower")
+                # Get date from the original API data if available
+                detailed_data["date"] = time.strftime("%Y-%m-%d")
+                detailed_data["app_id"] = self.app_id
+                self.last_scrape_data = detailed_data
+                return detailed_data
+            else:
+                logger.warning("Could not retrieve detailed data from SensorTower, trying general page")
+        except Exception as e:
+            logger.error(f"Error fetching detailed data from SensorTower: {str(e)}")
+            
+        # If detailed scraping fails, try normal Selenium scraping
         if not SELENIUM_AVAILABLE:
             logger.warning("Selenium is not available, using fallback method")
             return self._fallback_scrape_with_trafilatura()
