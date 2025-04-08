@@ -1,7 +1,7 @@
 Coinbase App Rankings - Statistical Analysis
-Generated on: 2025-04-08 07:38:02
+Generated on: 2025-04-08 07:53:25
 Data period: 2025-03-15 to 2025-04-08
-Total days of data: 25
+Total days of data: 26
 
 Category: iPhone - Free - Finance
   Current ranking: #19
@@ -9,18 +9,17 @@ Category: iPhone - Free - Finance
   Worst ranking: #26 on 2025-03-15
   Average ranking: #20.8
   Trend (comparing first week vs last week): Ranking has improved by 4.4 positions (18.8%)
-  Volatility (standard deviation): 2.21 positions
+  Volatility (standard deviation): 2.20 positions
 
 Category: iPhone - Free - Apps
   Current ranking: #240
   Best ranking: #240 on 2025-04-08
   Worst ranking: #377 on 2025-03-15
-  Average ranking: #345.9
-  Trend (comparing first week vs last week): Ranking has improved by 40.9 positions (11.2%)
-  Volatility (standard deviation): 25.02 positions
+  Average ranking: #341.8
+  Trend (comparing first week vs last week): Ranking has improved by 55.4 positions (15.2%)
+  Volatility (standard deviation): 32.13 positions
 
 Category: iPhone - Free - Overall
-  Current ranking: #542
   Best ranking: #540 on 2025-04-07
   Worst ranking: #580 on 2025-03-15
   Average ranking: #553.2
@@ -29,7 +28,7 @@ Category: iPhone - Free - Overall
 
 Overall Insights:
 Correlation between categories:
-  iPhone - Free - Finance vs iPhone - Free - Apps: Moderate positive (0.59)
+  iPhone - Free - Finance vs iPhone - Free - Apps: Moderate positive (0.55)
   iPhone - Free - Finance vs iPhone - Free - Overall: Strong positive (0.92)
   iPhone - Free - Apps vs iPhone - Free - Overall: Moderate positive (0.63)
 

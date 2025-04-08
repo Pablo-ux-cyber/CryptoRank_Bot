@@ -1478,4 +1478,7 @@ class SensorTowerScraper:
                 rank = category.get("rank", "N/A")
                 message += f"🔹 *{cat_name}:* \\#{rank}\n"
         
+        # Add motivational quote at the end
+        message += "\n\nПлохие дороги делают хороших водителей\\!\nВова «Адидас»"
+        
         return message
