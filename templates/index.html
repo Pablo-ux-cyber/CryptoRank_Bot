@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SensorTower Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        .bot-status {
+            border-radius: 50%;
+            width: 12px;
+            height: 12px;
+            display: inline-block;
+            margin-right: 6px;
+        }
+        .status-running {
+            background-color: var(--bs-success);
+        }
+        .status-error {
+            background-color: var(--bs-danger);
+        }
+        .bot-card {
+            border-left: 4px solid var(--bs-primary);
+        }
+        .next-run {
+            font-size: 0.9rem;
+            color: var(--bs-gray-600);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-sm mb-4 bot-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h2 class="mb-0">
+                                <span class="bot-status status-{{ status }}"></span>
+                                SensorTower Telegram Bot
+                            </h2>
+                        </div>
+                        <p class="text-muted">Automatically scrapes app store rankings from SensorTower and posts them to Telegram.</p>
+                        
+                        <div class="mt-4">
+                            <h5>Bot Status</h5>
+                            <div class="table-responsive">
+                                <table class="table">
+                                    <tbody>
+                                        <tr>
+                                            <td>Status</td>
+                                            <td>
+                                                <span class="badge bg-{{ status_class }}">{{ status_text }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>Next Scheduled Run</td>
+                                            <td>{{ next_run }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>App ID</td>
+                                            <td>{{ app_id }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Telegram Configuration</td>
+                                            <td>
+                                                {% if telegram_configured %}
+                                                <span class="badge bg-success">Configured</span>
+                                                {% else %}
+                                                <span class="badge bg-danger">Not Configured</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        {% if last_scrape_time %}
+                        <div class="mt-4">
+                            <h5>Last Scrape</h5>
+                            <p>{{ last_scrape_time }}</p>
+                            
+                            {% if categories %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Rank</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for category in categories %}
+                                        <tr>
+                                            <td>{{ category.category }}</td>
+                                            <td>#{{ category.rank }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-warning">
+                                No ranking data available from the last scrape.
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mt-4">
+                            <a href="/trigger-scrape" class="btn btn-primary">Trigger Manual Scrape</a>
+                            <a href="/logs" class="btn btn-outline-secondary ms-2">View Logs</a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h5 class="mb-0">About This Bot</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>This bot scrapes category rankings data for the specified app from SensorTower and posts it to a Telegram channel.</p>
+                        <p>It runs on a daily schedule and can also be triggered manually.</p>
+                        
+                        <h6 class="mt-3">Configuration:</h6>
+                        <ul>
+                            <li>App ID: {{ app_id }}</li>
+                            <li>Schedule: Daily at {{ schedule_time }}</li>
+                            <li>Data Source: SensorTower</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
