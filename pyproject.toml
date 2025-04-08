@@ -5,13 +5,10 @@ description = "Add your description here"
 requires-python = ">=3.11"
 dependencies = [
     "apscheduler==3.6.3",
-    "beautifulsoup4>=4.13.3",
     "email-validator>=2.2.0",
     "flask>=3.1.0",
     "flask-sqlalchemy>=3.1.1",
     "gunicorn>=23.0.0",
-    "matplotlib>=3.10.1",
-    "pandas>=2.2.3",
     "psycopg2-binary>=2.9.10",
     "python-telegram-bot==13.7",
     "pytz>=2025.2",
