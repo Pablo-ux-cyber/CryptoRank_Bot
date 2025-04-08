@@ -55,28 +55,30 @@ class SensorTowerScraper:
     def _create_test_data(self):
         """
         Create test data simulating real SensorTower Category Rankings data
+        Focuses on the specific categories requested:
+        - iPhone - Free - Finance
+        - iPhone - Free - Apps
+        - iPhone - Free - Overall
         """
         logger.info("Using simulated SensorTower Category Rankings data")
         
         # Set the app name based on the app ID we're scraping
         app_name = "Coinbase"  # Default
         
-        # Generate a realistic dataset based on SensorTower Category Rankings
-        # These categories actually exist in the App Store for Finance apps
+        # Generate a realistic dataset with exactly the categories required
+        # These are the categories that matter for the project
         rankings_data = {
             "app_name": app_name,
             "app_id": self.app_id,
             "date": time.strftime("%Y-%m-%d"),
             "categories": [
-                {"category": "Finance", "rank": "2"}, 
-                {"category": "Business", "rank": "11"},
-                {"category": "Lifestyle", "rank": "28"},
-                {"category": "Utilities", "rank": "45"},
-                {"category": "Productivity", "rank": "37"}
+                {"category": "iPhone - Free - Finance", "rank": "3"}, 
+                {"category": "iPhone - Free - Apps", "rank": "67"},
+                {"category": "iPhone - Free - Overall", "rank": "122"}
             ]
         }
         
-        logger.info(f"Generated test data with {len(rankings_data['categories'])} categories")
+        logger.info(f"Generated test data with {len(rankings_data['categories'])} specific categories")
         for cat in rankings_data["categories"]:
             logger.info(f"Test data - {cat['category']}: #{cat['rank']}")
             
@@ -232,12 +234,25 @@ class SensorTowerScraper:
                                 category_name = cells[0].text.strip()
                                 rank = cells[1].text.strip()
                                 
+                                # Filter for only the specific iPhone categories we're interested in
+                                target_categories = ["iphone - free - finance", "iphone - free - apps", "iphone - free - overall"]
+                                
                                 if category_name and rank:
-                                    logger.info(f"Found category: {category_name}, rank: {rank}")
-                                    rankings_data["categories"].append({
-                                        "category": category_name,
-                                        "rank": rank
-                                    })
+                                    # Convert to lowercase for case-insensitive comparison
+                                    category_lower = category_name.lower()
+                                    
+                                    # Check if this is one of our target categories
+                                    is_target = any(target in category_lower for target in target_categories)
+                                    
+                                    # Also check if it contains both "iphone" and "free" as keywords
+                                    contains_keywords = "iphone" in category_lower and "free" in category_lower
+                                    
+                                    if is_target or contains_keywords:
+                                        logger.info(f"Found target category: {category_name}, rank: {rank}")
+                                        rankings_data["categories"].append({
+                                            "category": category_name,
+                                            "rank": rank
+                                        })
                         except Exception as e:
                             logger.warning(f"Failed to extract data from a ranking row: {str(e)}")
                             continue
@@ -283,12 +298,28 @@ class SensorTowerScraper:
                                     # Clean up rank value (sometimes has "#" or other characters)
                                     rank = rank.replace("#", "").strip()
                                     
+                                    # Filter for only the categories we're interested in:
+                                    # - iPhone - Free - Finance
+                                    # - iPhone - Free - Apps
+                                    # - iPhone - Free - Overall
+                                    target_categories = ["iphone - free - finance", "iphone - free - apps", "iphone - free - overall"]
+                                    
                                     if category_name and rank:
-                                        logger.info(f"Found category: {category_name}, rank: {rank}")
-                                        rankings_data["categories"].append({
-                                            "category": category_name,
-                                            "rank": rank
-                                        })
+                                        # Convert to lowercase for case-insensitive comparison
+                                        category_lower = category_name.lower()
+                                        
+                                        # Check if this is one of our target categories
+                                        is_target = any(target in category_lower for target in target_categories)
+                                        
+                                        # Also check if it contains both "iphone" and "free" as keywords
+                                        contains_keywords = "iphone" in category_lower and "free" in category_lower
+                                        
+                                        if is_target or contains_keywords:
+                                            logger.info(f"Found target category: {category_name}, rank: {rank}")
+                                            rankings_data["categories"].append({
+                                                "category": category_name,
+                                                "rank": rank
+                                            })
                             except Exception as e:
                                 logger.warning(f"Failed to extract data from classic structure: {str(e)}")
                                 continue
@@ -317,12 +348,25 @@ class SensorTowerScraper:
                                     category_name = parts[0].strip()
                                     rank = parts[1].strip()
                                     
+                                    # Filter for only the specific iPhone categories we're interested in
+                                    target_categories = ["iphone - free - finance", "iphone - free - apps", "iphone - free - overall"]
+                                    
                                     if category_name and rank:
-                                        logger.info(f"Extracted from text: category: {category_name}, rank: {rank}")
-                                        rankings_data["categories"].append({
-                                            "category": category_name,
-                                            "rank": rank
-                                        })
+                                        # Convert to lowercase for case-insensitive comparison
+                                        category_lower = category_name.lower()
+                                        
+                                        # Check if this is one of our target categories
+                                        is_target = any(target in category_lower for target in target_categories)
+                                        
+                                        # Also check if it contains both "iphone" and "free" as keywords
+                                        contains_keywords = "iphone" in category_lower and "free" in category_lower
+                                        
+                                        if is_target or contains_keywords:
+                                            logger.info(f"Found target category from text: {category_name}, rank: {rank}")
+                                            rankings_data["categories"].append({
+                                                "category": category_name,
+                                                "rank": rank
+                                            })
                             except:
                                 continue
                 except Exception as e:
@@ -357,10 +401,25 @@ class SensorTowerScraper:
                                 rank_text = [p for p in parts if "#" in p]
                                 if rank_text:
                                     rank = rank_text[0].replace("#", "").strip()
-                                    rankings_data["categories"].append({
-                                        "category": category_name,
-                                        "rank": rank
-                                    })
+                                    
+                                    # Filter for only the specific iPhone categories we're interested in
+                                    target_categories = ["iphone - free - finance", "iphone - free - apps", "iphone - free - overall"]
+                                    
+                                    # Convert to lowercase for case-insensitive comparison
+                                    category_lower = category_name.lower()
+                                    
+                                    # Check if this is one of our target categories
+                                    is_target = any(target in category_lower for target in target_categories)
+                                    
+                                    # Also check if it contains both "iphone" and "free" as keywords
+                                    contains_keywords = "iphone" in category_lower and "free" in category_lower
+                                    
+                                    if is_target or contains_keywords:
+                                        logger.info(f"Found target category from last resort: {category_name}, rank: {rank}")
+                                        rankings_data["categories"].append({
+                                            "category": category_name,
+                                            "rank": rank
+                                        })
                 except Exception as e:
                     logger.error(f"Failed with last resort method: {str(e)}")
                 
