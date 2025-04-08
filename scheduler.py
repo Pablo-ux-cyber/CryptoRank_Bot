@@ -130,7 +130,7 @@ class SensorTowerScheduler:
                         # Worse ranking = higher number, red down arrow
                         trend_icon = "🔽 "
                 
-                combined_message = f"{rank_icon} {trend_icon}Coinbase Appsote Rank: {rank}\n\n"
+                combined_message = f"{trend_icon}Coinbase Appsote Rank: {rank}\n\n"
             else:
                 combined_message = f"❌ Coinbase Appsote Rank: Unavailable\n\n"
             
