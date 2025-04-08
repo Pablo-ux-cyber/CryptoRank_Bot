@@ -24,8 +24,8 @@ from logger import logger
 # Константы для iTunes API
 ITUNES_API_URL = "https://itunes.apple.com/lookup"
 ITUNES_FINANCE_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6015/json"  # Finance genre
-ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/json"  # Overall free apps
-ITUNES_ALL_APPS_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6000/json"  # All free apps
+ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=300/json"  # Overall free apps (увеличен лимит)
+ITUNES_ALL_APPS_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=300/genre=6000/json"  # All free apps (увеличен лимит)
 
 class SensorTowerScraper:
     def __init__(self):
@@ -149,6 +149,12 @@ class SensorTowerScraper:
                     })
                 else:
                     logger.info("App not found in top Overall apps")
+                    # Если приложение не найдено в первых 300, добавляем оценочный ранг
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Overall",
+                        "rank": "~300+",
+                        "estimated": True
+                    })
             else:
                 logger.error(f"Failed to fetch Overall rankings: HTTP {overall_response.status_code}")
             
@@ -175,6 +181,12 @@ class SensorTowerScraper:
                     })
                 else:
                     logger.info("App not found in top All Apps category")
+                    # Если приложение не найдено в первых 300, добавляем оценочный ранг
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Apps",
+                        "rank": "~300+",
+                        "estimated": True
+                    })
             else:
                 logger.error(f"Failed to fetch All Apps rankings: HTTP {apps_response.status_code}")
                 
@@ -638,6 +650,11 @@ class SensorTowerScraper:
                 # Экранируем специальные символы
                 cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
                 rank = category.get("rank", "N/A")
-                message += f"🔹 *{cat_name}:* \\#{rank}\n"
+                
+                # Проверяем, является ли это оценочным значением
+                if category.get("estimated", False):
+                    message += f"🔹 *{cat_name}:* {rank} \\(оценочно\\)\n"
+                else:
+                    message += f"🔹 *{cat_name}:* \\#{rank}\n"
         
         return message
