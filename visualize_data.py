@@ -18,6 +18,13 @@ def generate_rankings_chart(csv_file='historical_data.csv', output_file='static/
         # Read data from CSV file
         df = pd.read_csv(csv_file)
         
+        # Clean any '#' symbols from the rank columns
+        for col in ['iPhone - Free - Finance', 'iPhone - Free - Apps', 'iPhone - Free - Overall']:
+            if col in df.columns:
+                df[col] = df[col].astype(str).str.replace('#', '').str.strip()
+                # Convert to numeric (will be float with NaN for non-numeric)
+                df[col] = pd.to_numeric(df[col], errors='coerce')
+        
         # Convert date column to datetime
         df['date'] = pd.to_datetime(df['date'])
         
@@ -114,6 +121,13 @@ def generate_summary_analysis(csv_file='historical_data.csv', output_file='data_
     try:
         # Read data from CSV file
         df = pd.read_csv(csv_file)
+        
+        # Clean any '#' symbols from the rank columns
+        for col in ['iPhone - Free - Finance', 'iPhone - Free - Apps', 'iPhone - Free - Overall']:
+            if col in df.columns:
+                df[col] = df[col].astype(str).str.replace('#', '').str.strip()
+                # Convert to numeric (will be float with NaN for non-numeric)
+                df[col] = pd.to_numeric(df[col], errors='coerce')
         
         # Convert date column to datetime
         df['date'] = pd.to_datetime(df['date'])

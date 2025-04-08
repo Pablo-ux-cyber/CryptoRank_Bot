@@ -1110,13 +1110,9 @@ class SensorTowerScraper:
         Returns:
             dict: A dictionary containing the scraped rankings data
         """
-        if not SELENIUM_AVAILABLE:
-            logger.warning("Selenium is not available, using fallback method")
-            return self._fallback_scrape_with_trafilatura()
-            
-        if not self.initialize_driver():
-            logger.warning("Failed to initialize Selenium driver, using fallback method")
-            return self._fallback_scrape_with_trafilatura()
+        # Force using Twitter as a source for data as requested by user
+        logger.info("Using Twitter as primary data source as requested")
+        return self._fallback_scrape_from_twitter()
         
         try:
             logger.info(f"Navigating to {self.url}")

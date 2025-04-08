@@ -43,8 +43,8 @@ class SensorTowerScheduler:
             next_run = datetime.now() + timedelta(hours=24)
             logger.info(f"Scheduler started. Next run at: {next_run}")
             
-            # Uncomment to run immediately for testing
-            # self.run_scraping_job()
+            # Run immediately upon start
+            self.run_scraping_job()
             
             return True
         except Exception as e:
@@ -92,6 +92,11 @@ class SensorTowerScheduler:
             if not self.telegram_bot.send_message(message):
                 logger.error("Failed to send message to Telegram.")
                 return False
+            
+            # Process the rankings data - remove '#' symbols if present
+            for cat in rankings_data.get('categories', []):
+                if 'rank' in cat and isinstance(cat['rank'], str) and '#' in cat['rank']:
+                    cat['rank'] = cat['rank'].replace('#', '').strip()
             
             # Save the data to the historical data CSV file
             self._save_to_historical_data(rankings_data)
