@@ -130,9 +130,9 @@ class SensorTowerScheduler:
                         # Worse ranking = higher number, red down arrow
                         trend_icon = "🔽 "
                 
-                combined_message = f"{trend_icon}Coinbase Appsote Rank: {rank}\n\n"
+                combined_message = f"{trend_icon}Coinbase Appstore Rank: {rank}\n\n"
             else:
-                combined_message = f"❌ Coinbase Appsote Rank: Unavailable\n\n"
+                combined_message = f"❌ Coinbase Appstore Rank: Unavailable\n\n"
             
             # Then add Fear & Greed Index data if available
             if fear_greed_data:
