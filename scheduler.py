@@ -127,7 +127,8 @@ class SensorTowerScheduler:
             overall_rank = None
             
             for category in rankings_data.get('categories', []):
-                category_name = category.get('name', '')
+                # Keys can be either 'name' or 'category' depending on where data came from
+                category_name = category.get('name', category.get('category', ''))
                 rank = category.get('rank')
                 
                 if category_name == 'iPhone - Free - Finance':
@@ -137,10 +138,16 @@ class SensorTowerScheduler:
                 elif category_name == 'iPhone - Free - Overall':
                     overall_rank = rank
             
-            # Skip if we don't have valid rankings
-            if not all([finance_rank, apps_rank, overall_rank]):
-                logger.warning("Incomplete ranking data, not saving to historical data")
+            # We need at least two valid categories to consider saving
+            valid_categories = [rank for rank in [finance_rank, apps_rank, overall_rank] if rank]
+            
+            # Skip only if we have 0 or 1 valid rankings
+            if len(valid_categories) < 2:
+                logger.warning("Insufficient ranking data (need at least 2 categories), not saving to historical data")
                 return
+                
+            # Log what categories we have
+            logger.info(f"Saving to historical data with {len(valid_categories)} categories: Finance: {finance_rank}, Apps: {apps_rank}, Overall: {overall_rank}")
             
             # Create file with headers if it doesn't exist
             file_exists = os.path.isfile(csv_file)

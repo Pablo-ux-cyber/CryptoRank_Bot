@@ -1,35 +1,37 @@
 Coinbase App Rankings - Statistical Analysis
-Generated on: 2025-04-08 06:57:13
-Data period: 2025-03-09 to 2025-04-07
+Generated on: 2025-04-08 07:08:01
+Data period: 2025-03-11 to 2025-04-08
 Total days of data: 30
 
 Category: iPhone - Free - Finance
-  Current ranking: #20
+  Current ranking: #39
   Best ranking: #18 on 2025-04-03
-  Worst ranking: #28 on 2025-03-11
-  Average ranking: #22.1
-  Trend (comparing first week vs last week): Ranking has improved by 7.0 positions (26.5%)
-  Volatility (standard deviation): 3.00 positions
+  Worst ranking: #39 on 2025-04-08
+  Average ranking: #22.9
+  Trend (comparing first week vs last week): Ranking has improved by 1.0 positions (3.9%)
+  Volatility (standard deviation): 5.17 positions
 
 Category: iPhone - Free - Apps
-  Current ranking: #339
+  Current ranking: #365
   Best ranking: #336 on 2025-04-06
   Worst ranking: #388 on 2025-03-11
-  Average ranking: #356.9
-  Trend (comparing first week vs last week): Ranking has improved by 40.9 positions (10.7%)
-  Volatility (standard deviation): 16.37 positions
+  Average ranking: #355.7
+  Trend (comparing first week vs last week): Ranking has improved by 31.0 positions (8.2%)
+  Volatility (standard deviation): 15.01 positions
 
 Category: iPhone - Free - Overall
-  Current ranking: #540
   Best ranking: #540 on 2025-04-07
   Worst ranking: #592 on 2025-03-11
-  Average ranking: #560.6
-  Trend (comparing first week vs last week): Ranking has improved by 42.0 positions (7.2%)
-  Volatility (standard deviation): 16.76 positions
+  Average ranking: #558.6
+  Trend (comparing first week vs last week): Ranking has improved by 37.4 positions (6.4%)
+  Volatility (standard deviation): 15.48 positions
 
 Overall Insights:
 Correlation between categories:
-  iPhone - Free - Finance vs iPhone - Free - Apps: Strong positive (0.97)
-  iPhone - Free - Finance vs iPhone - Free - Overall: Strong positive (0.96)
+  iPhone - Free - Finance vs iPhone - Free - Apps: Moderate positive (0.65)
+  iPhone - Free - Finance vs iPhone - Free - Overall: Strong positive (0.95)
   iPhone - Free - Apps vs iPhone - Free - Overall: Strong positive (0.98)
+
+Significant changes in iPhone - Free - Finance:
+  2025-04-08: Ranking dropped by 19 positions (from #20 to #39)
 
