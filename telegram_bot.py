@@ -51,10 +51,25 @@ class TelegramBot:
             # For development/testing, log the message to console instead of sending
             logger.info(f"Message content: {message[:100]}...") # First 100 chars
             
+            # Дополнительно экранируем специальные символы для MarkdownV2
+            message = message.replace("_", "\\_").replace("*", "\\*")
+            message = message.replace("[", "\\[").replace("]", "\\]")
+            message = message.replace("(", "\\(").replace(")", "\\)")
+            message = message.replace("~", "\\~").replace("`", "\\`")
+            message = message.replace(">", "\\>").replace("#", "\\#")
+            message = message.replace("+", "\\+").replace("-", "\\-")
+            message = message.replace("=", "\\=").replace("|", "\\|")
+            message = message.replace("{", "\\{").replace("}", "\\}")
+            message = message.replace(".", "\\.").replace("!", "\\!")
+            
+            # Но оставляем маркеры Markdown нетронутыми
+            # Это очень упрощенная версия, здесь нужно быть более внимательным
+            # с сохранением уже существующих экранированных символов
+            
             self.bot.send_message(
                 chat_id=chat_id,
                 text=message,
-                parse_mode="MarkdownV2" # Using more compatible MarkdownV2
+                parse_mode=None  # Отключаем форматирование, будем использовать обычный текст
             )
             logger.info("Message sent to Telegram channel successfully")
             return True

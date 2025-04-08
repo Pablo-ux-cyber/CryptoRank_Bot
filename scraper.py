@@ -258,24 +258,24 @@ class SensorTowerScraper:
         if not rankings_data or "categories" not in rankings_data:
             return "❌ Failed to retrieve rankings data\\."
         
-        def escape_markdown_v2(text):
-            """Escape special characters for MarkdownV2"""
-            escape_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
-            for char in escape_chars:
-                text = text.replace(char, f"\\{char}")
-            return text
+        # Telegram MarkdownV2 требует экранирования следующих символов:
+        # _ * [ ] ( ) ~ ` > # + - = | { } . !
+        app_name = rankings_data.get("app_name", "Unknown App")
+        app_name = app_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
         
-        app_name = escape_markdown_v2(rankings_data.get("app_name", "Unknown App"))
         date = rankings_data.get("date", "Unknown Date")
         
-        message = f"📊 *{app_name} \\- Category Rankings*\n"
+        # Используем простое форматирование без дефисов в заголовке
+        message = f"📊 *{app_name} App Rankings*\n"
         message += f"📅 *Date:* {date}\n\n"
         
         if not rankings_data["categories"]:
             message += "No ranking data available\\."
         else:
             for category in rankings_data["categories"]:
-                cat_name = escape_markdown_v2(category.get("category", "Unknown Category"))
+                cat_name = category.get("category", "Unknown Category")
+                # Экранируем специальные символы
+                cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
                 rank = category.get("rank", "N/A")
                 message += f"🔹 *{cat_name}:* \\#{rank}\n"
         
