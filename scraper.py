@@ -31,10 +31,13 @@ class SensorTowerScraper:
             logger.info(f"Attempting to scrape web version of channel: {url}")
             
             headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
             }
             
             try:
+                # Новый запрос с дополнительными заголовками для предотвращения кеширования
                 response = requests.get(url, headers=headers, timeout=10)
                 
                 if response.status_code != 200:
@@ -42,26 +45,74 @@ class SensorTowerScraper:
                     return None
                 
                 html_content = response.text
+                
+                # Для отладки, давайте поищем конкретно сообщение с рейтингом 240
+                if "240" in html_content and "Coinbase Rank: 240" in html_content:
+                    logger.info("Found string 'Coinbase Rank: 240' in the raw HTML!")
+                
+                # Проверим наличие сообщения с ID 510 (которое содержит рейтинг 240)
+                if "coinbaseappstore/510" in html_content:
+                    logger.info("Found message with ID 510 (should contain rank 240)")
+                
+                # Сначала попробуем найти сообщение через уникальный идентификатор, который мы увидели в curl
+                # <div ... data-post="coinbaseappstore/510" ... >
                 messages = []
                 
-                # Находим все тексты сообщений на странице
-                # Страница отсортирована по умолчанию от новых к старым, так что первое сообщение - самое свежее
-                message_texts = re.findall(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', html_content, re.DOTALL)
+                # Новый подход: вытащить все блоки сообщений целиком и искать в них текст рейтинга
+                # Ищем все блоки сообщений
+                blocks = re.findall(r'<div class="tgme_widget_message[^"]*"[^>]*?data-post="coinbaseappstore/(\d+)".*?>(.*?)<div class="tgme_widget_message_footer', html_content, re.DOTALL)
                 
-                if message_texts:
-                    for text_html in message_texts:
-                        # Очищаем HTML-теги и форматируем текст
+                # Создаем словарь, где ключ - ID сообщения, значение - текст сообщения
+                messages_dict = {}
+                
+                for msg_id, block_html in blocks:
+                    # Извлекаем текст сообщения
+                    text_match = re.search(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', block_html, re.DOTALL)
+                    
+                    if text_match:
+                        text_html = text_match.group(1)
+                        # Очищаем HTML-теги
+                        clean_text = re.sub(r'<[^>]+>', ' ', text_html)
+                        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                        
+                        if clean_text:
+                            # Сохраняем сообщение в словарь с ID в качестве ключа
+                            messages_dict[int(msg_id)] = f"[ID: {msg_id}] {clean_text}"
+                            
+                            # Логгируем для отладки, если находим сообщение с ID 510
+                            if msg_id == "510":
+                                logger.info(f"Content of message 510: {clean_text}")
+                
+                if messages_dict:
+                    # Сортируем сообщения по ID в убывающем порядке (от новых к старым)
+                    sorted_ids = sorted(messages_dict.keys(), reverse=True)
+                    messages = [messages_dict[msg_id] for msg_id in sorted_ids]
+                    
+                    logger.info(f"Found {len(messages)} messages with IDs")
+                    
+                    # Для отладки, распечатаем первые 3 сообщения
+                    for i, msg in enumerate(messages[:3]):
+                        logger.info(f"Message {i+1}: {msg[:50]}...")
+                    
+                    return messages
+                
+                # Если прямой поиск не сработал, используем запасной вариант
+                if not messages:
+                    logger.info("Using fallback method to extract messages...")
+                    # Просто ищем все тексты сообщений
+                    all_texts = re.findall(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', html_content, re.DOTALL)
+                    
+                    for text_html in all_texts:
                         clean_text = re.sub(r'<[^>]+>', ' ', text_html)
                         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
                         if clean_text:
                             messages.append(clean_text)
                     
-                    logger.info(f"Found {len(messages)} messages from the channel web page")
-                    
-                    # Первое сообщение в списке - самое свежее
-                    return messages
+                    if messages:
+                        logger.info(f"Found {len(messages)} message texts using fallback method")
+                        return messages
                 
-                # Если выше ничего не нашли, используем trafilatura как запасной вариант
+                # Если все методы не сработали, пробуем использовать trafilatura
                 if not messages:
                     text_content = trafilatura.extract(html_content)
                     if text_content:
