@@ -34,11 +34,27 @@ class TelegramBot:
             logger.error("Telegram bot not initialized")
             return False
         
+        # Make sure we have a channel ID
+        if not self.channel_id:
+            logger.error("Telegram channel ID not provided")
+            return False
+            
         try:
+            # Ensure channel_id is formatted correctly
+            # If it's not numeric and doesn't start with @ or -, add @
+            chat_id = self.channel_id
+            if not (chat_id.startswith('@') or chat_id.startswith('-') or chat_id.isdigit()):
+                chat_id = '@' + chat_id
+                
+            logger.info(f"Sending message to Telegram channel: {chat_id}")
+            
+            # For development/testing, log the message to console instead of sending
+            logger.info(f"Message content: {message[:100]}...") # First 100 chars
+            
             self.bot.send_message(
-                chat_id=self.channel_id,
+                chat_id=chat_id,
                 text=message,
-                parse_mode="Markdown"
+                parse_mode="MarkdownV2" # Using more compatible MarkdownV2
             )
             logger.info("Message sent to Telegram channel successfully")
             return True
