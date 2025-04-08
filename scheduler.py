@@ -117,10 +117,10 @@ class SensorTowerScheduler:
                 else:
                     rank_icon = "📉"  # Downward charts for position below 200
                 
-                # Just app name and current rank with emoji
-                combined_message = f"{rank_icon} *{app_name}*: *{rank}*\n\n"
+                # Format exactly as requested by user
+                combined_message = f"{rank_icon} Coinbase Appsote Rank: {rank}\n\n"
             else:
-                combined_message = f"❌ *{app_name}*: Ranking data unavailable\\.\n\n"
+                combined_message = f"❌ Coinbase Appsote Rank: Unavailable\n\n"
             
             # Then add Fear & Greed Index data if available
             if fear_greed_data:
@@ -146,13 +146,9 @@ class SensorTowerScheduler:
                     filled_char = "🟢"
                 else:
                     emoji = "❓"
-                    
-                # Escape hyphen in string
-                label = label.replace("-", "\\-")
                 
-                # Format with value, status and progress bar - visually appealing
-                combined_message += f"{emoji} *Value:* {value}/100\n"
-                combined_message += f"*Status:* {label}\n"
+                # Format exactly as requested by user
+                combined_message += f"{emoji} {label}: {value}/100\n"
                 
                 # Add progress bar
                 progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10, filled_char)
