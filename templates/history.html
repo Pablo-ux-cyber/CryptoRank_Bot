@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История рейтингов - SensorTower Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        .chart-container {
+            max-width: 100%;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        .chart-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .history-table {
+            font-size: 0.9rem;
+        }
+        .trend-badge {
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .trend-up {
+            background-color: var(--bs-success);
+            color: white;
+        }
+        .trend-down {
+            background-color: var(--bs-danger);
+            color: white;
+        }
+        .trend-neutral {
+            background-color: var(--bs-secondary);
+            color: white;
+        }
+        .analysis-section {
+            padding: 1.5rem;
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .analysis-section h4 {
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="mb-4 d-flex justify-content-between align-items-center">
+                    <h2>История рейтингов</h2>
+                    <a href="/" class="btn btn-outline-secondary">Вернуться на главную</a>
+                </div>
+                
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">Динамика рейтингов за 30 дней</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <img src="/static/rankings_chart.png" alt="График рейтингов за 30 дней">
+                        </div>
+                        
+                        <div class="analysis-section">
+                            <h4>Ключевые наблюдения</h4>
+                            <ol>
+                                <li class="mb-2">Все категории показывают восходящий тренд (улучшение позиций в рейтингах).</li>
+                                <li class="mb-2">Наиболее заметное улучшение в категории "iPhone - Free - Overall" (общий рейтинг).</li>
+                                <li class="mb-2">Последняя неделя показывает стабилизацию рейтингов по всем категориям.</li>
+                                <li class="mb-2">Наибольшая волатильность наблюдалась в первой половине периода.</li>
+                                <li class="mb-2">Можно наблюдать некоторую корреляцию между категориями - улучшения и ухудшения часто происходят одновременно.</li>
+                            </ol>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">iPhone - Free - Finance</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Начальный:</span>
+                                            <strong>#21</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Текущий:</span>
+                                            <strong>#19</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Лучший:</span>
+                                            <strong>#17</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Худший:</span>
+                                            <strong>#25</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Тренд:</span>
+                                            <span class="trend-badge trend-up">+2 позиции</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">iPhone - Free - Apps</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Начальный:</span>
+                                            <strong>#245</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Текущий:</span>
+                                            <strong>#232</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Лучший:</span>
+                                            <strong>#230</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Худший:</span>
+                                            <strong>#252</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Тренд:</span>
+                                            <span class="trend-badge trend-up">+13 позиций</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">iPhone - Free - Overall</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Начальный:</span>
+                                            <strong>#480</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Текущий:</span>
+                                            <strong>#450</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Лучший:</span>
+                                            <strong>#450</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Худший:</span>
+                                            <strong>#487</strong>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Тренд:</span>
+                                            <span class="trend-badge trend-up">+30 позиций</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0">Исторические данные</h4>
+                        <a href="/download/history" class="btn btn-sm btn-primary">Скачать CSV</a>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover history-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>Дата</th>
+                                        <th>Finance</th>
+                                        <th>Apps</th>
+                                        <th>Overall</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in historical_data %}
+                                    <tr>
+                                        <td>{{ row.date }}</td>
+                                        <td>#{{ row.finance }}</td>
+                                        <td>#{{ row.apps }}</td>
+                                        <td>#{{ row.overall }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <div class="alert alert-info">
+                        <div class="d-flex align-items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-info-circle-fill me-2" viewBox="0 0 16 16">
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                            </svg>
+                            <div>
+                                <strong>Примечание:</strong> Меньшее значение позиции в рейтинге означает более высокое место (лучше).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

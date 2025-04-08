@@ -3,8 +3,10 @@ import signal
 import sys
 import threading
 import os
+import csv
+import pandas as pd
 from datetime import datetime, timedelta
-from flask import Flask, render_template, jsonify, redirect, url_for, flash, request
+from flask import Flask, render_template, jsonify, redirect, url_for, flash, request, send_file
 from logger import logger
 from scheduler import SensorTowerScheduler
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
@@ -144,6 +146,41 @@ def view_logs():
         log_content = [f"Error reading log file: {str(e)}"]
     
     return render_template('logs.html', logs=log_content)
+
+@app.route('/history')
+def view_history():
+    """View historical data and analysis"""
+    # Read historical data from CSV file
+    historical_data = []
+    try:
+        df = pd.read_csv('historical_data.csv')
+        df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+        
+        # Transform the data for template
+        for _, row in df.iterrows():
+            historical_data.append({
+                'date': row['date'],
+                'finance': row['iPhone - Free - Finance'],
+                'apps': row['iPhone - Free - Apps'],
+                'overall': row['iPhone - Free - Overall']
+            })
+            
+    except Exception as e:
+        logger.error(f"Error reading historical data: {str(e)}")
+    
+    return render_template('history.html', historical_data=historical_data)
+
+@app.route('/download/history')
+def download_history():
+    """Download historical data as CSV"""
+    try:
+        return send_file('historical_data.csv',
+                        mimetype='text/csv',
+                        as_attachment=True,
+                        download_name='coinbase_rankings_history.csv')
+    except Exception as e:
+        logger.error(f"Error downloading historical data: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/health')
 def health():

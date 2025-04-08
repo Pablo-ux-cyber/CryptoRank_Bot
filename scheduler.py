@@ -1,10 +1,13 @@
 import threading
 import time
+import csv
+import os
 from datetime import datetime, timedelta
 
 from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
+from visualize_data import generate_rankings_chart, generate_summary_analysis
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -85,6 +88,13 @@ class SensorTowerScheduler:
                 logger.error("Failed to send message to Telegram.")
                 return False
             
+            # Save the data to the historical data CSV file
+            self._save_to_historical_data(rankings_data)
+            
+            # Generate the chart and analysis
+            generate_rankings_chart()
+            generate_summary_analysis()
+            
             logger.info("Scraping job completed successfully")
             return True
             
@@ -96,3 +106,94 @@ class SensorTowerScheduler:
             except:
                 pass
             return False
+            
+    def _save_to_historical_data(self, rankings_data):
+        """
+        Save the scraped rankings data to a CSV file for historical tracking
+        
+        Args:
+            rankings_data (dict): The scraped rankings data
+        """
+        try:
+            # Define the CSV file path
+            csv_file = 'historical_data.csv'
+            
+            # Prepare the data for the CSV
+            today = datetime.now().strftime('%Y-%m-%d')
+            
+            # Extract rankings for each category
+            finance_rank = None
+            apps_rank = None
+            overall_rank = None
+            
+            for category in rankings_data.get('categories', []):
+                category_name = category.get('name', '')
+                rank = category.get('rank')
+                
+                if category_name == 'iPhone - Free - Finance':
+                    finance_rank = rank
+                elif category_name == 'iPhone - Free - Apps':
+                    apps_rank = rank
+                elif category_name == 'iPhone - Free - Overall':
+                    overall_rank = rank
+            
+            # Skip if we don't have valid rankings
+            if not all([finance_rank, apps_rank, overall_rank]):
+                logger.warning("Incomplete ranking data, not saving to historical data")
+                return
+            
+            # Create file with headers if it doesn't exist
+            file_exists = os.path.isfile(csv_file)
+            
+            with open(csv_file, 'a', newline='') as f:
+                writer = csv.writer(f)
+                
+                # Write headers if the file doesn't exist
+                if not file_exists:
+                    writer.writerow(['date', 'iPhone - Free - Finance', 'iPhone - Free - Apps', 'iPhone - Free - Overall'])
+                
+                # Write the data row
+                writer.writerow([today, finance_rank, apps_rank, overall_rank])
+                
+            logger.info(f"Rankings data saved to historical data file for {today}")
+            
+            # Limit to 30 days of data by removing older entries if necessary
+            self._limit_historical_data_to_30_days(csv_file)
+            
+        except Exception as e:
+            logger.error(f"Error saving to historical data: {str(e)}")
+    
+    def _limit_historical_data_to_30_days(self, csv_file):
+        """
+        Ensure the historical data file contains only the last 30 days of data
+        
+        Args:
+            csv_file (str): Path to the CSV file
+        """
+        try:
+            # Read the entire CSV file
+            rows = []
+            with open(csv_file, 'r', newline='') as f:
+                reader = csv.reader(f)
+                header = next(reader)  # Save the header
+                rows = list(reader)
+            
+            # If we have more than 30 days of data, keep only the most recent 30
+            if len(rows) > 30:
+                # Sort by date (first column) in descending order
+                rows.sort(key=lambda x: x[0], reverse=True)
+                rows = rows[:30]
+                
+                # Sort back by date in ascending order for writing
+                rows.sort(key=lambda x: x[0])
+                
+                # Write back to the file
+                with open(csv_file, 'w', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow(header)
+                    writer.writerows(rows)
+                    
+                logger.info(f"Historical data limited to the most recent 30 days")
+                
+        except Exception as e:
+            logger.error(f"Error limiting historical data: {str(e)}")

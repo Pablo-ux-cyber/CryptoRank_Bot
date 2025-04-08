@@ -1,45 +1,35 @@
-Анализ исторических данных рейтинга Coinbase (последние 30 дней)
+Coinbase App Rankings - Statistical Analysis
+Generated on: 2025-04-08 06:32:46
+Data period: 2025-03-09 to 2025-04-07
+Total days of data: 30
 
-Общие тренды:
+Category: iPhone - Free - Finance
+  Current ranking: #19
+  Best ranking: #17 on 2025-03-25
+  Worst ranking: #25 on 2025-03-09
+  Average ranking: #20.1
+  Trend (comparing first week vs last week): Ranking has improved by 4.9 positions (20.5%)
+  Volatility (standard deviation): 2.34 positions
 
-1. iPhone - Free - Finance:
-   - Начальный рейтинг (10 марта): #21
-   - Конечный рейтинг (8 апреля): #19
-   - Наилучший показатель: #17 (14 марта, 21 марта)
-   - Наихудший показатель: #25 (16 марта, 24 марта)
-   - Среднее значение: 20.1
-   - Медиана: 20
-   - Тренд: Небольшое улучшение рейтинга (на 2 позиции вверх за 30 дней)
+Category: iPhone - Free - Apps
+  Current ranking: #232
+  Best ranking: #231 on 2025-04-06
+  Worst ranking: #252 on 2025-03-09
+  Average ranking: #238.6
+  Trend (comparing first week vs last week): Ranking has improved by 14.4 positions (5.8%)
+  Volatility (standard deviation): 5.93 positions
 
-2. iPhone - Free - Apps:
-   - Начальный рейтинг (10 марта): #245
-   - Конечный рейтинг (8 апреля): #232
-   - Наилучший показатель: #230 (21 марта)
-   - Наихудший показатель: #252 (11 марта)
-   - Среднее значение: 238.8
-   - Медиана: 235
-   - Тренд: Заметное улучшение рейтинга (на 13 позиций вверх за 30 дней)
+Category: iPhone - Free - Overall
+  Current ranking: #450
+  Best ranking: #450 on 2025-04-07
+  Worst ranking: #487 on 2025-03-09
+  Average ranking: #462.6
+  Trend (comparing first week vs last week): Ranking has improved by 26.9 positions (5.6%)
+  Volatility (standard deviation): 10.95 positions
 
-3. iPhone - Free - Overall:
-   - Начальный рейтинг (10 марта): #480
-   - Конечный рейтинг (8 апреля): #450
-   - Наилучший показатель: #450 (3-8 апреля)
-   - Наихудший показатель: #487 (11 марта)
-   - Среднее значение: 464.3
-   - Медиана: 465
-   - Тренд: Значительное улучшение рейтинга (на 30 позиций вверх за 30 дней)
+Overall Insights:
+Correlation between categories:
+  iPhone - Free - Finance vs iPhone - Free - Apps: Strong positive (0.94)
+  iPhone - Free - Finance vs iPhone - Free - Overall: Strong positive (0.94)
+  iPhone - Free - Apps vs iPhone - Free - Overall: Strong positive (0.98)
 
-Ключевые наблюдения:
-
-1. Все категории показывают восходящий тренд (улучшение позиций в рейтингах).
-2. Наиболее заметное улучшение в категории "iPhone - Free - Overall" (общий рейтинг).
-3. Последняя неделя показывает стабилизацию рейтингов по всем категориям.
-4. Наибольшая волатильность наблюдалась в первой половине периода.
-5. Можно наблюдать некоторую корреляцию между категориями - улучшения и ухудшения часто происходят одновременно.
-
-Рекомендации:
-
-1. Продолжать мониторинг ежедневных изменений для выявления причин колебаний.
-2. Обратить внимание на длительные периоды стабильности (как последняя неделя) - это может указывать на замедление активности пользователей или изменение алгоритмов App Store.
-3. Использовать данные за более длительный период (3-6 месяцев) для выявления сезонных или долгосрочных трендов.
-4. Сравнить динамику с конкурентами в тех же категориях для более полного анализа.
