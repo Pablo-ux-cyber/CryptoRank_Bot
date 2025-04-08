@@ -151,9 +151,16 @@ class TelegramBot:
                 
                 try:
                     # Отправляем простой текст без форматирования
+                    # Убираем все символы форматирования Markdown
+                    clean_text = message.replace('\\', '')  # Убираем экранирование
+                    clean_text = clean_text.replace('*', '')  # Убираем звездочки
+                    clean_text = clean_text.replace('||', '')  # Убираем метки спойлеров
+                    clean_text = clean_text.replace('#', '')  # Убираем решетки
+                    clean_text = clean_text.replace('_', '')  # Убираем подчеркивания
+                    
                     self.bot.send_message(
                         chat_id=chat_id,
-                        text=message.replace('\\', ''),  # Убираем экранирование
+                        text=clean_text,
                         parse_mode=None
                     )
                     logger.info(f"Message sent to Telegram {chat_type} successfully (without formatting)")

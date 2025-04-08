@@ -119,7 +119,7 @@ class SensorTowerScheduler:
                     rank_icon = "📉"  # Графики вниз для позиции ниже 200
                 
                 # Основная информация (всегда видима)
-                combined_message += f"{rank_icon} *{app_name}*: \\#{rank}\n"
+                combined_message += f"{rank_icon} *{app_name}*: *{rank}*\n"
                 
                 # Детальная информация (скрыта в спойлере)
                 details = f"*{app_name} Рейтинг в App Store*\n"
@@ -131,7 +131,7 @@ class SensorTowerScheduler:
                     cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
                     rank = category.get("rank", "N/A")
                     
-                    details += f"• {cat_name}: \\#{rank}\n"
+                    details += f"• {cat_name}: *{rank}*\n"
                 
                 # Оборачиваем детали в спойлер
                 # Символы спойлера для MarkdownV2 - || в начале и конце текста
