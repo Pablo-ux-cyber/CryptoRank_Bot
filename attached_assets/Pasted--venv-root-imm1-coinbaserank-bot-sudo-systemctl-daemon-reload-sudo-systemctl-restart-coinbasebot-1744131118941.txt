@@ -1,0 +1,54 @@
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl daemon-reload
+sudo systemctl restart coinbasebot.service
+(venv) root@imm1:~/coinbaserank_bot# sudo journalctl -u coinbasebot.service -n 50
+Apr 08 19:50:49 imm1.dinet.fvds.ru systemd[1]: Stopped Coinbase Rank Telegram Bot.
+Apr 08 19:50:49 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Apr 08 19:50:49 imm1.dinet.fvds.ru systemd[951526]: coinbasebot.service: Failed to de>
+Apr 08 19:50:49 imm1.dinet.fvds.ru systemd[951526]: coinbasebot.service: Failed at st>
+Apr 08 19:50:49 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Main process exit>
+Apr 08 19:50:49 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Failed with resul>
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Scheduled restart>
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[1]: Stopped Coinbase Rank Telegram Bot.
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[951529]: coinbasebot.service: Failed to de>
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[951529]: coinbasebot.service: Failed at st>
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Main process exit>
+Apr 08 19:51:00 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Failed with resul>
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Scheduled restart>
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[1]: Stopped Coinbase Rank Telegram Bot.
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[951548]: coinbasebot.service: Failed to de>
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[951548]: coinbasebot.service: Failed at st>
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Main process exit>
+Apr 08 19:51:10 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Failed with resul>
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Scheduled restart>
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[1]: Stopped Coinbase Rank Telegram Bot.
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[951557]: coinbasebot.service: Failed to de>
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[951557]: coinbasebot.service: Failed at st>
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Main process exit>
+Apr 08 19:51:20 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Failed with resul>
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Scheduled restart>
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[1]: Stopped Coinbase Rank Telegram Bot.
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[951560]: coinbasebot.service: Failed to de>
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[951560]: coinbasebot.service: Failed at st>
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Main process exit>
+Apr 08 19:51:30 imm1.dinet.fvds.ru systemd[1]: coinbasebot.service: Failed with resul>
+Apr 08 19:51:36 imm1.dinet.fvds.ru systemd[1]: Stopped Coinbase Rank Telegram Bot.
+Apr 08 19:51:36 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]: 2025-04-08 19:51:37,268 - sensorto>
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]: 2025-04-08 19:51:37,268 - sensorto>
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]:  * Serving Flask app 'main'
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]:  * Debug mode: on
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]: 2025-04-08 19:51:37,309 - werkzeug>
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]:  * Running on all addresses (0.0.0>
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]:  * Running on http://127.0.0.1:5000
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]:  * Running on http://91.132.58.97:>
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]: 2025-04-08 19:51:37,309 - werkzeug>
+Apr 08 19:51:37 imm1.dinet.fvds.ru python[951596]: 2025-04-08 19:51:37,313 - werkzeug>
+Apr 08 19:51:38 imm1.dinet.fvds.ru python[951599]: 2025-04-08 19:51:38,008 - sensorto>
+Apr 08 19:51:38 imm1.dinet.fvds.ru python[951599]: 2025-04-08 19:51:38,008 - sensorto>
+Apr 08 19:51:38 imm1.dinet.fvds.ru python[951599]: 2025-04-08 19:51:38,022 - werkzeug>
+Apr 08 19:51:38 imm1.dinet.fvds.ru python[951599]: 2025-04-08 19:51:38,029 - werkzeug>
+lines 1-50/50 (END)

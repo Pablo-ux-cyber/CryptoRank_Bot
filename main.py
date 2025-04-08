@@ -51,8 +51,8 @@ def index():
     next_run = "Not scheduled"
     if scheduler and scheduler.running:
         # With our custom scheduler, we don't have a way to get next_run_time directly
-        # So we'll show it as 24 hours from now
-        next_run = (datetime.now() + timedelta(hours=24)).strftime("%Y-%m-%d %H:%M:%S")
+        # So we'll show it as 5 minutes from now (new schedule)
+        next_run = (datetime.now() + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
     
     schedule_time = f"{SCHEDULE_HOUR:02d}:{SCHEDULE_MINUTE:02d}"
     
@@ -119,13 +119,27 @@ def trigger_scrape():
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Run the scraping job
-        success = scheduler.run_scraping_job()
+        # Get force_send parameter (default is False)
+        force_send = request.args.get('force', 'false').lower() == 'true'
+        
+        # Run the scraping job using the new run_now method
+        if force_send:
+            logger.info("Manual trigger with force_send=True")
+            success = scheduler.run_now(force_send=True)
+        else:
+            logger.info("Manual trigger with normal change detection")
+            success = scheduler.run_now(force_send=False)
         
         if success:
             # Store the scraped data for display
             last_scrape_data = scheduler.scraper.last_scrape_data
             last_scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            if force_send:
+                flash("Scraping job completed successfully! Message sent regardless of changes.", "success")
+            else:
+                flash("Scraping job completed successfully! Message sent only if ranking changed.", "success")
+                
             return redirect(url_for('index'))
         else:
             return jsonify({"status": "error", "message": "Scraping job failed"}), 500

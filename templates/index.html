@@ -112,10 +112,19 @@
                         {% endif %}
                         
                         <div class="mt-4">
-                            <a href="/trigger-scrape" class="btn btn-primary">Trigger Manual Scrape</a>
-                            <a href="/get-fear-greed" class="btn btn-warning ms-2">Get Fear & Greed Index</a>
-                            <a href="/test-telegram" class="btn btn-info ms-2">Test Telegram Connection</a>
-                            <a href="/logs" class="btn btn-outline-secondary ms-2">View Logs</a>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="/trigger-scrape" class="btn btn-primary">Trigger Manual Scrape</a>
+                                <a href="/trigger-scrape?force=true" class="btn btn-danger">Force Send Message</a>
+                                <a href="/get-fear-greed" class="btn btn-warning">Get Fear & Greed Index</a>
+                                <a href="/test-telegram" class="btn btn-info">Test Telegram Connection</a>
+                                <a href="/logs" class="btn btn-outline-secondary">View Logs</a>
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-muted">
+                                    <strong>Note:</strong> "Trigger Manual Scrape" only sends a message if the rank changed.
+                                    "Force Send Message" always sends a message regardless of changes.
+                                </small>
+                            </div>
                         </div>
                         
                         <div class="mt-3" id="telegram-test-result" style="display: none;">
@@ -226,12 +235,12 @@
                     <div class="card-body">
                         <p>This bot scrapes category rankings data for the specified app from SensorTower and posts it to a Telegram channel.</p>
                         <p>It also tracks the Crypto Fear & Greed Index to help monitor market sentiment.</p>
-                        <p>Both reports run on a daily schedule and can also be triggered manually.</p>
+                        <p>The bot checks for new data every 5 minutes but only posts messages when the ranking changes.</p>
                         
                         <h6 class="mt-3">Configuration:</h6>
                         <ul>
                             <li>App ID: {{ app_id }}</li>
-                            <li>Schedule: Daily at {{ schedule_time }}</li>
+                            <li>Schedule: Every 5 minutes</li>
                             <li>Data Sources: SensorTower, Alternative.me Fear & Greed Index</li>
                         </ul>
                     </div>
