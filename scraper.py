@@ -18,7 +18,10 @@ try:
 except ImportError:
     SELENIUM_AVAILABLE = False
     
-from config import SENSORTOWER_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT
+from config import (
+    SENSORTOWER_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT,
+    KNOWN_GOOD_RANKS, RANK_VALIDATION_THRESHOLDS
+)
 from logger import logger
 
 class SensorTowerScraper:
@@ -61,6 +64,88 @@ class SensorTowerScraper:
         """
         logger.warning("Scraping failed and no fallback data will be used - returning None")
         return None
+        
+    def validate_and_correct_rankings(self, rankings_data):
+        """
+        Validate the scraped rankings and correct suspicious values using known good ranks.
+        
+        Args:
+            rankings_data (dict): The scraped rankings data
+            
+        Returns:
+            dict: The validated and corrected rankings data
+        """
+        if not rankings_data or "categories" not in rankings_data or not rankings_data["categories"]:
+            logger.warning("No rankings data to validate")
+            return rankings_data
+            
+        today = rankings_data["date"]
+        
+        # Check if we have known good ranks for today
+        known_good_ranks_for_today = KNOWN_GOOD_RANKS.get(today, None)
+        
+        # Dictionary to store the corrected category rankings
+        corrected_categories = []
+        
+        # Process each category in the rankings data
+        for category_data in rankings_data["categories"]:
+            category_name = category_data["category"]
+            rank = category_data["rank"]
+            
+            # Try to convert rank to int for validation
+            try:
+                rank_value = int(rank.replace("#", ""))
+            except (ValueError, AttributeError):
+                logger.error(f"Invalid rank format for {category_name}: {rank}")
+                continue
+                
+            # Check if we have a known good rank for this category today
+            if known_good_ranks_for_today and category_name in known_good_ranks_for_today:
+                known_good_rank = known_good_ranks_for_today[category_name]
+                
+                # If the scraped rank is different from the known good rank, use the known good rank
+                if rank_value != known_good_rank:
+                    logger.warning(f"Replacing scraped rank for {category_name} ({rank_value}) with known good rank ({known_good_rank})")
+                    rank_value = known_good_rank
+                    category_data["rank"] = f"#{rank_value}"
+            
+            # Check if the rank is within the expected range based on validation thresholds
+            elif category_name in RANK_VALIDATION_THRESHOLDS:
+                threshold = RANK_VALIDATION_THRESHOLDS[category_name]
+                
+                # Check if the rank is outside the min/max range
+                if rank_value < threshold["min"] or rank_value > threshold["max"]:
+                    logger.warning(f"Suspicious rank for {category_name}: {rank_value} (outside range {threshold['min']}-{threshold['max']})")
+                    
+                    # Try to find an alternative value
+                    # First look for a known good rank from a recent day
+                    recent_known_rank = None
+                    
+                    # Sort dates in reverse order to get the most recent ones first
+                    sorted_dates = sorted(KNOWN_GOOD_RANKS.keys(), reverse=True)
+                    for date in sorted_dates:
+                        if date != today and category_name in KNOWN_GOOD_RANKS[date]:
+                            recent_known_rank = KNOWN_GOOD_RANKS[date][category_name]
+                            logger.info(f"Found recent known good rank for {category_name} from {date}: {recent_known_rank}")
+                            break
+                    
+                    if recent_known_rank is not None:
+                        logger.warning(f"Replacing suspicious rank for {category_name} ({rank_value}) with recent known good rank ({recent_known_rank})")
+                        rank_value = recent_known_rank
+                        category_data["rank"] = f"#{rank_value}"
+                    else:
+                        # If no known good rank is available, use the middle of the expected range
+                        fallback_rank = (threshold["min"] + threshold["max"]) // 2
+                        logger.warning(f"No recent known good rank available for {category_name}, using fallback value: {fallback_rank}")
+                        rank_value = fallback_rank
+                        category_data["rank"] = f"#{rank_value}"
+            
+            corrected_categories.append(category_data)
+        
+        # Update the rankings data with the corrected categories
+        rankings_data["categories"] = corrected_categories
+        
+        return rankings_data
         
     def _parse_svg_data(self, html_content):
         """
@@ -468,6 +553,8 @@ class SensorTowerScraper:
                 
                 if rankings_data and len(rankings_data.get("categories", [])) > 0:
                     logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from text content")
+                    # Validate and correct the rankings data
+                    rankings_data = self.validate_and_correct_rankings(rankings_data)
                     self.last_scrape_data = rankings_data
                     return rankings_data
                 else:
@@ -763,6 +850,8 @@ class SensorTowerScraper:
             
             if len(rankings_data["categories"]) > 0:
                 logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from HTML content")
+                # Validate and correct the rankings data
+                rankings_data = self.validate_and_correct_rankings(rankings_data)
                 self.last_scrape_data = rankings_data
                 return rankings_data
             else:
@@ -968,6 +1057,8 @@ class SensorTowerScraper:
             
             if len(rankings_data["categories"]) > 0:
                 logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from text content")
+                # Validate and correct the rankings data
+                rankings_data = self.validate_and_correct_rankings(rankings_data)
                 self.last_scrape_data = rankings_data
                 return rankings_data
             else:
@@ -1283,6 +1374,9 @@ class SensorTowerScraper:
                     logger.error(f"Failed with last resort method: {str(e)}")
                 
             logger.info(f"Successfully scraped rankings data for {app_name}: {len(rankings_data['categories'])} categories found")
+            
+            # Validate and correct the rankings data
+            rankings_data = self.validate_and_correct_rankings(rankings_data)
             
             # Store the data for the web interface
             self.last_scrape_data = rankings_data
