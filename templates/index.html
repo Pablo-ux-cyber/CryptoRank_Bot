@@ -110,8 +110,60 @@
                         
                         <div class="mt-4">
                             <a href="/trigger-scrape" class="btn btn-primary">Trigger Manual Scrape</a>
+                            <a href="/test-telegram" class="btn btn-info ms-2">Test Telegram Connection</a>
                             <a href="/logs" class="btn btn-outline-secondary ms-2">View Logs</a>
                         </div>
+                        
+                        <div class="mt-3" id="telegram-test-result" style="display: none;">
+                            <div class="alert" id="telegram-alert" role="alert"></div>
+                        </div>
+                        
+                        <script>
+                            document.querySelector('a[href="/test-telegram"]').addEventListener('click', function(e) {
+                                e.preventDefault();
+                                
+                                // Show loading state
+                                const btn = this;
+                                const originalText = btn.textContent;
+                                btn.textContent = 'Testing...';
+                                btn.classList.add('disabled');
+                                
+                                // Make the API call
+                                fetch('/test-telegram')
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        // Show the result
+                                        const alertDiv = document.getElementById('telegram-alert');
+                                        const resultDiv = document.getElementById('telegram-test-result');
+                                        
+                                        resultDiv.style.display = 'block';
+                                        
+                                        if (data.status === 'success') {
+                                            alertDiv.className = 'alert alert-success';
+                                        } else if (data.status === 'warning') {
+                                            alertDiv.className = 'alert alert-warning';
+                                        } else {
+                                            alertDiv.className = 'alert alert-danger';
+                                        }
+                                        
+                                        alertDiv.textContent = data.message;
+                                    })
+                                    .catch(error => {
+                                        // Show error
+                                        const alertDiv = document.getElementById('telegram-alert');
+                                        const resultDiv = document.getElementById('telegram-test-result');
+                                        
+                                        resultDiv.style.display = 'block';
+                                        alertDiv.className = 'alert alert-danger';
+                                        alertDiv.textContent = 'Error testing Telegram connection: ' + error.message;
+                                    })
+                                    .finally(() => {
+                                        // Reset button state
+                                        btn.textContent = originalText;
+                                        btn.classList.remove('disabled');
+                                    });
+                            });
+                        </script>
                     </div>
                 </div>
                 

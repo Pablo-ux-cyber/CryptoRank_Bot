@@ -8,6 +8,13 @@ class TelegramBot:
         self.channel_id = TELEGRAM_CHANNEL_ID
         self.bot = None
         
+        # Проверяем, есть ли токен и канал
+        if not self.token:
+            logger.error("Telegram bot token not provided. Please set TELEGRAM_BOT_TOKEN environment variable.")
+        
+        if not self.channel_id:
+            logger.error("Telegram channel ID not provided. Please set TELEGRAM_CHANNEL_ID environment variable.")
+            
         self.initialize_bot()
     
     def initialize_bot(self):
@@ -18,6 +25,53 @@ class TelegramBot:
             return True
         except Exception as e:
             logger.error(f"Failed to initialize Telegram bot: {str(e)}")
+            return False
+    
+    def send_message_to_bot_admin(self, message):
+        """
+        Send a message to the bot administrator's private chat
+        This is useful for testing without a proper channel
+        
+        Args:
+            message (str): The message to send
+        
+        Returns:
+            bool: True if the message was sent successfully, False otherwise
+        """
+        if not self.bot:
+            logger.error("Telegram bot not initialized")
+            return False
+            
+        try:
+            # Сначала попробуем получить обновления, чтобы найти ID администратора
+            updates = self.bot.get_updates()
+            admin_id = None
+            
+            # Ищем первый private чат в обновлениях
+            for update in updates:
+                if update.message and update.message.chat.type == 'private':
+                    admin_id = update.message.chat.id
+                    break
+                    
+            if admin_id:
+                logger.info(f"Sending message to admin ID: {admin_id}")
+                self.bot.send_message(
+                    chat_id=admin_id,
+                    text=message,
+                    parse_mode=None
+                )
+                logger.info("Message sent to admin successfully")
+                return True
+            else:
+                logger.error("Could not find admin ID. Send a message to the bot first.")
+                # В качестве запасного варианта логируем сообщение
+                logger.info(f"Message that would be sent: {message}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"Failed to send message to admin: {str(e)}")
+            # В качестве запасного варианта логируем сообщение
+            logger.info(f"Message that would be sent: {message}")
             return False
     
     def send_message(self, message):
@@ -37,45 +91,41 @@ class TelegramBot:
         # Make sure we have a channel ID
         if not self.channel_id:
             logger.error("Telegram channel ID not provided")
-            return False
+            # Если канал не указан, попробуем отправить сообщение администратору бота
+            logger.info("Attempting to send message to bot admin instead")
+            return self.send_message_to_bot_admin(message)
+            
+        # Для отладки вывести сообщение в лог
+        logger.info(f"Message content to send: {message[:100]}...") # First 100 chars
             
         try:
-            # Ensure channel_id is formatted correctly
-            # If it's not numeric and doesn't start with @ or -, add @
+            # Проверяем, что чат существует
             chat_id = self.channel_id
+            # Проверяем формат ID канала
             if not (chat_id.startswith('@') or chat_id.startswith('-') or chat_id.isdigit()):
                 chat_id = '@' + chat_id
                 
-            logger.info(f"Sending message to Telegram channel: {chat_id}")
+            logger.info(f"Attempting to send message to Telegram channel: {chat_id}")
             
-            # For development/testing, log the message to console instead of sending
-            logger.info(f"Message content: {message[:100]}...") # First 100 chars
-            
-            # Дополнительно экранируем специальные символы для MarkdownV2
-            message = message.replace("_", "\\_").replace("*", "\\*")
-            message = message.replace("[", "\\[").replace("]", "\\]")
-            message = message.replace("(", "\\(").replace(")", "\\)")
-            message = message.replace("~", "\\~").replace("`", "\\`")
-            message = message.replace(">", "\\>").replace("#", "\\#")
-            message = message.replace("+", "\\+").replace("-", "\\-")
-            message = message.replace("=", "\\=").replace("|", "\\|")
-            message = message.replace("{", "\\{").replace("}", "\\}")
-            message = message.replace(".", "\\.").replace("!", "\\!")
-            
-            # Но оставляем маркеры Markdown нетронутыми
-            # Это очень упрощенная версия, здесь нужно быть более внимательным
-            # с сохранением уже существующих экранированных символов
-            
-            self.bot.send_message(
-                chat_id=chat_id,
-                text=message,
-                parse_mode=None  # Отключаем форматирование, будем использовать обычный текст
-            )
-            logger.info("Message sent to Telegram channel successfully")
-            return True
+            try:
+                # Сначала попробуем отправить обычный текст без форматирования
+                self.bot.send_message(
+                    chat_id=chat_id,
+                    text=message,
+                    parse_mode=None
+                )
+                logger.info("Message sent to Telegram channel successfully")
+                return True
+            except Exception as channel_error:
+                # Если отправка в канал не удалась, попробуем отправить администратору
+                logger.error(f"Failed to send to channel: {str(channel_error)}")
+                logger.info("Attempting to send message to bot admin instead")
+                return self.send_message_to_bot_admin(message)
+                
         except Exception as e:
             logger.error(f"Failed to send message to Telegram channel: {str(e)}")
-            return False
+            # В случае ошибки попробуем отправить сообщение администратору
+            return self.send_message_to_bot_admin(message)
 
     def test_connection(self):
         """

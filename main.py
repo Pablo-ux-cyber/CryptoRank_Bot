@@ -70,6 +70,42 @@ def index():
                           last_scrape_time=last_scrape_time,
                           categories=categories)
 
+@app.route('/test-telegram')
+def test_telegram():
+    """Test the Telegram connection"""
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+        
+    try:
+        # Test the Telegram connection using the bot's test_connection method
+        telegram_bot = scheduler.telegram_bot
+        if telegram_bot.test_connection():
+            # If test is successful, try to send a test message
+            test_msg = (
+                "🧪 Тестовое сообщение от SensorTower Bot\n\n"
+                "Это сообщение отправлено для проверки работы бота.\n"
+                f"Дата и время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+            )
+            
+            if telegram_bot.send_message(test_msg):
+                return jsonify({
+                    "status": "success", 
+                    "message": "Telegram connection successful and test message sent!"
+                })
+            else:
+                return jsonify({
+                    "status": "warning", 
+                    "message": "Connected to Telegram API, but failed to send test message. Check your channel ID."
+                }), 200
+        else:
+            return jsonify({
+                "status": "error", 
+                "message": "Failed to connect to Telegram API. Check your bot token."
+            }), 400
+    except Exception as e:
+        logger.error(f"Error testing Telegram connection: {str(e)}")
+        return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
+
 @app.route('/trigger-scrape')
 def trigger_scrape():
     """Manually trigger a scrape job"""
