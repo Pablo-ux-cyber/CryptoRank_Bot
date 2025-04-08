@@ -40,7 +40,7 @@
                                 SensorTower Telegram Bot
                             </h2>
                         </div>
-                        <p class="text-muted">Automatically scrapes app store rankings from SensorTower and posts them to Telegram.</p>
+                        <p class="text-muted">Automatically fetches app store rankings from Apple iTunes API (and SensorTower as fallback) and posts them to Telegram.</p>
                         
                         <div class="mt-4">
                             <h5>Bot Status</h5>
@@ -79,6 +79,9 @@
                         {% if last_scrape_time %}
                         <div class="mt-4">
                             <h5>Last Scrape</h5>
+                            {% if last_scrape_data and last_scrape_data.source %}
+                            <p class="text-muted">Source: {{ last_scrape_data.source }}</p>
+                            {% endif %}
                             <p>{{ last_scrape_time }}</p>
                             
                             {% if categories %}
@@ -179,7 +182,7 @@
                         <ul>
                             <li>App ID: {{ app_id }}</li>
                             <li>Schedule: Daily at {{ schedule_time }}</li>
-                            <li>Data Source: SensorTower</li>
+                            <li>Data Sources: Apple iTunes API (primary), SensorTower (fallback)</li>
                         </ul>
                     </div>
                 </div>

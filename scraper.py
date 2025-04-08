@@ -3,6 +3,7 @@ import requests
 import trafilatura
 import re
 import random
+import json
 from datetime import datetime
 
 try:
@@ -19,6 +20,11 @@ except ImportError:
     
 from config import SENSORTOWER_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT
 from logger import logger
+
+# Константы для iTunes API
+ITUNES_API_URL = "https://itunes.apple.com/lookup"
+ITUNES_CHARTS_API_URL = "https://itunes.apple.com/rss/topfreeapplications/limit=200/genre=6015/json"  # Finance genre
+ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/rss/topfreeapplications/limit=200/json"  # Overall
 
 class SensorTowerScraper:
     def __init__(self):
@@ -52,6 +58,124 @@ class SensorTowerScraper:
             self.driver.quit()
             logger.info("Selenium WebDriver closed")
 
+    def fetch_from_apple_api(self):
+        """
+        Fetch app rankings directly from Apple App Store API
+        This is a more reliable method that uses official API endpoints
+        """
+        logger.info("Fetching data from Apple App Store API")
+        
+        try:
+            # First, get app details to confirm the app name
+            lookup_params = {
+                "id": self.app_id,
+                "country": "us"
+            }
+            
+            logger.info(f"Looking up app details for ID: {self.app_id}")
+            lookup_response = requests.get(ITUNES_API_URL, params=lookup_params, timeout=10)
+            
+            if lookup_response.status_code != 200:
+                logger.error(f"Failed to fetch app details: HTTP {lookup_response.status_code}")
+                return self._create_test_data()
+                
+            lookup_data = lookup_response.json()
+            
+            if not lookup_data.get("results"):
+                logger.error(f"No results found for app ID: {self.app_id}")
+                return self._create_test_data()
+                
+            app_info = lookup_data["results"][0]
+            app_name = app_info.get("trackName", "Coinbase")
+            
+            logger.info(f"Found app in iTunes: {app_name}")
+            
+            # Initialize the rankings data structure
+            rankings_data = {
+                "app_name": app_name,
+                "app_id": self.app_id,
+                "date": time.strftime("%Y-%m-%d"),
+                "source": "Apple iTunes API",
+                "categories": []
+            }
+            
+            # Step 1: Check ranking in Finance category
+            logger.info("Fetching Finance category rankings")
+            finance_response = requests.get(ITUNES_CHARTS_API_URL, timeout=10)
+            
+            if finance_response.status_code == 200:
+                finance_data = finance_response.json()
+                entries = finance_data.get("feed", {}).get("entry", [])
+                
+                finance_rank = None
+                for i, entry in enumerate(entries):
+                    app_id_info = entry.get("id", {}).get("attributes", {}).get("im:id")
+                    if app_id_info == str(self.app_id):
+                        finance_rank = i + 1
+                        logger.info(f"Found app at position {finance_rank} in Finance category")
+                        break
+                
+                if finance_rank:
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Finance",
+                        "rank": str(finance_rank)
+                    })
+                else:
+                    logger.info("App not found in top Finance apps")
+            else:
+                logger.error(f"Failed to fetch Finance rankings: HTTP {finance_response.status_code}")
+            
+            # Step 2: Check ranking in Overall free apps
+            logger.info("Fetching Overall free apps rankings")
+            overall_response = requests.get(ITUNES_OVERALL_CHARTS_API_URL, timeout=10)
+            
+            if overall_response.status_code == 200:
+                overall_data = overall_response.json()
+                entries = overall_data.get("feed", {}).get("entry", [])
+                
+                overall_rank = None
+                for i, entry in enumerate(entries):
+                    app_id_info = entry.get("id", {}).get("attributes", {}).get("im:id")
+                    if app_id_info == str(self.app_id):
+                        overall_rank = i + 1
+                        logger.info(f"Found app at position {overall_rank} in Overall category")
+                        break
+                
+                if overall_rank:
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Overall",
+                        "rank": str(overall_rank)
+                    })
+                else:
+                    logger.info("App not found in top Overall apps")
+            else:
+                logger.error(f"Failed to fetch Overall rankings: HTTP {overall_response.status_code}")
+                
+            # If we have at least one ranking, consider this successful
+            if rankings_data["categories"]:
+                logger.info(f"Successfully retrieved {len(rankings_data['categories'])} rankings from Apple API")
+                
+                # The Apps category is technically the same as Overall for iPhone free apps
+                if any(cat["category"] == "iPhone - Free - Overall" for cat in rankings_data["categories"]):
+                    # Find the Overall ranking and duplicate it as Apps
+                    for cat in rankings_data["categories"]:
+                        if cat["category"] == "iPhone - Free - Overall":
+                            rankings_data["categories"].append({
+                                "category": "iPhone - Free - Apps",
+                                "rank": cat["rank"]
+                            })
+                            break
+                
+                self.last_scrape_data = rankings_data
+                return rankings_data
+            else:
+                logger.warning("No rankings found in Apple API, falling back to test data")
+                return self._create_test_data()
+                
+        except Exception as e:
+            logger.error(f"Error fetching data from Apple API: {str(e)}")
+            return self._create_test_data()
+            
     def _create_test_data(self):
         """
         Create test data simulating real SensorTower Category Rankings data
@@ -71,6 +195,7 @@ class SensorTowerScraper:
             "app_name": app_name,
             "app_id": self.app_id,
             "date": time.strftime("%Y-%m-%d"),
+            "source": "Test Data",
             "categories": [
                 {"category": "iPhone - Free - Finance", "rank": "3"}, 
                 {"category": "iPhone - Free - Apps", "rank": "67"},
@@ -127,11 +252,31 @@ class SensorTowerScraper:
     
     def scrape_category_rankings(self):
         """
-        Scrape the category rankings data for the specified app from SensorTower
+        Get category rankings data for the specified app, prioritizing official Apple API
+        
+        Steps:
+        1. Try to get data from Apple iTunes API (most reliable)
+        2. If that fails, try Selenium scraping of SensorTower
+        3. If Selenium fails, try Trafilatura scraping
+        4. If all else fails, return test data
         
         Returns:
-            dict: A dictionary containing the scraped rankings data
+            dict: A dictionary containing the rankings data
         """
+        # Try to get data from official Apple API first (most reliable source)
+        try:
+            logger.info("Attempting to fetch data from official Apple API")
+            apple_data = self.fetch_from_apple_api()
+            if apple_data and apple_data.get("categories"):
+                logger.info("Successfully retrieved data from Apple API")
+                return apple_data
+            else:
+                logger.warning("Apple API did not return any rankings, trying SensorTower scraping")
+        except Exception as e:
+            logger.error(f"Error fetching from Apple API: {str(e)}")
+            logger.info("Falling back to SensorTower scraping")
+            
+        # If Apple API fails, try Selenium scraping
         if not SELENIUM_AVAILABLE:
             logger.warning("Selenium is not available, using fallback method")
             return self._fallback_scrape_with_trafilatura()
@@ -214,6 +359,7 @@ class SensorTowerScraper:
                 "app_name": app_name,
                 "app_id": self.app_id,
                 "date": time.strftime("%Y-%m-%d"),
+                "source": "SensorTower (Selenium)",
                 "categories": []
             }
             
@@ -449,6 +595,10 @@ class SensorTowerScraper:
         Returns:
             str: Formatted message for Telegram
         """
+        # Check if the data has a source field, which would indicate where it came from
+        data_source = rankings_data.get('source', 'App Store Rankings')
+        if 'test' in data_source.lower():
+            data_source = '⚠️ Simulated Data (API Unavailable)'
         if not rankings_data or "categories" not in rankings_data:
             return "❌ Failed to retrieve rankings data\\."
         
@@ -461,7 +611,8 @@ class SensorTowerScraper:
         
         # Используем простое форматирование без дефисов в заголовке
         message = f"📊 *{app_name} App Rankings*\n"
-        message += f"📅 *Date:* {date}\n\n"
+        message += f"📅 *Date:* {date}\n"
+        message += f"📡 *Source:* {data_source}\n\n"
         
         if not rankings_data["categories"]:
             message += "No ranking data available\\."
