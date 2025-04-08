@@ -58,7 +58,7 @@ class SensorTowerScraper:
         """
         logger.info("Using test data for development")
         
-        # Generate a consistent test dataset for US - iPhone - Top Free
+        # Generate a consistent test dataset for US - iPhone - Top Free с рейтингом выше 200
         app_name = "Coinbase"
         
         rankings_data = {
@@ -66,7 +66,7 @@ class SensorTowerScraper:
             "app_id": self.app_id,
             "date": time.strftime("%Y-%m-%d"),
             "categories": [
-                {"category": "US - iPhone - Top Free", "rank": "17"}
+                {"category": "US - iPhone - Top Free", "rank": "237"}
             ]
         }
         
@@ -261,7 +261,16 @@ class SensorTowerScraper:
                 rank = category.get("rank", "N/A")
                 
                 # Добавляем эмодзи в зависимости от рейтинга
-                rank_icon = "🥇" if int(rank) <= 10 else "🥈" if int(rank) <= 50 else "🥉" if int(rank) <= 100 else "📊"
+                if int(rank) <= 10:
+                    rank_icon = "🥇"  # Золото для топ-10
+                elif int(rank) <= 50:
+                    rank_icon = "🥈"  # Серебро для топ-50
+                elif int(rank) <= 100:
+                    rank_icon = "🥉"  # Бронза для топ-100
+                elif int(rank) <= 200:
+                    rank_icon = "📊"  # Графики для топ-200
+                else:
+                    rank_icon = "📉"  # Графики вниз для позиции ниже 200
                 
                 message += f"{rank_icon} *{cat_name}*\n"
                 message += f"   Текущая позиция: *\\#{rank}*\n"
