@@ -54,36 +54,12 @@ class SensorTowerScraper:
 
     def _create_test_data(self):
         """
-        Create test data simulating real SensorTower Category Rankings data
-        Focuses on the specific categories requested:
-        - iPhone - Free - Finance
-        - iPhone - Free - Apps
-        - iPhone - Free - Overall
+        Previously created test data when scraping failed.
+        Now this method will just return None as requested by the user.
+        This prevents using synthetic test data when real data cannot be obtained.
         """
-        logger.info("Using simulated SensorTower Category Rankings data")
-        
-        # Set the app name based on the app ID we're scraping
-        app_name = "Coinbase"  # Default
-        
-        # Generate a realistic dataset with exactly the categories required using real data
-        # These values match what the user is seeing for April 8
-        rankings_data = {
-            "app_name": app_name,
-            "app_id": self.app_id,
-            "date": time.strftime("%Y-%m-%d"),
-            "categories": [
-                {"category": "iPhone - Free - Finance", "rank": "19"}, 
-                {"category": "iPhone - Free - Apps", "rank": "232"},
-                {"category": "iPhone - Free - Overall", "rank": "450"}  # Estimated value for Overall
-            ]
-        }
-        
-        logger.info(f"Generated test data with {len(rankings_data['categories'])} specific categories")
-        for cat in rankings_data["categories"]:
-            logger.info(f"Test data - {cat['category']}: #{cat['rank']}")
-            
-        self.last_scrape_data = rankings_data
-        return rankings_data
+        logger.warning("Scraping failed and no fallback data will be used - returning None")
+        return None
     
     def _fallback_scrape_with_trafilatura(self):
         """
@@ -102,6 +78,7 @@ class SensorTowerScraper:
                 
                 if response.status_code != 200:
                     logger.error(f"Failed to fetch page: HTTP {response.status_code}")
+                    logger.warning("Scraping failed - using fallback data as a last resort")
                     return self._create_test_data()
                     
                 # Extract text content using trafilatura
@@ -110,12 +87,28 @@ class SensorTowerScraper:
                 
                 if not text_content:
                     logger.error("Trafilatura failed to extract any content")
-                    return self._create_test_data()
+                    logger.warning("Attempting to parse raw HTML as last resort")
                     
+                    # Try to parse directly from HTML before falling back to test data
+                    rankings_data = self._parse_from_raw_html(downloaded)
+                    if rankings_data:
+                        return rankings_data
+                    
+                    logger.warning("Raw HTML parsing failed - using fallback data as a last resort")
+                    return self._create_test_data()
+                
                 logger.info("Successfully extracted content with trafilatura")
                 
-                # Use the fallback test data anyway since we can't reliably parse the SensorTower data
-                return self._create_test_data()
+                # Parse the text content to extract rankings
+                rankings_data = self._parse_rankings_from_text(text_content)
+                
+                if rankings_data and len(rankings_data.get("categories", [])) > 0:
+                    logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from text content")
+                    self.last_scrape_data = rankings_data
+                    return rankings_data
+                else:
+                    logger.warning("Failed to extract rankings from text content - using fallback data as a last resort")
+                    return self._create_test_data()
                 
             except requests.exceptions.RequestException as e:
                 logger.error(f"Request failed: {str(e)}")
@@ -124,6 +117,145 @@ class SensorTowerScraper:
         except Exception as e:
             logger.error(f"Fallback scraping failed: {str(e)}")
             return self._create_test_data()
+            
+    def _parse_from_raw_html(self, html_content):
+        """
+        Parse rankings data directly from HTML content as a last resort
+        
+        Args:
+            html_content (str): Raw HTML content
+            
+        Returns:
+            dict: Parsed rankings data or None if parsing failed
+        """
+        try:
+            # Set default app name
+            app_name = "Coinbase"
+            
+            # Initialize the rankings data
+            rankings_data = {
+                "app_name": app_name,
+                "app_id": self.app_id,
+                "date": time.strftime("%Y-%m-%d"),
+                "categories": []
+            }
+            
+            # Search for rankings data in HTML using regex
+            # Look for iPhone - Free - Finance
+            finance_pattern = r'(iPhone\s*-\s*Free\s*-\s*Finance)[^#]*#(\d+)'
+            finance_matches = re.finditer(finance_pattern, html_content, re.IGNORECASE)
+            for match in finance_matches:
+                category = match.group(1).strip()
+                rank = match.group(2).strip()
+                rankings_data["categories"].append({"category": category, "rank": rank})
+                break
+                
+            # Look for iPhone - Free - Apps
+            apps_pattern = r'(iPhone\s*-\s*Free\s*-\s*Apps)[^#]*#(\d+)'
+            apps_matches = re.finditer(apps_pattern, html_content, re.IGNORECASE)
+            for match in apps_matches:
+                category = match.group(1).strip()
+                rank = match.group(2).strip() 
+                rankings_data["categories"].append({"category": category, "rank": rank})
+                break
+                
+            # Look for iPhone - Free - Overall
+            overall_pattern = r'(iPhone\s*-\s*Free\s*-\s*Overall)[^#]*#(\d+)'
+            overall_matches = re.finditer(overall_pattern, html_content, re.IGNORECASE)
+            for match in overall_matches:
+                category = match.group(1).strip()
+                rank = match.group(2).strip()
+                rankings_data["categories"].append({"category": category, "rank": rank})
+                break
+            
+            # Try alternative patterns with table data
+            if len(rankings_data["categories"]) < 3:
+                table_pattern = r'<tr[^>]*>.*?<td[^>]*>(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))[^<]*</td>.*?<td[^>]*>[^<]*?(\d+)[^<]*</td>'
+                table_matches = re.finditer(table_pattern, html_content, re.IGNORECASE | re.DOTALL)
+                for match in table_matches:
+                    category = match.group(1).strip()
+                    rank = match.group(3).strip()
+                    
+                    # Check if this category already exists
+                    category_exists = False
+                    for existing_cat in rankings_data["categories"]:
+                        if existing_cat["category"].lower() == category.lower():
+                            category_exists = True
+                            break
+                            
+                    if not category_exists:
+                        rankings_data["categories"].append({"category": category, "rank": rank})
+            
+            if len(rankings_data["categories"]) > 0:
+                logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from HTML content")
+                self.last_scrape_data = rankings_data
+                return rankings_data
+            else:
+                logger.error("Failed to extract any category rankings from HTML content")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error parsing raw HTML: {str(e)}")
+            return None
+    
+    def _parse_rankings_from_text(self, text_content):
+        """
+        Parse rankings data from text content extracted with trafilatura
+        
+        Args:
+            text_content (str): Text content extracted from the web page
+            
+        Returns:
+            dict: Parsed rankings data or None if parsing failed
+        """
+        try:
+            # Set default app name
+            app_name = "Coinbase"
+            
+            # Try to extract app name from the text
+            app_name_pattern = r'^([^\n]+)'
+            app_name_match = re.search(app_name_pattern, text_content)
+            if app_name_match:
+                app_name = app_name_match.group(1).strip()
+            
+            # Initialize the rankings data
+            rankings_data = {
+                "app_name": app_name,
+                "app_id": self.app_id,
+                "date": time.strftime("%Y-%m-%d"),
+                "categories": []
+            }
+            
+            # Search for rankings data in text
+            # Look for patterns like "iPhone - Free - Finance #19"
+            ranking_pattern = r'(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall)).*?[#]?(\d+)'
+            ranking_matches = re.finditer(ranking_pattern, text_content, re.IGNORECASE)
+            
+            for match in ranking_matches:
+                category = match.group(1).strip()
+                rank = match.group(3).strip()
+                
+                # Check if this category already exists
+                category_exists = False
+                for existing_cat in rankings_data["categories"]:
+                    if existing_cat["category"].lower() == category.lower():
+                        category_exists = True
+                        break
+                        
+                if not category_exists:
+                    rankings_data["categories"].append({"category": category, "rank": rank})
+            
+            if len(rankings_data["categories"]) > 0:
+                logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from text content")
+                self.last_scrape_data = rankings_data
+                return rankings_data
+            else:
+                logger.error("Failed to extract any category rankings from text content")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error parsing text content: {str(e)}")
+            return None
     
     def scrape_category_rankings(self):
         """
@@ -315,10 +447,12 @@ class SensorTowerScraper:
                                         contains_keywords = "iphone" in category_lower and "free" in category_lower
                                         
                                         if is_target or contains_keywords:
-                                            logger.info(f"Found target category: {category_name}, rank: {rank}")
+                                            # Replace "#" or "rank" or any other text from the rank value
+                                            rank_clean = re.sub(r'[^\d]', '', rank)
+                                            logger.info(f"Found target category: {category_name}, rank: {rank_clean}")
                                             rankings_data["categories"].append({
                                                 "category": category_name,
-                                                "rank": rank
+                                                "rank": rank_clean
                                             })
                             except Exception as e:
                                 logger.warning(f"Failed to extract data from classic structure: {str(e)}")
@@ -362,10 +496,12 @@ class SensorTowerScraper:
                                         contains_keywords = "iphone" in category_lower and "free" in category_lower
                                         
                                         if is_target or contains_keywords:
-                                            logger.info(f"Found target category from text: {category_name}, rank: {rank}")
+                                            # Replace "#" or "rank" or any other text from the rank value
+                                            rank_clean = re.sub(r'[^\d]', '', rank)
+                                            logger.info(f"Found target category from text: {category_name}, rank: {rank_clean}")
                                             rankings_data["categories"].append({
                                                 "category": category_name,
-                                                "rank": rank
+                                                "rank": rank_clean
                                             })
                             except:
                                 continue
@@ -415,10 +551,12 @@ class SensorTowerScraper:
                                     contains_keywords = "iphone" in category_lower and "free" in category_lower
                                     
                                     if is_target or contains_keywords:
-                                        logger.info(f"Found target category from last resort: {category_name}, rank: {rank}")
+                                        # Replace "#" or "rank" or any other text from the rank value
+                                        rank_clean = re.sub(r'[^\d]', '', rank)
+                                        logger.info(f"Found target category from last resort: {category_name}, rank: {rank_clean}")
                                         rankings_data["categories"].append({
                                             "category": category_name,
-                                            "rank": rank
+                                            "rank": rank_clean
                                         })
                 except Exception as e:
                     logger.error(f"Failed with last resort method: {str(e)}")
@@ -449,8 +587,11 @@ class SensorTowerScraper:
         Returns:
             str: Formatted message for Telegram
         """
-        if not rankings_data or "categories" not in rankings_data:
-            return "❌ Failed to retrieve rankings data\\."
+        if not rankings_data:
+            return "❌ Failed to retrieve rankings data\\. SensorTower scraping was unsuccessful\\."
+            
+        if "categories" not in rankings_data or not rankings_data["categories"]:
+            return "❌ No ranking categories found\\. SensorTower might have changed their page structure\\."
         
         # Telegram MarkdownV2 требует экранирования следующих символов:
         # _ * [ ] ( ) ~ ` > # + - = | { } . !

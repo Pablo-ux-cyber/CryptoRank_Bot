@@ -120,16 +120,25 @@ def trigger_scrape():
         # Run the scraping job
         success = scheduler.run_scraping_job()
         
+        # Update last scrape time regardless of success
+        last_scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Update last_scrape_data if there is any (might be None)
+        last_scrape_data = scheduler.scraper.last_scrape_data
+        
         if success:
-            # Store the scraped data for display
-            last_scrape_data = scheduler.scraper.last_scrape_data
-            last_scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Normal success flow - data was scraped and sent to Telegram
+            flash('Scraping job completed successfully!', 'success')
             return redirect(url_for('index'))
         else:
-            return jsonify({"status": "error", "message": "Scraping job failed"}), 500
+            # The job ran but no data was found or there was an issue
+            # We still redirect to index but with a warning message
+            flash('Scraping job completed, but no data was found. Check logs for details.', 'warning')
+            return redirect(url_for('index'))
     except Exception as e:
         logger.error(f"Error triggering manual scrape: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
+        flash(f'Error: {str(e)}', 'danger')
+        return redirect(url_for('index'))
 
 @app.route('/logs')
 def view_logs():
