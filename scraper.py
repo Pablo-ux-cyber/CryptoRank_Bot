@@ -1109,9 +1109,28 @@ class SensorTowerScraper:
         Returns:
             dict: A dictionary containing the scraped rankings data
         """
-        # Force using Twitter as a source for data as requested by user
-        logger.info("Using Twitter as primary data source as requested")
-        return self._fallback_scrape_from_twitter()
+        # Use AppFigures as the primary source as requested by user
+        logger.info("Using AppFigures as primary data source as requested")
+        
+        # Import the AppFigures scraper here to avoid circular imports
+        try:
+            from appfigures_scraper import AppFiguresScraper
+            appfigures = AppFiguresScraper()
+            rankings_data = appfigures.scrape_rankings()
+            
+            if rankings_data and rankings_data["categories"]:
+                logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from AppFigures")
+                return rankings_data
+            else:
+                logger.error("Failed to scrape data from AppFigures")
+                # Fallback to Twitter as secondary source
+                logger.info("Falling back to Twitter as secondary data source")
+                return self._fallback_scrape_from_twitter()
+        except Exception as e:
+            logger.error(f"Error using AppFigures scraper: {str(e)}")
+            # Fallback to Twitter as secondary source
+            logger.info("Falling back to Twitter as secondary data source")
+            return self._fallback_scrape_from_twitter()
         
         try:
             logger.info(f"Navigating to {self.url}")
