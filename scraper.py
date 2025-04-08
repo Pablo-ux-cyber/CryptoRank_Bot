@@ -140,51 +140,160 @@ class SensorTowerScraper:
                 "categories": []
             }
             
-            # Search for rankings data in HTML using regex
-            # Look for iPhone - Free - Finance
-            finance_pattern = r'(iPhone\s*-\s*Free\s*-\s*Finance)[^#]*#(\d+)'
-            finance_matches = re.finditer(finance_pattern, html_content, re.IGNORECASE)
-            for match in finance_matches:
-                category = match.group(1).strip()
-                rank = match.group(2).strip()
-                rankings_data["categories"].append({"category": category, "rank": rank})
-                break
-                
-            # Look for iPhone - Free - Apps
-            apps_pattern = r'(iPhone\s*-\s*Free\s*-\s*Apps)[^#]*#(\d+)'
-            apps_matches = re.finditer(apps_pattern, html_content, re.IGNORECASE)
-            for match in apps_matches:
-                category = match.group(1).strip()
-                rank = match.group(2).strip() 
-                rankings_data["categories"].append({"category": category, "rank": rank})
-                break
-                
-            # Look for iPhone - Free - Overall
-            overall_pattern = r'(iPhone\s*-\s*Free\s*-\s*Overall)[^#]*#(\d+)'
-            overall_matches = re.finditer(overall_pattern, html_content, re.IGNORECASE)
-            for match in overall_matches:
-                category = match.group(1).strip()
-                rank = match.group(2).strip()
-                rankings_data["categories"].append({"category": category, "rank": rank})
-                break
+            # Define categories we need to find
+            categories_needed = ["iPhone - Free - Finance", "iPhone - Free - Apps", "iPhone - Free - Overall"]
+            categories_found = []
             
-            # Try alternative patterns with table data
-            if len(rankings_data["categories"]) < 3:
-                table_pattern = r'<tr[^>]*>.*?<td[^>]*>(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))[^<]*</td>.*?<td[^>]*>[^<]*?(\d+)[^<]*</td>'
-                table_matches = re.finditer(table_pattern, html_content, re.IGNORECASE | re.DOTALL)
+            # Try multiple patterns to extract the data
+            # Pattern 1: Classic hash pattern
+            hash_patterns = [
+                r'(iPhone\s*-\s*Free\s*-\s*Finance)[^#]*#(\d+)',
+                r'(iPhone\s*-\s*Free\s*-\s*Apps)[^#]*#(\d+)',
+                r'(iPhone\s*-\s*Free\s*-\s*Overall)[^#]*#(\d+)'
+            ]
+            
+            for pattern in hash_patterns:
+                matches = re.finditer(pattern, html_content, re.IGNORECASE)
+                for match in matches:
+                    category = match.group(1).strip()
+                    rank = match.group(2).strip()
+                    
+                    # Normalize category name
+                    if "finance" in category.lower():
+                        category = "iPhone - Free - Finance"
+                    elif "apps" in category.lower():
+                        category = "iPhone - Free - Apps"
+                    elif "overall" in category.lower():
+                        category = "iPhone - Free - Overall"
+                    
+                    if category not in categories_found:
+                        categories_found.append(category)
+                        rankings_data["categories"].append({"category": category, "rank": rank})
+                        logger.info(f"Found ranking for {category}: #{rank}")
+            
+            # Pattern 2: Table patterns
+            table_patterns = [
+                # Standard table pattern
+                r'<tr[^>]*>.*?<td[^>]*>(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))[^<]*</td>.*?<td[^>]*>[^<]*?(\d+)[^<]*</td>',
+                # Data attributes pattern
+                r'data-category="(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))"[^>]*data-rank="(\d+)"',
+                # Class-based pattern
+                r'class="[^"]*category[^"]*"[^>]*>(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))[^<]*</.*?class="[^"]*rank[^"]*"[^>]*>.*?(\d+)',
+                # Flexible table pattern
+                r'<tr[^>]*>.*?>(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))<.*?>.*?(\d+)'
+            ]
+            
+            for pattern in table_patterns:
+                table_matches = re.finditer(pattern, html_content, re.IGNORECASE | re.DOTALL)
                 for match in table_matches:
                     category = match.group(1).strip()
-                    rank = match.group(3).strip()
+                    rank = match.group(3).strip() if len(match.groups()) >= 3 else '0'
+                    
+                    # Normalize category name
+                    if "finance" in category.lower():
+                        category = "iPhone - Free - Finance"
+                    elif "apps" in category.lower():
+                        category = "iPhone - Free - Apps"
+                    elif "overall" in category.lower():
+                        category = "iPhone - Free - Overall"
                     
                     # Check if this category already exists
-                    category_exists = False
-                    for existing_cat in rankings_data["categories"]:
-                        if existing_cat["category"].lower() == category.lower():
-                            category_exists = True
-                            break
-                            
-                    if not category_exists:
+                    if category not in categories_found:
+                        categories_found.append(category)
                         rankings_data["categories"].append({"category": category, "rank": rank})
+                        logger.info(f"Found ranking for {category} in table: #{rank}")
+            
+            # Pattern 3: Try to find any div/span containing the category names near numbers
+            if len(rankings_data["categories"]) < 3:
+                for category_name in ["Finance", "Apps", "Overall"]:
+                    full_category = f"iPhone - Free - {category_name}"
+                    
+                    if full_category not in categories_found:
+                        # Look for category name in a div/span, then find a number nearby
+                        div_pattern = fr'<(?:div|span)[^>]*>.*?{category_name}.*?</(?:div|span)>.*?<.*?>.*?(\d+)'
+                        div_matches = re.finditer(div_pattern, html_content, re.IGNORECASE | re.DOTALL)
+                        
+                        for match in div_matches:
+                            rank = match.group(1).strip()
+                            categories_found.append(full_category)
+                            rankings_data["categories"].append({"category": full_category, "rank": rank})
+                            logger.info(f"Found ranking for {full_category} in div/span: #{rank}")
+                            break
+            
+            # Pattern 4: Try to find JSON data in the HTML
+            if len(rankings_data["categories"]) < 3:
+                logger.info("Looking for JSON data in the HTML")
+                json_pattern = r'(\{.*?"category".*?"rank".*?\})'
+                json_matches = re.finditer(json_pattern, html_content, re.IGNORECASE | re.DOTALL)
+                
+                for match in json_matches:
+                    try:
+                        json_text = match.group(1)
+                        # Check if this contains our keywords
+                        if "iphone" in json_text.lower() and ("finance" in json_text.lower() or "apps" in json_text.lower() or "overall" in json_text.lower()):
+                            # Extract category and rank using regex to avoid having to parse the JSON
+                            cat_match = re.search(r'"category"[^"]*"([^"]*)"', json_text)
+                            rank_match = re.search(r'"rank"[^"]*"([^"]*)"', json_text)
+                            
+                            if cat_match and rank_match:
+                                category = cat_match.group(1)
+                                rank = rank_match.group(1)
+                                
+                                # Normalize category name
+                                if "finance" in category.lower():
+                                    category = "iPhone - Free - Finance"
+                                elif "apps" in category.lower():
+                                    category = "iPhone - Free - Apps"
+                                elif "overall" in category.lower():
+                                    category = "iPhone - Free - Overall"
+                                
+                                if category not in categories_found:
+                                    categories_found.append(category)
+                                    rankings_data["categories"].append({"category": category, "rank": rank})
+                                    logger.info(f"Found ranking for {category} in JSON: #{rank}")
+                    except Exception as e:
+                        logger.warning(f"Failed to parse JSON data: {str(e)}")
+            
+            # Pattern 5: Last resort - liberal pattern matching
+            if len(rankings_data["categories"]) < 3:
+                logger.info("Trying liberal pattern matching as last resort")
+                
+                # For each category we need
+                for category_name in ["Finance", "Apps", "Overall"]:
+                    full_category = f"iPhone - Free - {category_name}"
+                    
+                    if full_category not in categories_found:
+                        # Find instances of the category name
+                        category_locations = [m.start() for m in re.finditer(category_name, html_content, re.IGNORECASE)]
+                        
+                        for loc in category_locations:
+                            # Look within 200 characters after the category name for numbers
+                            search_range = html_content[loc:loc+200]
+                            numbers = re.findall(r'(\d+)', search_range)
+                            
+                            if numbers:
+                                # Take the first reasonably sized number (ranks are typically smaller than 1000)
+                                for num in numbers:
+                                    if 1 <= int(num) <= 2000:
+                                        rank = num
+                                        categories_found.append(full_category)
+                                        rankings_data["categories"].append({"category": full_category, "rank": rank})
+                                        logger.info(f"Found ranking for {full_category} using proximity search: #{rank}")
+                                        break
+                            
+                            # If we found this category, stop looking
+                            if full_category in categories_found:
+                                break
+            
+            # Save the HTML to debug file if we didn't find all categories
+            if len(rankings_data["categories"]) < 3 and len(rankings_data["categories"]) > 0:
+                logger.warning(f"Only found {len(rankings_data['categories'])} categories, not all 3")
+                try:
+                    with open("debug_html.html", "w") as f:
+                        f.write(html_content)
+                    logger.info("Saved debug HTML to debug_html.html for further analysis")
+                except Exception as e:
+                    logger.warning(f"Failed to save debug HTML: {str(e)}")
             
             if len(rankings_data["categories"]) > 0:
                 logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from HTML content")
@@ -226,24 +335,118 @@ class SensorTowerScraper:
                 "categories": []
             }
             
-            # Search for rankings data in text
-            # Look for patterns like "iPhone - Free - Finance #19"
-            ranking_pattern = r'(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall)).*?[#]?(\d+)'
-            ranking_matches = re.finditer(ranking_pattern, text_content, re.IGNORECASE)
+            # Try multiple patterns to find the rankings data
             
-            for match in ranking_matches:
-                category = match.group(1).strip()
-                rank = match.group(3).strip()
+            # Pattern 1: Classic format "iPhone - Free - Finance #19"
+            patterns = [
+                # Standard format with # symbol
+                r'(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall)).*?[#]?(\d+)',
+                # Format with "rank" or "position" keywords
+                r'(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall)).*?(rank|position)[^\d]*(\d+)',
+                # Format with category followed by numbers
+                r'(iPhone\s*-\s*Free\s*-\s*(Finance|Apps|Overall))[^\d]*(\d+)',
+                # Format with just the category names and nearby numbers
+                r'(Finance|Apps|Overall)[^\d]*(\d+)',
+                # Format with the word "iPhone" followed by category and numbers
+                r'iPhone.*?(Finance|Apps|Overall)[^\d]*(\d+)'
+            ]
+            
+            categories_needed = ["iPhone - Free - Finance", "iPhone - Free - Apps", "iPhone - Free - Overall"]
+            categories_found = []
+            
+            # Try each pattern
+            for pattern in patterns:
+                ranking_matches = list(re.finditer(pattern, text_content, re.IGNORECASE))
                 
-                # Check if this category already exists
-                category_exists = False
-                for existing_cat in rankings_data["categories"]:
-                    if existing_cat["category"].lower() == category.lower():
-                        category_exists = True
-                        break
+                for match in ranking_matches:
+                    if 'Finance' in match.group(0) or 'Apps' in match.group(0) or 'Overall' in match.group(0):
+                        # Determine which category this is
+                        match_text = match.group(0).lower()
                         
-                if not category_exists:
-                    rankings_data["categories"].append({"category": category, "rank": rank})
+                        if 'finance' in match_text:
+                            category = "iPhone - Free - Finance"
+                        elif 'apps' in match_text and 'finance' not in match_text:
+                            category = "iPhone - Free - Apps"
+                        elif 'overall' in match_text:
+                            category = "iPhone - Free - Overall"
+                        else:
+                            continue
+                            
+                        # Extract rank - get the last group that contains digits
+                        rank = None
+                        for group_idx in range(len(match.groups()), 0, -1):
+                            group = match.group(group_idx)
+                            if group and re.search(r'\d', group):
+                                rank = ''.join(re.findall(r'\d+', group))
+                                break
+                                
+                        if not rank:
+                            # Try to find any number in the match
+                            numbers = re.findall(r'\d+', match.group(0))
+                            if numbers:
+                                rank = numbers[-1]  # Take the last number found
+                        
+                        if rank:
+                            # Check if this category already exists
+                            if category not in categories_found:
+                                categories_found.append(category)
+                                rankings_data["categories"].append({"category": category, "rank": rank})
+                                logger.info(f"Found ranking for {category}: #{rank}")
+                
+                # If we found all needed categories, stop trying patterns
+                if set(categories_found) == set(categories_needed):
+                    break
+            
+            # Try looking for sentences containing category names and numbers
+            if len(rankings_data["categories"]) < 3:
+                logger.info("Trying sentence-based extraction")
+                sentences = text_content.split('.')
+                
+                for sentence in sentences:
+                    for category_name in ["Finance", "Apps", "Overall"]:
+                        if category_name.lower() in sentence.lower():
+                            # Find numbers in this sentence
+                            numbers = re.findall(r'\d+', sentence)
+                            if numbers:
+                                rank = numbers[-1]  # Take the last number as the rank
+                                full_category = f"iPhone - Free - {category_name}"
+                                
+                                # Check if this category already exists
+                                if full_category not in categories_found:
+                                    categories_found.append(full_category)
+                                    rankings_data["categories"].append({"category": full_category, "rank": rank})
+                                    logger.info(f"Found ranking for {full_category} from sentence: #{rank}")
+            
+            # Final attempt: try to match any digits near category names
+            if len(rankings_data["categories"]) < 3:
+                logger.info("Trying proximity-based extraction")
+                for category_suffix in ["Finance", "Apps", "Overall"]:
+                    full_category = f"iPhone - Free - {category_suffix}"
+                    
+                    if full_category not in categories_found:
+                        # Look for the category name followed by a number within 50 characters
+                        pattern = fr'{category_suffix}(?:.{{0,50}}?)(\d+)'
+                        matches = re.finditer(pattern, text_content, re.IGNORECASE)
+                        
+                        for match in matches:
+                            rank = match.group(1)
+                            categories_found.append(full_category)
+                            rankings_data["categories"].append({"category": full_category, "rank": rank})
+                            logger.info(f"Found ranking for {full_category} using proximity: #{rank}")
+                            break
+            
+            # Check the historical data as a last resort before saying we found nothing
+            if len(rankings_data["categories"]) == 0:
+                logger.warning("No rankings found in the current scrape, checking previous data")
+                
+                # Look for a string pattern that might indicate the data is still valid but in a new format
+                if "rank" in text_content.lower() or "category" in text_content.lower() or "iphone" in text_content.lower():
+                    logger.info("Found potential ranking-related content but couldn't parse it")
+                    
+                    # Create a debug log of the content to help diagnose
+                    with open("debug_content.txt", "w") as f:
+                        f.write(text_content)
+                    logger.info("Saved debug content to debug_content.txt")
             
             if len(rankings_data["categories"]) > 0:
                 logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from text content")
