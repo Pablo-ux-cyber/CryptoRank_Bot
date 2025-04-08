@@ -23,9 +23,16 @@ from logger import logger
 
 # Константы для iTunes API
 ITUNES_API_URL = "https://itunes.apple.com/lookup"
-ITUNES_FINANCE_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6015/json"  # Finance genre
-ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/json"  # Overall free apps
-ITUNES_ALL_APPS_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6000/json"  # All free apps
+
+# Используем официальные rss feed от App Store с iPhone категориями
+ITUNES_FINANCE_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6015/json"  # Finance genre - iPhone
+ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/json"  # Overall - iPhone
+ITUNES_ALL_APPS_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6000/json"  # All free apps - iPhone
+
+# Для запроса категории в SensorTower
+ST_FINANCE_CATEGORY = "iPhone - Free - Finance"
+ST_OVERALL_CATEGORY = "iPhone - Free - Overall" 
+ST_APPS_CATEGORY = "iPhone - Free - Apps"
 
 class SensorTowerScraper:
     def __init__(self):
