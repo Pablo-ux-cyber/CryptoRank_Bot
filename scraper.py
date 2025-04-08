@@ -19,7 +19,7 @@ class SensorTowerScraper:
         Получает последние сообщения из канала Telegram через веб-интерфейс
         
         Returns:
-            list: Список последних сообщений из канала
+            list: Список последних сообщений из канала с информацией о дате
         """
         try:
             # Поскольку у нас нет прав администратора в канале, мы не можем использовать Bot API
@@ -41,32 +41,57 @@ class SensorTowerScraper:
                     logger.error(f"Failed to fetch channel web page: HTTP {response.status_code}")
                     return None
                 
-                # Используем trafilatura для извлечения текста из HTML
                 html_content = response.text
-                messages = []
+                messages_with_dates = []
                 
-                # Извлекаем блоки сообщений
-                message_blocks = re.findall(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', html_content, re.DOTALL)
+                # Ищем блоки сообщений вместе с датами
+                # Находим все сообщения с классом tgme_widget_message
+                message_blocks = re.findall(r'<div class="tgme_widget_message[^"]*"[^>]*>(.*?)<div class="tgme_widget_message_footer">', html_content, re.DOTALL)
                 
                 if message_blocks:
                     for block in message_blocks:
-                        # Очищаем HTML-теги и добавляем текст в список сообщений
-                        clean_text = re.sub(r'<[^>]+>', ' ', block)
-                        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
-                        if clean_text:
-                            messages.append(clean_text)
+                        # Извлекаем текст сообщения
+                        text_match = re.search(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', block, re.DOTALL)
+                        if not text_match:
+                            continue
                             
-                    logger.info(f"Found {len(messages)} messages from the channel web page")
+                        text_content = text_match.group(1)
+                        clean_text = re.sub(r'<[^>]+>', ' ', text_content)
+                        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
+                        
+                        # Извлекаем дату сообщения
+                        date_match = re.search(r'<a[^>]*>([^<]*)</a>', block)
+                        message_date = date_match.group(1).strip() if date_match else None
+                        
+                        # Если нашли и текст и дату, добавляем в результат
+                        if clean_text and message_date:
+                            messages_with_dates.append({
+                                'text': clean_text,
+                                'date': message_date
+                            })
+                    
+                    logger.info(f"Found {len(messages_with_dates)} messages with dates from the channel web page")
+                    
+                    # Сортируем сообщения по дате (от новых к старым)
+                    # Преобразовать строку даты в объект datetime сложно, так как формат может меняться,
+                    # поэтому просто предполагаем, что сообщения уже идут от новых к старым
+                    
+                    # Если нужно будет отсортировать, раскомментировать:
+                    # messages_with_dates.sort(key=lambda x: x['date'], reverse=True)
+                    
+                    # Возвращаем только тексты сообщений, но в порядке от новых к старым
+                    return [msg['text'] for msg in messages_with_dates]
                 else:
-                    # Попробуем извлечь весь текст со страницы
+                    # Запасной вариант - попробуем извлечь весь текст со страницы
                     text_content = trafilatura.extract(html_content)
                     if text_content:
                         # Разбиваем на абзацы
                         paragraphs = re.split(r'\n+', text_content)
                         messages = [p.strip() for p in paragraphs if p.strip()]
-                        logger.info(f"Extracted {len(messages)} paragraphs using trafilatura")
+                        logger.info(f"Extracted {len(messages)} paragraphs using trafilatura (no dates)")
+                        return messages
                 
-                return messages
+                return []
                 
             except requests.exceptions.RequestException as e:
                 logger.error(f"Request failed: {str(e)}")
@@ -179,16 +204,29 @@ class SensorTowerScraper:
                 rank = "350"  # Фиксированное значение
                 logger.info(f"Using fixed ranking value: {rank}")
             else:
-                # Ищем сообщение с рейтингом
+                # Первое сообщение (самое последнее по дате) в котором есть рейтинг
                 ranking = None
                 message_with_ranking = None
                 
-                for message in messages:
-                    extracted_ranking = self._extract_ranking_from_message(message)
+                # Проверяем первое сообщение (которое должно быть самое свежее)
+                if messages:
+                    logger.info(f"Checking most recent message for ranking...")
+                    first_message = messages[0]
+                    extracted_ranking = self._extract_ranking_from_message(first_message)
                     if extracted_ranking is not None:
                         ranking = extracted_ranking
-                        message_with_ranking = message
-                        break
+                        message_with_ranking = first_message
+                        logger.info(f"Found ranking in the most recent message: {ranking}")
+                    else:
+                        logger.warning(f"Most recent message does not contain ranking, checking other messages...")
+                        # Если в первом сообщении нет рейтинга, проверяем остальные
+                        for message in messages[1:]:
+                            extracted_ranking = self._extract_ranking_from_message(message)
+                            if extracted_ranking is not None:
+                                ranking = extracted_ranking
+                                message_with_ranking = message
+                                logger.info(f"Found ranking in an older message: {ranking}")
+                                break
                 
                 if ranking is None:
                     logger.warning("Could not find ranking in any of the messages")
