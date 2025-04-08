@@ -94,11 +94,10 @@ class SensorTowerScheduler:
             # Get current date
             current_date = rankings_data.get("date", time.strftime("%Y-%m-%d"))
             
-            # Format header with common date for the entire message
-            combined_message = f"📊 *Crypto Market Report*\n"
-            combined_message += f"📅 *Date:* {current_date}\n\n"
+            # Simplified minimal message format without dates and descriptions
+            # Just direct values as requested by the user
             
-            # Add Coinbase ranking data (without separate date)
+            # Add Coinbase ranking data
             app_name = rankings_data.get("app_name", "Coinbase").replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
             
             # Status and visible part
@@ -118,59 +117,39 @@ class SensorTowerScheduler:
                 else:
                     rank_icon = "📉"  # Downward charts for position below 200
                 
-                # Key information (always visible)
-                combined_message += f"{rank_icon} *{app_name}*: *{rank}*\n"
-                
-                # Detailed information (hidden in spoiler)
-                details = f"*{app_name} App Store Ranking*\n"
-                
-                # Add all categories to details
-                for category in rankings_data["categories"]:
-                    cat_name = category.get("category", "Unknown Category")
-                    # Escape special characters
-                    cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
-                    rank = category.get("rank", "N/A")
-                    
-                    details += f"• {cat_name}: *{rank}*\n"
-                
-                # Wrap details in spoiler
-                # Spoiler symbols for MarkdownV2 - || at the beginning and end of text
-                combined_message += f"||{details}||\n"
+                # Just the app and rank, nothing else
+                combined_message = f"{rank_icon} *{app_name} App Store Rank*: *{rank}*\n"
             else:
-                combined_message += f"❌ *{app_name}*: Ranking data unavailable\\.\n"
+                combined_message = f"❌ *{app_name}*: Ranking data unavailable\\.\n"
             
             # Then add Fear & Greed Index data if available
             if fear_greed_data:
                 # Add separator between messages
-                combined_message += "\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
+                combined_message += "\n"
                 
-                # Add only index data without separate date
+                # Add only index value and classification, no other details
                 value = fear_greed_data.get("value", "N/A")
-                label = fear_greed_data.get("value_classification", "Unknown")
+                label = fear_greed_data.get("classification", "Unknown")
                 
-                # Key information about FGI (always visible)
+                # Choose emoji based on classification
+                if label == "Extreme Fear":
+                    emoji = "😱"
+                elif label == "Fear":
+                    emoji = "😨"
+                elif label == "Neutral":
+                    emoji = "😐"
+                elif label == "Greed":
+                    emoji = "😏"
+                elif label == "Extreme Greed":
+                    emoji = "🤑"
+                else:
+                    emoji = "❓"
+                
                 # Escape hyphen in string
                 label = label.replace("-", "\\-")
-                combined_message += f"🧠 *Fear & Greed Index*: {value} \\- {label}\n"
                 
-                # Progress bar and additional information (hidden in spoiler)
-                details = ""
-                
-                # Add progress bar to details
-                if "value" in fear_greed_data:
-                    progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10)
-                    details += f"{progress_bar}\n"
-                
-                # Add descriptions of index values
-                details += "Index values:\\n"
-                details += "0\\\\\\-25: Extreme Fear\\n"
-                details += "26\\\\\\-45: Fear\\n"
-                details += "46\\\\\\-55: Neutral\\n"
-                details += "56\\\\\\-75: Greed\\n"
-                details += "76\\\\\\-100: Extreme Greed"
-                
-                # Wrap details in spoiler
-                combined_message += f"||{details}||"
+                # Just the value and classification, nothing else
+                combined_message += f"{emoji} *Fear & Greed Index*: *{value}* \\- *{label}*"
             
             # Send the combined message
             if not self.telegram_bot.send_message(combined_message):
