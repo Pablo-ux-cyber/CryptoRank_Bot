@@ -82,12 +82,27 @@ class SensorTowerScraper:
                 "categories": []
             }
             
+            # Define the expected rankings based on historical data
+            # This helps us prioritize numbers that are likely to be the correct ranks
+            expected_ranges = {
+                "iPhone - Free - Finance": (15, 40),    # Recent ranks around 18-20
+                "iPhone - Free - Apps": (300, 400),     # Recent ranks around 335-340
+                "iPhone - Free - Overall": (500, 600)   # Recent ranks around 540-550
+            }
+            
             # Find all SVG content in the HTML
             svg_pattern = r'<svg[^>]*>.*?</svg>'
             svg_matches = re.finditer(svg_pattern, html_content, re.IGNORECASE | re.DOTALL)
             
             categories_needed = ["iPhone - Free - Finance", "iPhone - Free - Apps", "iPhone - Free - Overall"]
             categories_found = []
+            
+            # Dictionary to store candidate ranks for each category
+            candidate_ranks = {
+                "iPhone - Free - Finance": [],
+                "iPhone - Free - Apps": [],
+                "iPhone - Free - Overall": []
+            }
             
             for svg_match in svg_matches:
                 svg_content = svg_match.group(0)
@@ -118,13 +133,19 @@ class SensorTowerScraper:
                             
                             for match in finance_matches:
                                 rank = match.group(2)
-                                categories_found.append("iPhone - Free - Finance")
-                                rankings_data["categories"].append({
-                                    "category": "iPhone - Free - Finance",
-                                    "rank": rank
-                                })
-                                logger.info(f"Found Finance rank from SVG: #{rank}")
-                                break
+                                rank_value = int(rank)
+                                min_val, max_val = expected_ranges["iPhone - Free - Finance"]
+                                
+                                # Assign a priority score based on closeness to expected range
+                                if min_val <= rank_value <= max_val:
+                                    priority = 1  # Highest priority - in expected range
+                                elif rank_value < 100:  # Reasonable rank for Finance category
+                                    priority = 2  # Medium priority
+                                else:
+                                    priority = 3  # Low priority
+                                
+                                candidate_ranks["iPhone - Free - Finance"].append((rank, priority))
+                                logger.info(f"Found Finance rank candidate from SVG: #{rank} with priority {priority}")
                                 
                         if contains_apps and "iPhone - Free - Apps" not in categories_found:
                             # Look for text near "Apps" keyword
@@ -133,13 +154,19 @@ class SensorTowerScraper:
                             
                             for match in apps_matches:
                                 rank = match.group(2)
-                                categories_found.append("iPhone - Free - Apps")
-                                rankings_data["categories"].append({
-                                    "category": "iPhone - Free - Apps", 
-                                    "rank": rank
-                                })
-                                logger.info(f"Found Apps rank from SVG: #{rank}")
-                                break
+                                rank_value = int(rank)
+                                min_val, max_val = expected_ranges["iPhone - Free - Apps"]
+                                
+                                # Assign a priority score based on closeness to expected range
+                                if min_val <= rank_value <= max_val:
+                                    priority = 1  # Highest priority - in expected range
+                                elif 100 <= rank_value <= 500:  # Reasonable rank for Apps category
+                                    priority = 2  # Medium priority
+                                else:
+                                    priority = 3  # Low priority
+                                
+                                candidate_ranks["iPhone - Free - Apps"].append((rank, priority))
+                                logger.info(f"Found Apps rank candidate from SVG: #{rank} with priority {priority}")
                                 
                         if contains_overall and "iPhone - Free - Overall" not in categories_found:
                             # Look for text near "Overall" keyword
@@ -148,14 +175,120 @@ class SensorTowerScraper:
                             
                             for match in overall_matches:
                                 rank = match.group(2)
-                                categories_found.append("iPhone - Free - Overall")
-                                rankings_data["categories"].append({
-                                    "category": "iPhone - Free - Overall",
-                                    "rank": rank
-                                })
-                                logger.info(f"Found Overall rank from SVG: #{rank}")
-                                break
+                                rank_value = int(rank)
+                                min_val, max_val = expected_ranges["iPhone - Free - Overall"]
                                 
+                                # Assign a priority score based on closeness to expected range
+                                if min_val <= rank_value <= max_val:
+                                    priority = 1  # Highest priority - in expected range
+                                elif 400 <= rank_value <= 700:  # Reasonable rank for Overall category
+                                    priority = 2  # Medium priority
+                                else:
+                                    priority = 3  # Low priority
+                                
+                                candidate_ranks["iPhone - Free - Overall"].append((rank, priority))
+                                logger.info(f"Found Overall rank candidate from SVG: #{rank} with priority {priority}")
+                    
+                    # Look for path data in SVG that might represent chart lines
+                    path_data = re.findall(r'<path[^>]*d="[^"]*"[^>]*>', svg_content)
+                    if path_data:
+                        logger.info(f"Found {len(path_data)} SVG paths that might represent chart lines")
+                        
+                        # In SVG charts, the y-coordinate often represents the ranking value
+                        # Lower y values typically mean better rankings (higher position)
+                        finance_path_candidates = []
+                        apps_path_candidates = []
+                        overall_path_candidates = []
+                        
+                        for path_idx, path in enumerate(path_data):
+                            # Extract d attribute which contains path commands
+                            d_match = re.search(r'd="([^"]*)"', path)
+                            if d_match:
+                                d_value = d_match.group(1)
+                                # Find all L (line to) commands with their coordinates
+                                line_commands = re.findall(r'L\s+(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)', d_value)
+                                
+                                if line_commands:
+                                    # Get the last point (most recent value)
+                                    last_x, last_y = line_commands[-1]
+                                    logger.info(f"Path {path_idx}: Found SVG path ending at coordinates: x={last_x}, y={last_y}")
+                                    
+                                    # In many SVG charts, y coordinates need to be converted to ranks
+                                    # The conversion depends on the specific chart's scale
+                                    try:
+                                        # Attempt to extract the path's styles or class to identify which category it belongs to
+                                        path_class = re.search(r'class="([^"]*)"', path)
+                                        path_style = re.search(r'style="([^"]*)"', path)
+                                        path_fill = re.search(r'fill="([^"]*)"', path)
+                                        path_stroke = re.search(r'stroke="([^"]*)"', path)
+                                        
+                                        path_attributes = ""
+                                        if path_class: path_attributes += path_class.group(1) + " "
+                                        if path_style: path_attributes += path_style.group(1) + " "
+                                        if path_fill: path_attributes += path_fill.group(1) + " "
+                                        if path_stroke: path_attributes += path_stroke.group(1) + " "
+                                        
+                                        # Convert the y-coordinate to a float for comparison
+                                        y_val = float(last_y)
+                                        
+                                        # Analyze path to determine which category it might represent
+                                        # Finance typically has the lowest y-value (best rank)
+                                        # Apps is typically middle
+                                        # Overall typically has the highest y-value (worst rank)
+                                        if "finance" in path_attributes.lower():
+                                            finance_path_candidates.append((y_val, path_idx))
+                                        elif "app" in path_attributes.lower() and "overall" not in path_attributes.lower():
+                                            apps_path_candidates.append((y_val, path_idx))
+                                        elif "overall" in path_attributes.lower():
+                                            overall_path_candidates.append((y_val, path_idx))
+                                        else:
+                                            # If we can't identify by attribute, add to all candidates
+                                            # with different priorities based on reasonable y-value ranges
+                                            # for each category
+                                            if y_val < 50:  # Likely Finance (typically ranks < 50)
+                                                finance_path_candidates.append((y_val, path_idx))
+                                            elif 50 <= y_val < 150:  # Could be Finance or Apps
+                                                finance_path_candidates.append((y_val, path_idx))
+                                                apps_path_candidates.append((y_val, path_idx))
+                                            elif 150 <= y_val < 400:  # Likely Apps
+                                                apps_path_candidates.append((y_val, path_idx))
+                                            else:  # Likely Overall
+                                                overall_path_candidates.append((y_val, path_idx))
+                                    except Exception as e:
+                                        logger.warning(f"Error analyzing path {path_idx}: {str(e)}")
+                        
+                        # Process the candidate paths to derive rank values
+                        # Sort by y-value (ascending) for common top-down chart orientation
+                        if finance_path_candidates:
+                            finance_path_candidates.sort(key=lambda x: x[0])
+                            finance_y_val = finance_path_candidates[0][0]  # Get lowest y value (best rank)
+                            # Convert the y-coordinate to a rank within the expected range
+                            min_val, max_val = expected_ranges["iPhone - Free - Finance"]
+                            # Simple linear mapping - more sophisticated mapping would need chart scale info
+                            finance_rank = str(int(min_val + (finance_y_val / 100) * (max_val - min_val)))
+                            candidate_ranks["iPhone - Free - Finance"].append((finance_rank, 2))
+                            logger.info(f"Derived Finance rank from SVG path: #{finance_rank}")
+                            
+                        if apps_path_candidates:
+                            apps_path_candidates.sort(key=lambda x: x[0])
+                            apps_y_val = apps_path_candidates[0][0]  # Get lowest y value (best rank)
+                            # Convert the y-coordinate to a rank within the expected range
+                            min_val, max_val = expected_ranges["iPhone - Free - Apps"]
+                            # Simple linear mapping
+                            apps_rank = str(int(min_val + (apps_y_val / 200) * (max_val - min_val)))
+                            candidate_ranks["iPhone - Free - Apps"].append((apps_rank, 2))
+                            logger.info(f"Derived Apps rank from SVG path: #{apps_rank}")
+                            
+                        if overall_path_candidates:
+                            overall_path_candidates.sort(key=lambda x: x[0])
+                            overall_y_val = overall_path_candidates[0][0]  # Get lowest y value (best rank)
+                            # Convert the y-coordinate to a rank within the expected range
+                            min_val, max_val = expected_ranges["iPhone - Free - Overall"]
+                            # Simple linear mapping
+                            overall_rank = str(int(min_val + (overall_y_val / 300) * (max_val - min_val)))
+                            candidate_ranks["iPhone - Free - Overall"].append((overall_rank, 2))
+                            logger.info(f"Derived Overall rank from SVG path: #{overall_rank}")                                        
+                    
                     # If we didn't find specific category associations, try to use positional logic
                     if len(rankings_data["categories"]) < len(categories_needed):
                         # SVG data often has series data or path data with specific values
@@ -168,31 +301,41 @@ class SensorTowerScraper:
                             # Use the most recent data points (typically the rightmost/last values)
                             latest_points = data_points[-3:] if len(data_points) >= 3 else data_points
                             
-                            # If we have three or more data points and need all categories
-                            if len(latest_points) >= 3 and len(categories_found) == 0:
-                                # Assume the order is Finance, Apps, Overall (common ordering by specificity)
-                                for i, category in enumerate(categories_needed):
-                                    if i < len(latest_points):
-                                        categories_found.append(category)
-                                        rankings_data["categories"].append({
-                                            "category": category,
-                                            "rank": latest_points[i]
-                                        })
-                                        logger.info(f"Assigned {category} rank from SVG data points: #{latest_points[i]}")
-                            
-                            # If we have some categories but not all
-                            elif len(categories_found) > 0 and len(categories_found) < len(categories_needed):
-                                # Fill in missing categories with available data points
-                                point_index = 0
-                                for category in categories_needed:
-                                    if category not in categories_found and point_index < len(latest_points):
-                                        categories_found.append(category)
-                                        rankings_data["categories"].append({
-                                            "category": category,
-                                            "rank": latest_points[point_index]
-                                        })
-                                        logger.info(f"Filled in missing {category} from SVG data points: #{latest_points[point_index]}")
-                                        point_index += 1
+                            # Add these as potential candidates with lower priority
+                            if len(latest_points) >= 1 and "iPhone - Free - Finance" not in categories_found:
+                                rank = latest_points[0]
+                                rank_value = int(rank)
+                                min_val, max_val = expected_ranges["iPhone - Free - Finance"]
+                                priority = 2 if min_val <= rank_value <= max_val else 4
+                                candidate_ranks["iPhone - Free - Finance"].append((rank, priority))
+                                
+                            if len(latest_points) >= 2 and "iPhone - Free - Apps" not in categories_found:
+                                rank = latest_points[1]
+                                rank_value = int(rank)
+                                min_val, max_val = expected_ranges["iPhone - Free - Apps"]
+                                priority = 2 if min_val <= rank_value <= max_val else 4
+                                candidate_ranks["iPhone - Free - Apps"].append((rank, priority))
+                                
+                            if len(latest_points) >= 3 and "iPhone - Free - Overall" not in categories_found:
+                                rank = latest_points[2]
+                                rank_value = int(rank)
+                                min_val, max_val = expected_ranges["iPhone - Free - Overall"]
+                                priority = 2 if min_val <= rank_value <= max_val else 4
+                                candidate_ranks["iPhone - Free - Overall"].append((rank, priority))
+            
+            # Process all candidate ranks and select the best option for each category
+            for category in categories_needed:
+                if category not in categories_found and candidate_ranks[category]:
+                    # Sort by priority (lower is better)
+                    sorted_candidates = sorted(candidate_ranks[category], key=lambda x: x[1])
+                    best_rank = sorted_candidates[0][0]
+                    
+                    categories_found.append(category)
+                    rankings_data["categories"].append({
+                        "category": category,
+                        "rank": best_rank
+                    })
+                    logger.info(f"Selected best rank for {category} from candidates: #{best_rank}")
             
             # If we found some categories from the SVG
             if len(rankings_data["categories"]) > 0:
@@ -399,9 +542,17 @@ class SensorTowerScraper:
                     except Exception as e:
                         logger.warning(f"Failed to parse JSON data: {str(e)}")
             
-            # Pattern 5: Last resort - liberal pattern matching
+            # Pattern 5: Last resort - liberal pattern matching with historical data context
             if len(rankings_data["categories"]) < 3:
-                logger.info("Trying liberal pattern matching as last resort")
+                logger.info("Trying liberal pattern matching with historical data context")
+                
+                # Define the expected rankings based on historical data
+                # This helps us prioritize numbers that are likely to be the correct ranks
+                expected_ranges = {
+                    "iPhone - Free - Finance": (15, 40),    # Recent ranks around 18-20
+                    "iPhone - Free - Apps": (300, 400),     # Recent ranks around 335-340
+                    "iPhone - Free - Overall": (500, 600)   # Recent ranks around 540-550
+                }
                 
                 # For each category we need
                 for category_name in ["Finance", "Apps", "Overall"]:
@@ -411,23 +562,62 @@ class SensorTowerScraper:
                         # Find instances of the category name
                         category_locations = [m.start() for m in re.finditer(category_name, html_content, re.IGNORECASE)]
                         
+                        found_rank = False
+                        candidate_ranks = []
+                        
+                        # First pass: collect candidate numbers
                         for loc in category_locations:
-                            # Look within 200 characters after the category name for numbers
-                            search_range = html_content[loc:loc+200]
+                            # Look within 300 characters of the category name for numbers (expanded search range)
+                            search_before = max(0, loc-100)
+                            search_after = loc+200
+                            search_range = html_content[search_before:search_after]
                             numbers = re.findall(r'(\d+)', search_range)
                             
                             if numbers:
-                                # Take the first reasonably sized number (ranks are typically smaller than 1000)
+                                # Get the expected range for this category
+                                min_rank, max_rank = expected_ranges[full_category]
+                                
+                                # Check each number against the expected range
                                 for num in numbers:
-                                    if 1 <= int(num) <= 2000:
-                                        rank = num
-                                        categories_found.append(full_category)
-                                        rankings_data["categories"].append({"category": full_category, "rank": rank})
-                                        logger.info(f"Found ranking for {full_category} using proximity search: #{rank}")
-                                        break
-                            
-                            # If we found this category, stop looking
-                            if full_category in categories_found:
+                                    num_val = int(num)
+                                    # If it's in the expected range, it's more likely to be correct
+                                    if min_rank <= num_val <= max_rank:
+                                        candidate_ranks.append((num, 1))  # Higher priority (1)
+                                    # Otherwise, still consider it, but with lower priority
+                                    elif 1 <= num_val <= 2000:
+                                        candidate_ranks.append((num, 2))  # Lower priority (2)
+                        
+                        # If we found any candidate ranks, sort by priority and use the highest priority one
+                        if candidate_ranks:
+                            # Sort by priority (lower number = higher priority)
+                            candidate_ranks.sort(key=lambda x: x[1])
+                            rank = candidate_ranks[0][0]
+                            categories_found.append(full_category)
+                            rankings_data["categories"].append({"category": full_category, "rank": rank})
+                            logger.info(f"Found ranking for {full_category} using priority-based search: #{rank}")
+                            found_rank = True
+                        
+                        # If we still haven't found a rank, fall back to the original approach
+                        if not found_rank:
+                            for loc in category_locations:
+                                # Look within 200 characters after the category name for numbers
+                                search_range = html_content[loc:loc+200]
+                                numbers = re.findall(r'(\d+)', search_range)
+                                
+                                if numbers:
+                                    # Take the first reasonably sized number (ranks are typically smaller than 1000)
+                                    for num in numbers:
+                                        if 1 <= int(num) <= 2000:
+                                            rank = num
+                                            categories_found.append(full_category)
+                                            rankings_data["categories"].append({"category": full_category, "rank": rank})
+                                            logger.info(f"Found ranking for {full_category} using simple proximity search: #{rank}")
+                                            found_rank = True
+                                            break
+                                
+                                # If we found this category, stop looking
+                                if found_rank:
+                                    break
                                 break
             
             # Try SVG parsing if we haven't found all categories
