@@ -151,13 +151,24 @@ def view_logs():
 
 @app.route('/get-fear-greed')
 def get_fear_greed():
-    """Manually fetch Fear & Greed Index data"""
-    global last_fear_greed_data, last_fear_greed_time
+    """Manually fetch Fear & Greed Index data and send in a combined message with app rankings"""
+    global last_fear_greed_data, last_fear_greed_time, last_scrape_data, last_scrape_time
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
+        # Get app rankings data (either existing or new)
+        if last_scrape_data:
+            # Use existing rankings data
+            rankings_data = last_scrape_data
+        else:
+            # Or fetch new rankings data
+            rankings_data = scheduler.scraper.scrape_category_rankings()
+            if rankings_data:
+                last_scrape_data = rankings_data
+                last_scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
@@ -166,20 +177,32 @@ def get_fear_greed():
             last_fear_greed_data = fear_greed_data
             last_fear_greed_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            # Format for Telegram and send
-            fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-            sent = scheduler.telegram_bot.send_message(fear_greed_message)
+            # Формируем и отправляем единое сообщение
+            if rankings_data:
+                # Сначала данные о рейтинге
+                combined_message = scheduler.scraper.format_rankings_message(rankings_data)
+                
+                # Добавляем разделитель между сообщениями
+                combined_message += "\n\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
+            else:
+                combined_message = ""
+                
+            # Добавляем данные об индексе страха и жадности
+            combined_message += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+            
+            # Отправляем сообщение
+            sent = scheduler.telegram_bot.send_message(combined_message)
             
             if sent:
-                flash("Fear & Greed Index data successfully fetched and sent to Telegram!", "success")
+                flash("Data successfully fetched and sent to Telegram!", "success")
             else:
-                flash("Fear & Greed Index data fetched but failed to send to Telegram.", "warning")
+                flash("Data fetched but failed to send to Telegram.", "warning")
                 
             return redirect(url_for('index'))
         else:
             return jsonify({"status": "error", "message": "Failed to retrieve Fear & Greed Index data"}), 500
     except Exception as e:
-        logger.error(f"Error fetching Fear & Greed Index: {str(e)}")
+        logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/health')

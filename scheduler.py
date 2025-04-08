@@ -70,7 +70,7 @@ class SensorTowerScheduler:
                 logger.error("Telegram connection test failed. Job aborted.")
                 return False
             
-            # Шаг 1: Получение и отправка данных о рейтинге приложения
+            # Часть 1: Получение данных о рейтинге приложения
             rankings_data = self.scraper.scrape_category_rankings()
             
             if not rankings_data:
@@ -79,38 +79,36 @@ class SensorTowerScheduler:
                 self.telegram_bot.send_message(error_message)
                 return False
             
-            # Format the data into a message
-            message = self.scraper.format_rankings_message(rankings_data)
-            
-            # Send the message to Telegram
-            if not self.telegram_bot.send_message(message):
-                logger.error("Failed to send rankings message to Telegram.")
-                return False
-            
-            logger.info("App rankings sent successfully")
-            
-            # Шаг 2: Получение и отправка данных индекса страха и жадности
+            # Часть 2: Получение данных индекса страха и жадности
+            fear_greed_data = None
             try:
-                # Небольшая пауза между сообщениями
-                time.sleep(2)
-                
                 fear_greed_data = self.fear_greed_tracker.get_fear_greed_index()
                 
                 if not fear_greed_data:
                     logger.error("Failed to get Fear & Greed Index data")
-                else:
-                    # Format message
-                    fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-                    
-                    # Send to Telegram
-                    if not self.telegram_bot.send_message(fear_greed_message):
-                        logger.error("Failed to send Fear & Greed Index to Telegram")
-                    else:
-                        logger.info("Fear & Greed Index sent successfully")
             except Exception as e:
                 logger.error(f"Error processing Fear & Greed Index: {str(e)}")
                 # Продолжаем выполнение даже при ошибке с индексом страха и жадности
             
+            # Формируем и отправляем единое сообщение
+            # Сначала форматируем данные о рейтинге
+            rankings_message = self.scraper.format_rankings_message(rankings_data)
+            
+            # Затем добавляем данные об индексе страха и жадности, если они доступны
+            combined_message = rankings_message
+            
+            if fear_greed_data:
+                # Добавляем разделитель между сообщениями
+                fear_greed_message = "\n\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
+                fear_greed_message += self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+                combined_message += fear_greed_message
+            
+            # Отправляем объединенное сообщение
+            if not self.telegram_bot.send_message(combined_message):
+                logger.error("Failed to send combined message to Telegram.")
+                return False
+            
+            logger.info("Combined message sent successfully")
             logger.info("Scraping job completed successfully")
             return True
             
