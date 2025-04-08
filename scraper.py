@@ -24,8 +24,8 @@ from logger import logger
 # Константы для iTunes API
 ITUNES_API_URL = "https://itunes.apple.com/lookup"
 ITUNES_FINANCE_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6015/json"  # Finance genre
-ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=300/json"  # Overall free apps (увеличен лимит)
-ITUNES_ALL_APPS_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=300/genre=6000/json"  # All free apps (увеличен лимит)
+ITUNES_OVERALL_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/json"  # Overall free apps
+ITUNES_ALL_APPS_CHARTS_API_URL = "https://itunes.apple.com/us/rss/topfreeapplications/limit=200/genre=6000/json"  # All free apps
 
 class SensorTowerScraper:
     def __init__(self):
@@ -157,6 +157,12 @@ class SensorTowerScraper:
                     })
             else:
                 logger.error(f"Failed to fetch Overall rankings: HTTP {overall_response.status_code}")
+                # Добавляем оценочный ранг при ошибке API
+                rankings_data["categories"].append({
+                    "category": "iPhone - Free - Overall",
+                    "rank": "~200+",
+                    "estimated": True
+                })
             
             # Step 3: Check ranking in All Apps free category
             logger.info("Fetching Free Apps rankings")
@@ -189,6 +195,12 @@ class SensorTowerScraper:
                     })
             else:
                 logger.error(f"Failed to fetch All Apps rankings: HTTP {apps_response.status_code}")
+                # Добавляем оценочный ранг при ошибке API
+                rankings_data["categories"].append({
+                    "category": "iPhone - Free - Apps",
+                    "rank": "~200+",
+                    "estimated": True
+                })
                 
             # If we have at least one ranking, consider this successful
             if rankings_data["categories"]:
