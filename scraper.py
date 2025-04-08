@@ -1093,8 +1093,7 @@ class SensorTowerScraper:
             
             if rankings_data and rankings_data["categories"]:
                 logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from Twitter")
-                # Validate and correct the rankings data
-                rankings_data = self.validate_and_correct_rankings(rankings_data)
+                # Don't validate Twitter data - use as is
                 return rankings_data
             else:
                 logger.error("Failed to scrape any data from Twitter")
