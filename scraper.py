@@ -13,6 +13,7 @@ class SensorTowerScraper:
         self.last_scrape_data = None
         self.telegram_source_channel = TELEGRAM_SOURCE_CHANNEL  # Channel where we get data from
         self.limit = 10  # Number of recent messages to check
+        self.previous_rank = None  # Will be initialized with first value obtained
 
     def _get_messages_from_telegram(self):
         """
@@ -309,8 +310,32 @@ class SensorTowerScraper:
                 ]
             }
             
+            # Save previous rank value before updating data
+            current_rank_int = int(rank)
+            
+            # For tracking rank changes
+            if self.previous_rank is None:
+                self.previous_rank = current_rank_int
+            
+            # Calculate trend (will be used in scheduler)
+            if "trend" not in rankings_data:
+                rankings_data["trend"] = {
+                    "previous_rank": self.previous_rank,
+                    "current_rank": current_rank_int,
+                    "direction": "same" if self.previous_rank == current_rank_int else
+                                 "up" if self.previous_rank > current_rank_int else "down"
+                }
+                
+            # Log the trend
+            trend_direction = rankings_data["trend"]["direction"]
+            logger.info(f"Rank trend: {self.previous_rank} → {current_rank_int} ({trend_direction})")
+                
             # Save data for web interface
             self.last_scrape_data = rankings_data
+            
+            # Update previous rank for next time
+            self.previous_rank = current_rank_int
+            
             return rankings_data
             
         except Exception as e:
