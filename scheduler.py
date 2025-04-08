@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
+from fear_greed_index import FearGreedIndexTracker
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -13,6 +14,7 @@ class SensorTowerScheduler:
         self.thread = None
         self.scraper = SensorTowerScraper()
         self.telegram_bot = TelegramBot()
+        self.fear_greed_tracker = FearGreedIndexTracker()
     
     def _scheduler_loop(self):
         """
@@ -68,7 +70,7 @@ class SensorTowerScheduler:
                 logger.error("Telegram connection test failed. Job aborted.")
                 return False
             
-            # Scrape the data
+            # Шаг 1: Получение и отправка данных о рейтинге приложения
             rankings_data = self.scraper.scrape_category_rankings()
             
             if not rankings_data:
@@ -82,8 +84,32 @@ class SensorTowerScheduler:
             
             # Send the message to Telegram
             if not self.telegram_bot.send_message(message):
-                logger.error("Failed to send message to Telegram.")
+                logger.error("Failed to send rankings message to Telegram.")
                 return False
+            
+            logger.info("App rankings sent successfully")
+            
+            # Шаг 2: Получение и отправка данных индекса страха и жадности
+            try:
+                # Небольшая пауза между сообщениями
+                time.sleep(2)
+                
+                fear_greed_data = self.fear_greed_tracker.get_fear_greed_index()
+                
+                if not fear_greed_data:
+                    logger.error("Failed to get Fear & Greed Index data")
+                else:
+                    # Format message
+                    fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+                    
+                    # Send to Telegram
+                    if not self.telegram_bot.send_message(fear_greed_message):
+                        logger.error("Failed to send Fear & Greed Index to Telegram")
+                    else:
+                        logger.info("Fear & Greed Index sent successfully")
+            except Exception as e:
+                logger.error(f"Error processing Fear & Greed Index: {str(e)}")
+                # Продолжаем выполнение даже при ошибке с индексом страха и жадности
             
             logger.info("Scraping job completed successfully")
             return True
@@ -96,3 +122,16 @@ class SensorTowerScheduler:
             except:
                 pass
             return False
+            
+    def get_current_fear_greed_index(self):
+        """
+        Get current Fear & Greed Index data for testing/manual triggering
+        
+        Returns:
+            dict: Fear & Greed Index data or None in case of error
+        """
+        try:
+            return self.fear_greed_tracker.get_fear_greed_index()
+        except Exception as e:
+            logger.error(f"Error getting Fear & Greed Index: {str(e)}")
+            return None

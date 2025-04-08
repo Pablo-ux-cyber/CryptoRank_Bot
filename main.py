@@ -15,6 +15,8 @@ app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
 scheduler = None
 last_scrape_data = None
 last_scrape_time = None
+last_fear_greed_data = None
+last_fear_greed_time = None
 
 def start_scheduler_thread():
     """Start the scheduler in a separate thread"""
@@ -144,6 +146,39 @@ def view_logs():
         log_content = [f"Error reading log file: {str(e)}"]
     
     return render_template('logs.html', logs=log_content)
+
+@app.route('/get-fear-greed')
+def get_fear_greed():
+    """Manually fetch Fear & Greed Index data"""
+    global last_fear_greed_data, last_fear_greed_time
+    
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+    
+    try:
+        # Get Fear & Greed Index data
+        fear_greed_data = scheduler.get_current_fear_greed_index()
+        
+        if fear_greed_data:
+            # Store the data for display
+            last_fear_greed_data = fear_greed_data
+            last_fear_greed_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Format for Telegram and send
+            fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+            sent = scheduler.telegram_bot.send_message(fear_greed_message)
+            
+            if sent:
+                flash("Fear & Greed Index data successfully fetched and sent to Telegram!", "success")
+            else:
+                flash("Fear & Greed Index data fetched but failed to send to Telegram.", "warning")
+                
+            return redirect(url_for('index'))
+        else:
+            return jsonify({"status": "error", "message": "Failed to retrieve Fear & Greed Index data"}), 500
+    except Exception as e:
+        logger.error(f"Error fetching Fear & Greed Index: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/health')
 def health():
