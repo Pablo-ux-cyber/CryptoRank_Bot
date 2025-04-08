@@ -75,6 +75,25 @@ class TelegramBot:
             logger.info(f"Message that would be sent: {message}")
             return False
     
+    def _escape_markdown_v2(self, text):
+        """
+        Escape special characters for MarkdownV2 format
+        
+        Args:
+            text (str): Text to escape
+            
+        Returns:
+            str: Escaped text
+        """
+        # Список символов, которые нужно экранировать в MarkdownV2
+        special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+        
+        # Экранируем каждый специальный символ
+        for char in special_chars:
+            text = text.replace(char, f"\\{char}")
+            
+        return text
+    
     def send_message(self, message):
         """
         Send a message to the designated Telegram channel or group
@@ -116,19 +135,34 @@ class TelegramBot:
             logger.info(f"Attempting to send message to Telegram {chat_type}: {chat_id}")
             
             try:
-                # Сначала попробуем отправить обычный текст без форматирования
+                # Отправляем сообщение с форматированием MarkdownV2
+                # Не экранируем символы, так как они уже экранированы в сообщении
                 self.bot.send_message(
                     chat_id=chat_id,
                     text=message,
-                    parse_mode=None
+                    parse_mode="MarkdownV2"
                 )
                 logger.info(f"Message sent to Telegram {chat_type} successfully")
                 return True
             except Exception as chat_error:
-                # Если отправка в чат не удалась, попробуем отправить администратору
-                logger.error(f"Failed to send to {chat_type}: {str(chat_error)}")
-                logger.info("Attempting to send message to bot admin instead")
-                return self.send_message_to_bot_admin(message)
+                # Если отправка в чат не удалась, попробуем еще раз без форматирования
+                logger.error(f"Failed to send to {chat_type} with MarkdownV2: {str(chat_error)}")
+                logger.info("Attempting to send message without formatting")
+                
+                try:
+                    # Отправляем простой текст без форматирования
+                    self.bot.send_message(
+                        chat_id=chat_id,
+                        text=message.replace('\\', ''),  # Убираем экранирование
+                        parse_mode=None
+                    )
+                    logger.info(f"Message sent to Telegram {chat_type} successfully (without formatting)")
+                    return True
+                except Exception as e:
+                    logger.error(f"Failed to send plain text: {str(e)}")
+                    # Если и это не удалось, отправляем администратору
+                    logger.info("Attempting to send message to bot admin instead")
+                    return self.send_message_to_bot_admin(message)
                 
         except Exception as e:
             logger.error(f"Failed to send message to Telegram chat: {str(e)}")
