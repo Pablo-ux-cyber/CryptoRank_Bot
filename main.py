@@ -152,9 +152,54 @@ def view_history():
     """View historical data and analysis"""
     # Read historical data from CSV file
     historical_data = []
+    analytics = {
+        'finance': {'current': 0, 'best': 0, 'worst': 0, 'trend': 0, 'first_value': 0},
+        'apps': {'current': 0, 'best': 0, 'worst': 0, 'trend': 0, 'first_value': 0},
+        'overall': {'current': 0, 'best': 0, 'worst': 0, 'trend': 0, 'first_value': 0}
+    }
+    
     try:
         df = pd.read_csv('historical_data.csv')
         df['date'] = pd.to_datetime(df['date']).dt.strftime('%Y-%m-%d')
+        
+        # Get the first and last value for each category to calculate trend
+        first_finance = df.iloc[0]['iPhone - Free - Finance']
+        first_apps = df.iloc[0]['iPhone - Free - Apps']
+        first_overall = df.iloc[0]['iPhone - Free - Overall']
+        
+        last_finance = df.iloc[-1]['iPhone - Free - Finance']
+        last_apps = df.iloc[-1]['iPhone - Free - Apps']
+        last_overall = df.iloc[-1]['iPhone - Free - Overall']
+        
+        # Calculate trend (positive means improvement, ranks going down)
+        finance_trend = first_finance - last_finance
+        apps_trend = first_apps - last_apps
+        overall_trend = first_overall - last_overall
+        
+        # Fill analytics data
+        analytics = {
+            'finance': {
+                'current': int(last_finance),
+                'best': int(df['iPhone - Free - Finance'].min()),
+                'worst': int(df['iPhone - Free - Finance'].max()),
+                'trend': int(finance_trend),
+                'first_value': int(first_finance)
+            },
+            'apps': {
+                'current': int(last_apps),
+                'best': int(df['iPhone - Free - Apps'].min()),
+                'worst': int(df['iPhone - Free - Apps'].max()),
+                'trend': int(apps_trend),
+                'first_value': int(first_apps)
+            },
+            'overall': {
+                'current': int(last_overall),
+                'best': int(df['iPhone - Free - Overall'].min()),
+                'worst': int(df['iPhone - Free - Overall'].max()),
+                'trend': int(overall_trend),
+                'first_value': int(first_overall)
+            }
+        }
         
         # Transform the data for template
         for _, row in df.iterrows():
@@ -168,7 +213,18 @@ def view_history():
     except Exception as e:
         logger.error(f"Error reading historical data: {str(e)}")
     
-    return render_template('history.html', historical_data=historical_data)
+    # Try to read from data analysis file for more insights
+    analysis_content = ""
+    try:
+        with open('data_analysis.txt', 'r') as f:
+            analysis_content = f.read()
+    except Exception as e:
+        logger.error(f"Error reading analysis file: {str(e)}")
+    
+    return render_template('history_dynamic.html', 
+                          historical_data=historical_data, 
+                          analytics=analytics,
+                          analysis_content=analysis_content)
 
 @app.route('/download/history')
 def download_history():
