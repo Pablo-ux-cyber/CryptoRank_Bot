@@ -1,5 +1,5 @@
 Coinbase App Rankings - Statistical Analysis
-Generated on: 2025-04-08 06:33:45
+Generated on: 2025-04-08 06:54:57
 Data period: 2025-03-09 to 2025-04-07
 Total days of data: 30
 

@@ -60,6 +60,151 @@ class SensorTowerScraper:
         """
         logger.warning("Scraping failed and no fallback data will be used - returning None")
         return None
+        
+    def _parse_svg_data(self, html_content):
+        """
+        Parse ranking data from SVG charts embedded in the HTML
+        
+        Args:
+            html_content (str): The raw HTML content
+            
+        Returns:
+            dict: Parsed rankings data or None if parsing failed
+        """
+        try:
+            logger.info("Looking for SVG chart data in HTML")
+            
+            # Initialize the rankings data
+            rankings_data = {
+                "app_name": "Coinbase",
+                "app_id": self.app_id,
+                "date": time.strftime("%Y-%m-%d"),
+                "categories": []
+            }
+            
+            # Find all SVG content in the HTML
+            svg_pattern = r'<svg[^>]*>.*?</svg>'
+            svg_matches = re.finditer(svg_pattern, html_content, re.IGNORECASE | re.DOTALL)
+            
+            categories_needed = ["iPhone - Free - Finance", "iPhone - Free - Apps", "iPhone - Free - Overall"]
+            categories_found = []
+            
+            for svg_match in svg_matches:
+                svg_content = svg_match.group(0)
+                
+                # Check if this SVG contains category names
+                contains_finance = "finance" in svg_content.lower()
+                contains_apps = "apps" in svg_content.lower()
+                contains_overall = "overall" in svg_content.lower()
+                
+                if contains_finance or contains_apps or contains_overall:
+                    logger.info("Found SVG content with category keywords")
+                    
+                    # Look for data points in the SVG
+                    # In SVG charts, the current value is often the last data point or specially marked
+                    
+                    # Try to find text elements with numbers
+                    text_values = re.findall(r'<text[^>]*>(\d+)</text>', svg_content)
+                    
+                    # If we found text elements with numbers
+                    if text_values:
+                        logger.info(f"Found {len(text_values)} numeric text elements in SVG")
+                        
+                        # Try to find individual categories and their values
+                        if contains_finance and "iPhone - Free - Finance" not in categories_found:
+                            # Look for text near "Finance" keyword
+                            finance_pattern = r'([Ff]inance).*?<text[^>]*>(\d+)</text>'
+                            finance_matches = re.finditer(finance_pattern, svg_content, re.DOTALL)
+                            
+                            for match in finance_matches:
+                                rank = match.group(2)
+                                categories_found.append("iPhone - Free - Finance")
+                                rankings_data["categories"].append({
+                                    "category": "iPhone - Free - Finance",
+                                    "rank": rank
+                                })
+                                logger.info(f"Found Finance rank from SVG: #{rank}")
+                                break
+                                
+                        if contains_apps and "iPhone - Free - Apps" not in categories_found:
+                            # Look for text near "Apps" keyword
+                            apps_pattern = r'([Aa]pps).*?<text[^>]*>(\d+)</text>'
+                            apps_matches = re.finditer(apps_pattern, svg_content, re.DOTALL)
+                            
+                            for match in apps_matches:
+                                rank = match.group(2)
+                                categories_found.append("iPhone - Free - Apps")
+                                rankings_data["categories"].append({
+                                    "category": "iPhone - Free - Apps", 
+                                    "rank": rank
+                                })
+                                logger.info(f"Found Apps rank from SVG: #{rank}")
+                                break
+                                
+                        if contains_overall and "iPhone - Free - Overall" not in categories_found:
+                            # Look for text near "Overall" keyword
+                            overall_pattern = r'([Oo]verall).*?<text[^>]*>(\d+)</text>'
+                            overall_matches = re.finditer(overall_pattern, svg_content, re.DOTALL)
+                            
+                            for match in overall_matches:
+                                rank = match.group(2)
+                                categories_found.append("iPhone - Free - Overall")
+                                rankings_data["categories"].append({
+                                    "category": "iPhone - Free - Overall",
+                                    "rank": rank
+                                })
+                                logger.info(f"Found Overall rank from SVG: #{rank}")
+                                break
+                                
+                    # If we didn't find specific category associations, try to use positional logic
+                    if len(rankings_data["categories"]) < len(categories_needed):
+                        # SVG data often has series data or path data with specific values
+                        # Try to extract any remaining numbers 
+                        data_points = re.findall(r'(?:value|y|data-value)="(\d+)"', svg_content)
+                        
+                        if data_points:
+                            logger.info(f"Found {len(data_points)} data point values in SVG")
+                            
+                            # Use the most recent data points (typically the rightmost/last values)
+                            latest_points = data_points[-3:] if len(data_points) >= 3 else data_points
+                            
+                            # If we have three or more data points and need all categories
+                            if len(latest_points) >= 3 and len(categories_found) == 0:
+                                # Assume the order is Finance, Apps, Overall (common ordering by specificity)
+                                for i, category in enumerate(categories_needed):
+                                    if i < len(latest_points):
+                                        categories_found.append(category)
+                                        rankings_data["categories"].append({
+                                            "category": category,
+                                            "rank": latest_points[i]
+                                        })
+                                        logger.info(f"Assigned {category} rank from SVG data points: #{latest_points[i]}")
+                            
+                            # If we have some categories but not all
+                            elif len(categories_found) > 0 and len(categories_found) < len(categories_needed):
+                                # Fill in missing categories with available data points
+                                point_index = 0
+                                for category in categories_needed:
+                                    if category not in categories_found and point_index < len(latest_points):
+                                        categories_found.append(category)
+                                        rankings_data["categories"].append({
+                                            "category": category,
+                                            "rank": latest_points[point_index]
+                                        })
+                                        logger.info(f"Filled in missing {category} from SVG data points: #{latest_points[point_index]}")
+                                        point_index += 1
+            
+            # If we found some categories from the SVG
+            if len(rankings_data["categories"]) > 0:
+                logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from SVG data")
+                return rankings_data
+            else:
+                logger.warning("Failed to extract any category rankings from SVG data")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Error parsing SVG data: {str(e)}")
+            return None
     
     def _fallback_scrape_with_trafilatura(self):
         """
@@ -284,6 +429,20 @@ class SensorTowerScraper:
                             # If we found this category, stop looking
                             if full_category in categories_found:
                                 break
+            
+            # Try SVG parsing if we haven't found all categories
+            if len(rankings_data["categories"]) < 3:
+                logger.info("Attempting to parse SVG data for missing categories")
+                svg_data = self._parse_svg_data(html_content)
+                
+                if svg_data and len(svg_data["categories"]) > 0:
+                    # Merge SVG results with existing results
+                    existing_categories = [cat["category"].lower() for cat in rankings_data["categories"]]
+                    
+                    for svg_category in svg_data["categories"]:
+                        if svg_category["category"].lower() not in existing_categories:
+                            rankings_data["categories"].append(svg_category)
+                            logger.info(f"Added missing category {svg_category['category']} from SVG data")
             
             # Save the HTML to debug file if we didn't find all categories
             if len(rankings_data["categories"]) < 3 and len(rankings_data["categories"]) > 0:
