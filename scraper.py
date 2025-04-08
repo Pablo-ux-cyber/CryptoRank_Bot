@@ -491,32 +491,20 @@ class SensorTowerScraper:
     
     def scrape_category_rankings(self):
         """
-        Get category rankings data for the specified app, prioritizing official Apple API
+        Get category rankings data for the specified app directly from SensorTower
         
         Steps:
-        1. Try to get data from Apple iTunes API (most reliable)
-        2. Try to get detailed data directly from SensorTower detailed page
-        3. If that fails, try Selenium scraping of SensorTower
-        4. If Selenium fails, try Trafilatura scraping
-        5. If all else fails, return test data
+        1. Try to get detailed data directly from SensorTower detailed page using XPath
+        2. If that fails, try general Selenium scraping of SensorTower
+        3. If Selenium fails, try Trafilatura scraping
+        4. If all else fails, return test data
         
         Returns:
             dict: A dictionary containing the rankings data
         """
-        # Try to get data from official Apple API first (most reliable source)
-        try:
-            logger.info("Attempting to fetch data from official Apple API")
-            apple_data = self.fetch_from_apple_api()
-            if apple_data and apple_data.get("categories"):
-                logger.info("Successfully retrieved data from Apple API")
-                return apple_data
-            else:
-                logger.warning("Apple API did not return any rankings, trying SensorTower scraping")
-        except Exception as e:
-            logger.error(f"Error fetching from Apple API: {str(e)}")
-            logger.info("Falling back to SensorTower scraping")
+        logger.info("Getting data exclusively from SensorTower as requested")
             
-        # First try to get detailed SensorTower data from the specific page
+        # First try to get detailed SensorTower data from the specific page using XPath
         try:
             logger.info("Attempting to fetch detailed data from SensorTower analysis page")
             detailed_data = self.scrape_sensortower_detailed()
