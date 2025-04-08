@@ -301,7 +301,7 @@ class SensorTowerScraper:
         """
         Scrape detailed category rankings directly from SensorTower detailed analysis page
         This method specifically targets the URL provided by the user to extract exact ranking information
-        Using the specific XPath selector provided by the user
+        Looking for the specific format "Finance\nUS - iPhone - Top Free" and "Apps\nUS - iPhone - Top Free"
         """
         if not SELENIUM_AVAILABLE:
             logger.warning("Selenium is not available for detailed scraping")
@@ -323,225 +323,224 @@ class SensorTowerScraper:
             logger.info("Taking screenshot of the detailed page")
             self.driver.save_screenshot("sensortower_detailed_debug.png")
             
-            # Let's look for the rankings in the table or chart
-            # Target specifically the "US - iPhone - Top Free" data for Apps, Finance, and Overall
+            # Prepare data structure for the result
             rankings_data = {
                 "source": "SensorTower Detailed Analysis",
                 "app_name": "Coinbase",
                 "categories": []
             }
             
-            # Use the specific XPath selector provided by the user
+            # Ищем конкретные данные, которые указал пользователь
+            # Нам нужно найти данные в формате:
+            # Finance
+            # US - iPhone - Top Free
+            # и
+            # Apps
+            # US - iPhone - Top Free
+            
             try:
-                logger.info("Using specific XPath selector to extract ranking data")
+                logger.info("Looking for specific format: 'Finance/Apps' + 'US - iPhone - Top Free'")
                 
-                # Используем точный XPath селектор, предоставленный пользователем
-                xpath_selector = "//*[@id=':rd:']/div[5]/div/div[2]/div/div/div[2]/div[2]/div/p"
-                logger.info(f"Trying exact XPath selector: {xpath_selector}")
+                # Более широкий поиск всех элементов, содержащих "Finance" или "Apps"
+                finance_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Finance')]")
+                apps_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Apps')]")
+                overall_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Overall')]")
                 
-                # Try several strategies with increasing flexibility
-                selectors_to_try = [
-                    # 1. Точный селектор
-                    xpath_selector,
-                    # 2. Более гибкий селектор с частью ID
-                    "//div[contains(@id, ':r')]/div[5]/div/div[2]/div/div/div[2]/div[2]/div/p",
-                    # 3. Поиск по структуре без ID
-                    "//div[5]/div/div[2]/div/div/div[2]/div[2]/div/p",
-                    # 4. Поиск всех параграфов с текстом, содержащих ключевые слова
-                    "//p[contains(text(), 'iPhone') and contains(text(), 'Finance')]",
-                    # 5. Любые параграфы с цифрами
-                    "//p[contains(text(), '#') or contains(text(), '1') or contains(text(), '2') or contains(text(), '3')]"
-                ]
+                logger.info(f"Found {len(finance_elements)} Finance elements, {len(apps_elements)} Apps elements, {len(overall_elements)} Overall elements")
                 
-                ranking_text = None
-                
-                # Пробуем каждый селектор до успеха
-                for i, selector in enumerate(selectors_to_try):
+                # Функция для извлечения ранга из строки
+                def extract_rank(element):
                     try:
-                        logger.info(f"Trying selector {i+1}: {selector}")
+                        # Берем родительский элемент, чтобы охватить весь блок с категорией и рангом
+                        parent = element.find_element(By.XPATH, "./..")
+                        # Ищем все дочерние элементы, которые могут содержать ранг
+                        children = parent.find_elements(By.XPATH, ".//*")
                         
-                        # Ждем появления элемента с таймаутом
-                        WebDriverWait(self.driver, 10).until(
-                            EC.presence_of_element_located((By.XPATH, selector))
-                        )
-                        
-                        # Если элемент найден, получаем его текст
-                        ranking_element = self.driver.find_element(By.XPATH, selector)
-                        ranking_text = ranking_element.text
-                        
-                        if ranking_text and len(ranking_text) > 5:  # Проверяем, что текст не пустой и содержит значимые данные
-                            logger.info(f"Found ranking text with selector {i+1}: {ranking_text}")
-                            break
-                        else:
-                            logger.warning(f"Selector {i+1} returned empty or too short text: '{ranking_text}'")
-                            ranking_text = None
-                    except Exception as e:
-                        logger.warning(f"Selector {i+1} failed: {str(e)}")
-                
-                # Если не удалось получить данные по селекторам, ищем по всей странице
-                if not ranking_text:
-                    logger.info("All specific selectors failed, looking for any elements with ranking information")
-                    # Полный исходный код страницы
-                    page_source = self.driver.page_source
-                    
-                    # Поиск элементов, содержащих информацию о рейтингах
-                    try:
-                        # Ищем все элементы, содержащие ключевые слова "iPhone", "Finance", "Apps", "Overall"
-                        elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'iPhone') or contains(text(), 'Finance') or contains(text(), 'Overall') or contains(text(), 'Apps') or contains(text(), '#')]")
-                        
-                        logger.info(f"Found {len(elements)} elements containing keywords")
-                        
-                        # Проходимся по каждому найденному элементу
-                        for element in elements:
-                            element_text = element.text
-                            if element_text and ('iPhone' in element_text or 'rank' in element_text.lower() or '#' in element_text):
-                                logger.info(f"Found element with relevant text: {element_text}")
+                        for child in children:
+                            text = child.text
+                            # Если текст содержит "US - iPhone - Top Free", это может быть описание категории
+                            if "US - iPhone - Top Free" in text:
+                                logger.info(f"Found category description: {text}")
                                 
-                                # Если текст уже есть, добавляем к нему, иначе устанавливаем
-                                if ranking_text:
-                                    ranking_text += "\n" + element_text
-                                else:
-                                    ranking_text = element_text
+                                # Теперь ищем ранг в соседних элементах
+                                siblings = parent.find_elements(By.XPATH, ".//span | .//div | .//p")
+                                for sibling in siblings:
+                                    sibling_text = sibling.text
+                                    # Если текст содержит числа, это может быть ранг
+                                    if re.search(r'#?\d+', sibling_text):
+                                        rank_match = re.search(r'#?(\d+)', sibling_text)
+                                        if rank_match:
+                                            rank = rank_match.group(1)
+                                            logger.info(f"Found rank: {rank}")
+                                            return rank
+                            
+                            # Проверяем, есть ли в тексте число, которое может быть рангом
+                            if re.search(r'#?\d+', text):
+                                rank_match = re.search(r'#?(\d+)', text)
+                                if rank_match:
+                                    rank = rank_match.group(1)
+                                    logger.info(f"Found rank directly in element: {rank}")
+                                    return rank
                     except Exception as e:
-                        logger.warning(f"Error searching for keyword elements: {str(e)}")
+                        logger.warning(f"Error extracting rank: {str(e)}")
+                    
+                    return None
                 
-                # Если мы нашли какой-то текст с рейтингами
-                if ranking_text:
-                    logger.info("Processing ranking text to extract category information")
-                    
-                    # Define patterns to identify our three target categories
-                    # Более гибкие паттерны для поиска рейтингов
-                    finance_pattern = re.compile(r'(finance|финансы|6015).*?(\d+)|(\d+).*?(finance|финансы|6015)', re.IGNORECASE)
-                    apps_pattern = re.compile(r'(apps|приложения|36).*?(\d+)|(\d+).*?(apps|приложения|36)', re.IGNORECASE)
-                    overall_pattern = re.compile(r'(overall|все категории|общий|0).*?(\d+)|(\d+).*?(overall|все категории|общий|0)', re.IGNORECASE)
-                    
-                    # Check for each category in the text
-                    # Process multiline text in case the results include line breaks
-                    lines = ranking_text.split("\n")
-                    
-                    for line in lines:
-                        # Check for finance category
-                        finance_match = finance_pattern.search(line)
-                        if finance_match:
-                            # Учитываем оба возможных порядка "категория число" или "число категория"
-                            rank = finance_match.group(2) if finance_match.group(2) else finance_match.group(3)
-                            logger.info(f"Found Finance rank: {rank}")
-                            rankings_data["categories"].append({
-                                "category": "iPhone - Free - Finance", 
-                                "rank": rank
-                            })
-                        
-                        # Check for apps category
-                        apps_match = apps_pattern.search(line)
-                        if apps_match:
-                            rank = apps_match.group(2) if apps_match.group(2) else apps_match.group(3)
-                            logger.info(f"Found Apps rank: {rank}")
-                            rankings_data["categories"].append({
-                                "category": "iPhone - Free - Apps",
-                                "rank": rank
-                            })
-                        
-                        # Check for overall category
-                        overall_match = overall_pattern.search(line)
-                        if overall_match:
-                            rank = overall_match.group(2) if overall_match.group(2) else overall_match.group(3)
-                            logger.info(f"Found Overall rank: {rank}")
-                            rankings_data["categories"].append({
-                                "category": "iPhone - Free - Overall",
-                                "rank": rank
-                            })
+                # Извлекаем ранги для всех категорий
+                finance_rank = None
+                apps_rank = None
+                overall_rank = None
                 
-                # Если мы нашли категории, возвращаем данные
-                if rankings_data["categories"]:
-                    logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from detailed SensorTower page")
-                    return rankings_data
-                else:
-                    # Если категории не найдены через регулярные выражения, ищем просто числа
-                    logger.info("No categories found with regex, trying to extract any numbers from the text")
-                    
-                    # Extract any numbers from the text as possible rankings
-                    number_pattern = re.compile(r'#?(\d+)')
-                    numbers = number_pattern.findall(ranking_text)
-                    
-                    if numbers:
-                        logger.info(f"Found numbers that could be rankings: {numbers}")
-                        
-                        # Если нашли ровно 3 числа, предполагаем что это наши три категории
-                        if len(numbers) == 3:
-                            logger.info("Found exactly 3 numbers, assuming they are Finance, Apps, and Overall ranks")
-                            rankings_data["categories"] = [
-                                {"category": "iPhone - Free - Finance", "rank": numbers[0]},
-                                {"category": "iPhone - Free - Apps", "rank": numbers[1]},
-                                {"category": "iPhone - Free - Overall", "rank": numbers[2]}
-                            ]
-                            return rankings_data
-                        # Если нашли больше чисел, берем первые три
-                        elif len(numbers) > 3:
-                            logger.info(f"Found {len(numbers)} numbers, using first 3")
-                            rankings_data["categories"] = [
-                                {"category": "iPhone - Free - Finance", "rank": numbers[0]},
-                                {"category": "iPhone - Free - Apps", "rank": numbers[1]},
-                                {"category": "iPhone - Free - Overall", "rank": numbers[2]}
-                            ]
-                            return rankings_data
-                        else:
-                            logger.warning(f"Found only {len(numbers)} numbers, but expected at least 3 for our categories")
-                    else:
-                        logger.warning("No ranking numbers found in the text")
+                # Ищем ранг для Finance
+                for element in finance_elements:
+                    if "Finance" in element.text and "US - iPhone - Top Free" in element.text:
+                        logger.info(f"Found Finance element with matching format: {element.text}")
+                        finance_rank = extract_rank(element)
+                        if finance_rank:
+                            break
                 
-            except Exception as e:
-                logger.error(f"Error extracting rankings with XPath selector: {str(e)}")
-                logger.error("Falling back to full page content analysis")
-            
-            # Если до сих пор не удалось получить данные, анализируем весь исходный код страницы
-            page_content = self.driver.page_source
-            logger.info("Analyzing full page source for ranking data")
-            
-            # Look for specific category data using regex in the full page source
-            iphone_finance_pattern = re.compile(r'(iPhone|iOS).*?(Finance|6015).*?(\d+)|(\d+).*?(Finance|6015).*?(iPhone|iOS)', re.IGNORECASE)
-            iphone_apps_pattern = re.compile(r'(iPhone|iOS).*?(Apps|36).*?(\d+)|(\d+).*?(Apps|36).*?(iPhone|iOS)', re.IGNORECASE)
-            iphone_overall_pattern = re.compile(r'(iPhone|iOS).*?(Overall|0).*?(\d+)|(\d+).*?(Overall|0).*?(iPhone|iOS)', re.IGNORECASE)
-            
-            # Try to extract the ranks using regex from the page source
-            finance_match = iphone_finance_pattern.search(page_content)
-            apps_match = iphone_apps_pattern.search(page_content)
-            overall_match = iphone_overall_pattern.search(page_content)
-            
-            # Add the data we found
-            if finance_match:
-                # Определяем, в какой группе находится число
-                rank = next((g for g in finance_match.groups() if g and g.isdigit()), None)
-                if rank:
-                    logger.info(f"Found Finance rank in page source: {rank}")
+                # Ищем ранг для Apps
+                for element in apps_elements:
+                    if "Apps" in element.text and "US - iPhone - Top Free" in element.text:
+                        logger.info(f"Found Apps element with matching format: {element.text}")
+                        apps_rank = extract_rank(element)
+                        if apps_rank:
+                            break
+                
+                # Ищем ранг для Overall
+                for element in overall_elements:
+                    if "Overall" in element.text and "US - iPhone - Top Free" in element.text:
+                        logger.info(f"Found Overall element with matching format: {element.text}")
+                        overall_rank = extract_rank(element)
+                        if overall_rank:
+                            break
+                
+                # Если не нашли прямое совпадение, ищем элементы, которые содержат часть искомого текста
+                if not finance_rank:
+                    for element in finance_elements:
+                        if not finance_rank and ("Finance" in element.text or "iPhone" in element.text):
+                            logger.info(f"Found partial Finance match: {element.text}")
+                            finance_rank = extract_rank(element)
+                
+                if not apps_rank:
+                    for element in apps_elements:
+                        if not apps_rank and ("Apps" in element.text or "iPhone" in element.text):
+                            logger.info(f"Found partial Apps match: {element.text}")
+                            apps_rank = extract_rank(element)
+                
+                if not overall_rank:
+                    for element in overall_elements:
+                        if not overall_rank and ("Overall" in element.text or "iPhone" in element.text):
+                            logger.info(f"Found partial Overall match: {element.text}")
+                            overall_rank = extract_rank(element)
+                
+                # Добавляем найденные ранги в результат
+                if finance_rank:
                     rankings_data["categories"].append({
                         "category": "iPhone - Free - Finance",
-                        "rank": rank
+                        "rank": finance_rank
                     })
-            
-            if apps_match:
-                rank = next((g for g in apps_match.groups() if g and g.isdigit()), None)
-                if rank:
-                    logger.info(f"Found Apps rank in page source: {rank}")
+                
+                if apps_rank:
                     rankings_data["categories"].append({
                         "category": "iPhone - Free - Apps",
-                        "rank": rank
+                        "rank": apps_rank
                     })
-            
-            if overall_match:
-                rank = next((g for g in overall_match.groups() if g and g.isdigit()), None)
-                if rank:
-                    logger.info(f"Found Overall rank in page source: {rank}")
+                
+                if overall_rank:
                     rankings_data["categories"].append({
                         "category": "iPhone - Free - Overall",
-                        "rank": rank
+                        "rank": overall_rank
                     })
-            
-            # If we found any categories, return the data
-            if rankings_data["categories"]:
-                logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from page source")
-                return rankings_data
-            else:
-                logger.warning("No rankings found in page source")
+                
+                # Если нашли хотя бы одну категорию, возвращаем результат
+                if rankings_data["categories"]:
+                    logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories")
+                    return rankings_data
+                
+                # Если не нашли категории, ищем по всей странице
+                logger.info("No categories found, looking for all text on the page")
+                
+                # Берем весь исходный код страницы
+                page_source = self.driver.page_source
+                
+                # Ищем специфический формат с помощью регулярных выражений:
+                # "Finance\s*US - iPhone - Top Free\s*\d+"
+                finance_pattern = re.compile(r'Finance\s*US\s*-\s*iPhone\s*-\s*Top\s*Free\s*.*?(\d+)', re.DOTALL | re.IGNORECASE)
+                apps_pattern = re.compile(r'Apps\s*US\s*-\s*iPhone\s*-\s*Top\s*Free\s*.*?(\d+)', re.DOTALL | re.IGNORECASE)
+                overall_pattern = re.compile(r'Overall\s*US\s*-\s*iPhone\s*-\s*Top\s*Free\s*.*?(\d+)', re.DOTALL | re.IGNORECASE)
+                
+                # Ищем совпадения
+                finance_match = finance_pattern.search(page_source)
+                apps_match = apps_pattern.search(page_source)
+                overall_match = overall_pattern.search(page_source)
+                
+                # Добавляем найденные ранги в результат
+                if finance_match:
+                    finance_rank = finance_match.group(1)
+                    logger.info(f"Found Finance rank from page source: {finance_rank}")
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Finance",
+                        "rank": finance_rank
+                    })
+                
+                if apps_match:
+                    apps_rank = apps_match.group(1)
+                    logger.info(f"Found Apps rank from page source: {apps_rank}")
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Apps",
+                        "rank": apps_rank
+                    })
+                
+                if overall_match:
+                    overall_rank = overall_match.group(1)
+                    logger.info(f"Found Overall rank from page source: {overall_rank}")
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Overall",
+                        "rank": overall_rank
+                    })
+                
+                # Если нашли хотя бы одну категорию, возвращаем результат
+                if rankings_data["categories"]:
+                    logger.info(f"Successfully extracted {len(rankings_data['categories'])} categories from page source")
+                    return rankings_data
+                
+                # Если до сих пор не нашли данные, ищем видимые таблицы или элементы с числами
+                logger.info("Looking for visible tables or elements with numbers")
+                
+                # Находим все элементы с числами
+                number_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), '#') or contains(text(), '1') or contains(text(), '2') or contains(text(), '3')]")
+                
+                logger.info(f"Found {len(number_elements)} elements with numbers")
+                
+                # Собираем текст всех элементов для анализа
+                all_text = ""
+                for element in number_elements:
+                    all_text += element.text + "\n"
+                
+                logger.info(f"Collected text from all number elements: {all_text}")
+                
+                # Ищем числа
+                numbers = re.findall(r'#?(\d+)', all_text)
+                
+                if numbers:
+                    logger.info(f"Found numbers: {numbers}")
+                    
+                    # Если нашли хотя бы 3 числа, используем первые три как ранги для категорий
+                    if len(numbers) >= 3:
+                        logger.info(f"Using first 3 numbers as ranks: {numbers[:3]}")
+                        rankings_data["categories"] = [
+                            {"category": "iPhone - Free - Finance", "rank": numbers[0]},
+                            {"category": "iPhone - Free - Apps", "rank": numbers[1]},
+                            {"category": "iPhone - Free - Overall", "rank": numbers[2]}
+                        ]
+                        return rankings_data
+                
+                logger.warning("Could not find any rankings on the page")
+                return None
+                
+            except Exception as e:
+                logger.error(f"Error extracting rankings: {str(e)}")
                 return None
                 
         except Exception as e:

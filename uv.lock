@@ -127,6 +127,15 @@ wheels = [
 ]
 
 [[package]]
+name = "chromedriver-py"
+version = "135.0.7049.42"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/fb/41/f089b22dbd3e54c92de21298f371d70155562b71f67942b116d8352b3e88/chromedriver_py-135.0.7049.42.tar.gz", hash = "sha256:0557ecb58fc34604b075fd55886e3243dec0bd95426b56eeebc4c3b4d86f4206", size = 43283589 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c9/c6/30bf6c4f827c90c5dc6391f2a464fb8c6669d145a14c1776b60805cb5dcf/chromedriver_py-135.0.7049.42-py3-none-any.whl", hash = "sha256:98dbd06e6dba742009c8b5de9abbcd0ebba8b0b2609c6f160069a38501fbf52c", size = 43372409 },
+]
+
+[[package]]
 name = "click"
 version = "8.1.8"
 source = { registry = "https://pypi.org/simple" }
@@ -650,6 +659,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "apscheduler" },
+    { name = "chromedriver-py" },
     { name = "email-validator" },
     { name = "flask" },
     { name = "flask-sqlalchemy" },
@@ -666,6 +676,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "apscheduler", specifier = "==3.6.3" },
+    { name = "chromedriver-py", specifier = ">=135.0.7049.42" },
     { name = "email-validator", specifier = ">=2.2.0" },
     { name = "flask", specifier = ">=3.1.0" },
     { name = "flask-sqlalchemy", specifier = ">=3.1.1" },

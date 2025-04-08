@@ -14,7 +14,13 @@ SCHEDULE_HOUR = 8  # 8 AM
 SCHEDULE_MINUTE = 0  # 00 minutes
 
 # Selenium Configuration
-SELENIUM_DRIVER_PATH = os.getenv("SELENIUM_DRIVER_PATH", "/usr/bin/chromedriver")
+# Используем chromedriver-py для автоматического нахождения пути к драйверу
+try:
+    from chromedriver_py import binary_path
+    SELENIUM_DRIVER_PATH = binary_path
+except ImportError:
+    SELENIUM_DRIVER_PATH = os.getenv("SELENIUM_DRIVER_PATH", "/usr/bin/chromedriver")
+    
 SELENIUM_HEADLESS = True
 SELENIUM_TIMEOUT = 30  # seconds
 
