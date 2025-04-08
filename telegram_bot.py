@@ -71,7 +71,7 @@ class TelegramBot:
                 
         except Exception as e:
             logger.error(f"Failed to send message to admin: {str(e)}")
-            # В качестве запасного варианта логируем сообщение
+            # Log the message as a fallback
             logger.info(f"Message that would be sent: {message}")
             return False
     
@@ -85,10 +85,10 @@ class TelegramBot:
         Returns:
             str: Escaped text
         """
-        # Список символов, которые нужно экранировать в MarkdownV2
+        # List of special characters that need to be escaped in MarkdownV2
         special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
         
-        # Экранируем каждый специальный символ
+        # Escape each special character
         for char in special_chars:
             text = text.replace(char, f"\\{char}")
             
@@ -116,47 +116,55 @@ class TelegramBot:
         # Make sure we have a chat ID (channel or group)
         if not self.channel_id:
             logger.error("Telegram chat ID not provided")
-            # Если чат не указан, попробуем отправить сообщение администратору бота
+            # If chat is not specified, try to send message to the bot admin
             logger.info("Attempting to send message to bot admin instead")
             return self.send_message_to_bot_admin(message)
             
-        # Для отладки вывести сообщение в лог
+        # Log message content for debugging
         logger.info(f"Message content to send: {message[:100]}...") # First 100 chars
             
         try:
-            # Проверяем, что чат существует
+            # Verify chat exists
             chat_id = self.channel_id
-            # Проверяем формат ID чата
+            # Check chat ID format
             if not (chat_id.startswith('@') or chat_id.startswith('-') or chat_id.isdigit()):
                 chat_id = '@' + chat_id
             
-            # Определяем тип чата по ID
+            # Determine chat type based on ID
             chat_type = "group" if chat_id.startswith('-') else "channel"
             logger.info(f"Attempting to send message to Telegram {chat_type}: {chat_id}")
             
+            # MODIFIED: Ensure all special characters are properly escaped
+            # We do this here as a final step to make sure everything is properly formatted
+            escaped_message = message
+            for char in ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']:
+                # Replace all occurrences of the character, even if already escaped
+                escaped_message = escaped_message.replace(f"\\{char}", f"TEMP_ESCAPED_{char}")  # Temporarily mark already escaped chars
+                escaped_message = escaped_message.replace(char, f"\\{char}")  # Escape all instances
+                escaped_message = escaped_message.replace(f"TEMP_ESCAPED_{char}", f"\\{char}")  # Restore properly escaped chars
+            
             try:
-                # Отправляем сообщение с форматированием MarkdownV2
-                # Не экранируем символы, так как они уже экранированы в сообщении
+                # Send message with MarkdownV2 formatting with properly escaped characters
                 self.bot.send_message(
                     chat_id=chat_id,
-                    text=message,
+                    text=escaped_message,
                     parse_mode="MarkdownV2"
                 )
-                logger.info(f"Message sent to Telegram {chat_type} successfully")
+                logger.info(f"Message sent to Telegram {chat_type} successfully with MarkdownV2")
                 return True
             except Exception as chat_error:
-                # Если отправка в чат не удалась, попробуем еще раз без форматирования
+                # If sending to chat fails, try again without formatting
                 logger.error(f"Failed to send to {chat_type} with MarkdownV2: {str(chat_error)}")
                 logger.info("Attempting to send message without formatting")
                 
                 try:
-                    # Отправляем простой текст без форматирования
-                    # Убираем все символы форматирования Markdown
-                    clean_text = message.replace('\\', '')  # Убираем экранирование
-                    clean_text = clean_text.replace('*', '')  # Убираем звездочки
-                    clean_text = clean_text.replace('||', '')  # Убираем метки спойлеров
-                    clean_text = clean_text.replace('#', '')  # Убираем решетки
-                    clean_text = clean_text.replace('_', '')  # Убираем подчеркивания
+                    # Send plain text without formatting
+                    # Remove all Markdown formatting symbols
+                    clean_text = message.replace('\\', '')  # Remove escaping
+                    clean_text = clean_text.replace('*', '')  # Remove asterisks
+                    clean_text = clean_text.replace('||', '')  # Remove spoiler tags
+                    clean_text = clean_text.replace('#', '')  # Remove hashtags
+                    clean_text = clean_text.replace('_', '')  # Remove underscores
                     
                     self.bot.send_message(
                         chat_id=chat_id,
@@ -167,13 +175,13 @@ class TelegramBot:
                     return True
                 except Exception as e:
                     logger.error(f"Failed to send plain text: {str(e)}")
-                    # Если и это не удалось, отправляем администратору
+                    # If this also fails, send to admin
                     logger.info("Attempting to send message to bot admin instead")
                     return self.send_message_to_bot_admin(message)
                 
         except Exception as e:
             logger.error(f"Failed to send message to Telegram chat: {str(e)}")
-            # В случае ошибки попробуем отправить сообщение администратору
+            # In case of error, try to send message to admin
             return self.send_message_to_bot_admin(message)
 
     def test_connection(self):

@@ -142,7 +142,7 @@ class SensorTowerScheduler:
             # Then add Fear & Greed Index data if available
             if fear_greed_data:
                 # Add separator between messages
-                combined_message += "\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
+                combined_message += "\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
                 
                 # Add only index data without separate date
                 value = fear_greed_data.get("value", "N/A")

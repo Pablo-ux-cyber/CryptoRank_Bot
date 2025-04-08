@@ -11,19 +11,19 @@ class SensorTowerScraper:
     def __init__(self):
         self.app_id = APP_ID
         self.last_scrape_data = None
-        self.telegram_source_channel = TELEGRAM_SOURCE_CHANNEL  # Канал, откуда берем данные
-        self.limit = 10  # Количество последних сообщений для проверки
+        self.telegram_source_channel = TELEGRAM_SOURCE_CHANNEL  # Channel where we get data from
+        self.limit = 10  # Number of recent messages to check
 
     def _get_messages_from_telegram(self):
         """
-        Получает последние сообщения из канала Telegram через веб-интерфейс
+        Gets the latest messages from Telegram channel via web interface
         
         Returns:
-            list: Список последних сообщений из канала
+            list: List of recent messages from the channel
         """
         try:
-            # Поскольку у нас нет прав администратора в канале, мы не можем использовать Bot API
-            # Вместо этого мы будем парсить публичную веб-версию канала
+            # Since we don't have admin rights in the channel, we can't use Bot API
+            # Instead, we'll parse the public web version of the channel
             
             channel_username = self.telegram_source_channel.replace("@", "")
             url = f"https://t.me/s/{channel_username}"
@@ -37,7 +37,7 @@ class SensorTowerScraper:
             }
             
             try:
-                # Новый запрос с дополнительными заголовками для предотвращения кеширования
+                # New request with additional headers to prevent caching
                 response = requests.get(url, headers=headers, timeout=10)
                 
                 if response.status_code != 200:
@@ -46,70 +46,70 @@ class SensorTowerScraper:
                 
                 html_content = response.text
                 
-                # Для отладки, давайте поищем конкретно сообщение с рейтингом 240
+                # For debugging, let's search specifically for a message with ranking 240
                 if "240" in html_content and "Coinbase Rank: 240" in html_content:
                     logger.info("Found string 'Coinbase Rank: 240' in the raw HTML!")
                 
-                # Проверим наличие сообщения с ID 510 (которое содержит рейтинг 240)
+                # Check for the presence of message with ID 510 (which contains ranking 240)
                 if "coinbaseappstore/510" in html_content:
                     logger.info("Found message with ID 510 (should contain rank 240)")
                 
-                # Сначала попробуем найти сообщение через уникальный идентификатор, который мы увидели в curl
+                # First, try to find the message through the unique identifier we saw in curl
                 # <div ... data-post="coinbaseappstore/510" ... >
                 messages = []
                 
-                # Новый подход: вытащить все блоки сообщений целиком и искать в них текст рейтинга
-                # Ищем все блоки сообщений
+                # New approach: extract all message blocks completely and search for ranking text in them
+                # Find all message blocks
                 blocks = re.findall(r'<div class="tgme_widget_message[^"]*"[^>]*?data-post="coinbaseappstore/(\d+)".*?>(.*?)<div class="tgme_widget_message_footer', html_content, re.DOTALL)
                 
-                # Создаем словарь, где ключ - ID сообщения, значение - текст сообщения
+                # Create a dictionary where key is message ID, value is message text
                 messages_dict = {}
                 
                 for msg_id, block_html in blocks:
-                    # Извлекаем текст сообщения
+                    # Extract message text
                     text_match = re.search(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', block_html, re.DOTALL)
                     
                     if text_match:
                         text_html = text_match.group(1)
-                        # Очищаем HTML-теги
+                        # Clean HTML tags
                         clean_text = re.sub(r'<[^>]+>', ' ', text_html)
                         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
                         
                         if clean_text:
-                            # Сохраняем сообщение в словарь с ID в качестве ключа
+                            # Save message to dictionary with ID as key
                             messages_dict[int(msg_id)] = f"[ID: {msg_id}] {clean_text}"
                             
-                            # Логгируем для отладки, если находим сообщение с ID 510
+                            # Log for debugging if we find message with ID 510
                             if msg_id == "510":
                                 logger.info(f"Content of message 510: {clean_text}")
                 
                 if messages_dict:
-                    # Сортируем сообщения по ID в убывающем порядке (от новых к старым)
+                    # Sort messages by ID in descending order (newest to oldest)
                     sorted_ids = sorted(messages_dict.keys(), reverse=True)
                     messages = [messages_dict[msg_id] for msg_id in sorted_ids]
                     
                     logger.info(f"Found {len(messages)} messages with IDs")
                     
-                    # Для отладки, распечатаем первые 3 сообщения
+                    # For debugging, print the first 3 messages
                     for i, msg in enumerate(messages[:3]):
                         logger.info(f"Message {i+1}: {msg[:50]}...")
                     
-                    # Отфильтруем только те сообщения, которые содержат "Coinbase Rank"
-                    # Это защитит от рекламных и других сообщений в канале
+                    # Filter only messages containing "Coinbase Rank"
+                    # This protects against ads and other irrelevant messages in the channel
                     filtered_messages = [msg for msg in messages if "Coinbase Rank" in msg]
                     
                     if filtered_messages:
                         logger.info(f"After filtering for 'Coinbase Rank', found {len(filtered_messages)} relevant messages")
                         return filtered_messages
                     else:
-                        # Если нет сообщений с Coinbase Rank, вернем все сообщения как запасной вариант
+                        # If no messages with Coinbase Rank, return all messages as fallback
                         logger.warning("No messages containing 'Coinbase Rank' found, using all messages")
                         return messages
                 
-                # Если прямой поиск не сработал, используем запасной вариант
+                # If direct search didn't work, use fallback method
                 if not messages:
                     logger.info("Using fallback method to extract messages...")
-                    # Просто ищем все тексты сообщений
+                    # Simply search for all message texts
                     all_texts = re.findall(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', html_content, re.DOTALL)
                     
                     for text_html in all_texts:
@@ -122,11 +122,11 @@ class SensorTowerScraper:
                         logger.info(f"Found {len(messages)} message texts using fallback method")
                         return messages
                 
-                # Если все методы не сработали, пробуем использовать trafilatura
+                # If all methods failed, try using trafilatura
                 if not messages:
                     text_content = trafilatura.extract(html_content)
                     if text_content:
-                        # Разбиваем на абзацы
+                        # Split into paragraphs
                         paragraphs = re.split(r'\n+', text_content)
                         messages = [p.strip() for p in paragraphs if p.strip()]
                         logger.info(f"Extracted {len(messages)} paragraphs using trafilatura")
@@ -144,21 +144,21 @@ class SensorTowerScraper:
     
     def _extract_ranking_from_message(self, message):
         """
-        Извлекает данные о рейтинге из сообщения Telegram
+        Extracts ranking data from a Telegram message
         
         Args:
-            message (str): Текст сообщения из Telegram
+            message (str): Message text from Telegram
             
         Returns:
-            int or None: Значение рейтинга или None, если не удалось извлечь
+            int or None: Ranking value or None if extraction failed
         """
         try:
             if not message:
                 return None
                 
-            # Пытаемся найти разные варианты упоминания рейтинга в сообщении
+            # Try to find different patterns of ranking mentions in the message
             
-            # Вариант 0 (основной): "Coinbase Rank: X" (канал @coinbaseappstore)
+            # Pattern 0 (main): "Coinbase Rank: X" (channel @coinbaseappstore)
             pattern0 = r"Coinbase Rank:?\s*(\d+)"
             match = re.search(pattern0, message, re.IGNORECASE)
             
@@ -167,8 +167,8 @@ class SensorTowerScraper:
                 logger.info(f"Extracted ranking using pattern 0 (Coinbase Rank): {rank}")
                 return rank
             
-            # Вариант 1: Текущая позиция: X
-            pattern1 = r"Текущая позиция:?\s*\*?(\d+)\*?"
+            # Pattern 1: Current position: X (English)
+            pattern1 = r"Current position:?\s*\*?(\d+)\*?"
             match = re.search(pattern1, message)
             
             if match:
@@ -176,8 +176,8 @@ class SensorTowerScraper:
                 logger.info(f"Extracted ranking using pattern 1: {rank}")
                 return rank
             
-            # Вариант 2: Текущее место: X
-            pattern2 = r"Текущее место:?\s*\*?(\d+)\*?"
+            # Pattern 2: Current place: X (English)
+            pattern2 = r"Current place:?\s*\*?(\d+)\*?"
             match = re.search(pattern2, message)
             
             if match:
@@ -185,8 +185,8 @@ class SensorTowerScraper:
                 logger.info(f"Extracted ranking using pattern 2: {rank}")
                 return rank
             
-            # Вариант 3: Rank: X или Position: X
-            pattern3 = r"(?:Rank|Position|Позиция|Место):?\s*\*?#?(\d+)\*?"
+            # Pattern 3: Rank: X or Position: X (English only)
+            pattern3 = r"(?:Rank|Position):?\s*\*?#?(\d+)\*?"
             match = re.search(pattern3, message, re.IGNORECASE)
             
             if match:
@@ -194,7 +194,7 @@ class SensorTowerScraper:
                 logger.info(f"Extracted ranking using pattern 3: {rank}")
                 return rank
             
-            # Вариант 4: Ищем просто цифру с решеткой (#123)
+            # Pattern 4: Looking for a number with a hashtag (#123)
             pattern4 = r"#(\d+)"
             match = re.search(pattern4, message)
             
@@ -203,7 +203,7 @@ class SensorTowerScraper:
                 logger.info(f"Extracted ranking using pattern 4: {rank}")
                 return rank
             
-            # Вариант 5: Просто число в коротком сообщении (если больше ничего нет)
+            # Pattern 5: Just a number in a short message (if nothing else exists)
             if len(message.strip().split()) <= 3:
                 pattern5 = r"(\d+)"
                 match = re.search(pattern5, message)
@@ -221,14 +221,14 @@ class SensorTowerScraper:
     
     def _create_test_data(self):
         """
-        Создает базовую структуру данных с фиксированным значением рейтинга
-        когда не удалось получить настоящие данные из Telegram
+        Creates a basic data structure with a fixed ranking value
+        when unable to get real data from Telegram
         
         Returns:
-            dict: Словарь с данными
+            dict: Dictionary with data
         """
         app_name = "Coinbase"
-        rank = "350"  # Фиксированное значение
+        rank = "350"  # Fixed value
         date = time.strftime("%Y-%m-%d")
         
         logger.info(f"Creating data structure with fixed ranking value: {rank}")
@@ -251,24 +251,24 @@ class SensorTowerScraper:
         Returns:
             dict: A dictionary containing the scraped rankings data
         """
-        # Получаем данные только из Telegram канала
+        # Get data only from Telegram channel
         logger.info(f"Attempting to get ranking data from Telegram channel: {self.telegram_source_channel}")
         
         try:
-            # Получаем сообщения из Telegram канала
+            # Get messages from Telegram channel
             messages = self._get_messages_from_telegram()
             
             if not messages or len(messages) == 0:
                 logger.warning("No messages retrieved from Telegram channel")
-                # Используем фиксированное значение рейтинга
-                rank = "350"  # Фиксированное значение
+                # Using fixed ranking value
+                rank = "350"  # Fixed value
                 logger.info(f"Using fixed ranking value: {rank}")
             else:
-                # Первое сообщение (самое последнее по дате) в котором есть рейтинг
+                # First message (the most recent by date) containing the ranking
                 ranking = None
                 message_with_ranking = None
                 
-                # Проверяем первое сообщение (которое должно быть самое свежее)
+                # Check the first message (which should be the most recent)
                 if messages:
                     logger.info(f"Checking most recent message for ranking...")
                     first_message = messages[0]
@@ -279,7 +279,7 @@ class SensorTowerScraper:
                         logger.info(f"Found ranking in the most recent message: {ranking}")
                     else:
                         logger.warning(f"Most recent message does not contain ranking, checking other messages...")
-                        # Если в первом сообщении нет рейтинга, проверяем остальные
+                        # If the first message doesn't contain ranking, check the others
                         for message in messages[1:]:
                             extracted_ranking = self._extract_ranking_from_message(message)
                             if extracted_ranking is not None:
@@ -290,14 +290,14 @@ class SensorTowerScraper:
                 
                 if ranking is None:
                     logger.warning("Could not find ranking in any of the messages")
-                    # Используем фиксированное значение рейтинга
-                    rank = "350"  # Фиксированное значение
+                    # Using fixed ranking value
+                    rank = "350"  # Fixed value
                     logger.info(f"Using fixed ranking value: {rank}")
                 else:
                     rank = str(ranking)
                     logger.info(f"Successfully scraped ranking from Telegram: {rank}")
             
-            # Создаем структуру данных с полученным или фиксированным рейтингом
+            # Create data structure with obtained or fixed ranking
             app_name = "Coinbase"
             
             rankings_data = {
@@ -309,15 +309,15 @@ class SensorTowerScraper:
                 ]
             }
             
-            # Сохраняем данные для веб-интерфейса
+            # Save data for web interface
             self.last_scrape_data = rankings_data
             return rankings_data
             
         except Exception as e:
             logger.error(f"Error scraping from Telegram: {str(e)}")
-            # Используем фиксированное значение рейтинга
+            # Using fixed ranking value
             app_name = "Coinbase"
-            rank = "350"  # Фиксированное значение
+            rank = "350"  # Fixed value
             
             logger.info(f"Using fixed ranking value: {rank}")
             
@@ -330,7 +330,7 @@ class SensorTowerScraper:
                 ]
             }
             
-            # Сохраняем данные для веб-интерфейса
+            # Save data for web interface
             self.last_scrape_data = rankings_data
             return rankings_data
     
@@ -347,40 +347,40 @@ class SensorTowerScraper:
         if not rankings_data or "categories" not in rankings_data:
             return "❌ Failed to retrieve rankings data\\."
         
-        # Telegram MarkdownV2 требует экранирования следующих символов:
+        # Telegram MarkdownV2 requires escaping the following characters:
         # _ * [ ] ( ) ~ ` > # + - = | { } . !
         app_name = rankings_data.get("app_name", "Unknown App")
         app_name = app_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
         
         date = rankings_data.get("date", "Unknown Date")
         
-        # Используем простое форматирование для заголовка
-        message = f"📊 *{app_name} Рейтинг в App Store*\n"
-        message += f"📅 *Дата:* {date}\n\n"
+        # Using simple formatting for the heading
+        message = f"📊 *{app_name} Ranking in App Store*\n"
+        message += f"📅 *Date:* {date}\n\n"
         
         if not rankings_data["categories"]:
-            message += "Данные о рейтинге недоступны\\."
+            message += "Ranking data is unavailable\\."
         else:
-            # Специальное форматирование для категории US - iPhone - Top Free
+            # Special formatting for US - iPhone - Top Free category
             for category in rankings_data["categories"]:
                 cat_name = category.get("category", "Unknown Category")
-                # Экранируем специальные символы
+                # Escape special characters
                 cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
                 rank = category.get("rank", "N/A")
                 
-                # Добавляем эмодзи в зависимости от рейтинга
+                # Add emoji depending on the ranking
                 if int(rank) <= 10:
-                    rank_icon = "🥇"  # Золото для топ-10
+                    rank_icon = "🥇"  # Gold for top 10
                 elif int(rank) <= 50:
-                    rank_icon = "🥈"  # Серебро для топ-50
+                    rank_icon = "🥈"  # Silver for top 50
                 elif int(rank) <= 100:
-                    rank_icon = "🥉"  # Бронза для топ-100
+                    rank_icon = "🥉"  # Bronze for top 100
                 elif int(rank) <= 200:
-                    rank_icon = "📊"  # Графики для топ-200
+                    rank_icon = "📊"  # Charts for top 200
                 else:
-                    rank_icon = "📉"  # Графики вниз для позиции ниже 200
+                    rank_icon = "📉"  # Charts down for position below 200
                 
                 message += f"{rank_icon} *{cat_name}*\n"
-                message += f"   Текущая позиция: *\\#{rank}*\n"
+                message += f"   Current position: *\\#{rank}*\n"
         
         return message

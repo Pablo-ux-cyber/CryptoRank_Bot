@@ -86,9 +86,9 @@ def test_telegram():
         if telegram_bot.test_connection():
             # If test is successful, try to send a test message
             test_msg = (
-                "🧪 Тестовое сообщение от SensorTower Bot\n\n"
-                "Это сообщение отправлено для проверки работы бота.\n"
-                f"Дата и время: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+                "🧪 Test message from SensorTower Bot\n\n"
+                "This message was sent to verify the bot is working correctly.\n"
+                f"Date and time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
             )
             
             if telegram_bot.send_message(test_msg):
@@ -177,20 +177,20 @@ def get_fear_greed():
             last_fear_greed_data = fear_greed_data
             last_fear_greed_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            # Формируем и отправляем единое сообщение
+            # Format and send a combined message
             if rankings_data:
-                # Сначала данные о рейтинге
+                # First add ranking data
                 combined_message = scheduler.scraper.format_rankings_message(rankings_data)
                 
-                # Добавляем разделитель между сообщениями
-                combined_message += "\n\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
+                # Add separator between messages
+                combined_message += "\n\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
             else:
                 combined_message = ""
                 
-            # Добавляем данные об индексе страха и жадности
+            # Add Fear & Greed Index data
             combined_message += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
             
-            # Отправляем сообщение
+            # Send the message
             sent = scheduler.telegram_bot.send_message(combined_message)
             
             if sent:
