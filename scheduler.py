@@ -70,7 +70,7 @@ class SensorTowerScheduler:
                 logger.error("Telegram connection test failed. Job aborted.")
                 return False
             
-            # Часть 1: Получение данных о рейтинге приложения
+            # Part 1: Get app ranking data
             rankings_data = self.scraper.scrape_category_rankings()
             
             if not rankings_data:
@@ -79,7 +79,7 @@ class SensorTowerScheduler:
                 self.telegram_bot.send_message(error_message)
                 return False
             
-            # Часть 2: Получение данных индекса страха и жадности
+            # Part 2: Get Fear & Greed Index data
             fear_greed_data = None
             try:
                 fear_greed_data = self.fear_greed_tracker.get_fear_greed_index()
@@ -88,91 +88,91 @@ class SensorTowerScheduler:
                     logger.error("Failed to get Fear & Greed Index data")
             except Exception as e:
                 logger.error(f"Error processing Fear & Greed Index: {str(e)}")
-                # Продолжаем выполнение даже при ошибке с индексом страха и жадности
+                # Continue execution even with Fear & Greed Index error
             
-            # Создаем единое сообщение с одной общей датой и скрываемыми блоками
-            # Получаем текущую дату
+            # Create a single message with one common date and collapsible blocks
+            # Get current date
             current_date = rankings_data.get("date", time.strftime("%Y-%m-%d"))
             
-            # Формируем заголовок с общей датой для всего сообщения
+            # Format header with common date for the entire message
             combined_message = f"📊 *Crypto Market Report*\n"
-            combined_message += f"📅 *Дата:* {current_date}\n\n"
+            combined_message += f"📅 *Date:* {current_date}\n\n"
             
-            # Добавляем данные о рейтинге Coinbase (без отдельной даты)
+            # Add Coinbase ranking data (without separate date)
             app_name = rankings_data.get("app_name", "Coinbase").replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
             
-            # Статус и видимая часть
+            # Status and visible part
             if rankings_data.get("categories") and len(rankings_data["categories"]) > 0:
                 category = rankings_data["categories"][0]
                 rank = category.get("rank", "N/A")
                 
-                # Добавляем эмодзи в зависимости от рейтинга
+                # Add emoji based on ranking
                 if int(rank) <= 10:
-                    rank_icon = "🥇"  # Золото для топ-10
+                    rank_icon = "🥇"  # Gold for top-10
                 elif int(rank) <= 50:
-                    rank_icon = "🥈"  # Серебро для топ-50
+                    rank_icon = "🥈"  # Silver for top-50
                 elif int(rank) <= 100:
-                    rank_icon = "🥉"  # Бронза для топ-100
+                    rank_icon = "🥉"  # Bronze for top-100
                 elif int(rank) <= 200:
-                    rank_icon = "📊"  # Графики для топ-200
+                    rank_icon = "📊"  # Charts for top-200
                 else:
-                    rank_icon = "📉"  # Графики вниз для позиции ниже 200
+                    rank_icon = "📉"  # Downward charts for position below 200
                 
-                # Основная информация (всегда видима)
+                # Key information (always visible)
                 combined_message += f"{rank_icon} *{app_name}*: *{rank}*\n"
                 
-                # Детальная информация (скрыта в спойлере)
-                details = f"*{app_name} Рейтинг в App Store*\n"
+                # Detailed information (hidden in spoiler)
+                details = f"*{app_name} App Store Ranking*\n"
                 
-                # Добавляем все категории в детали
+                # Add all categories to details
                 for category in rankings_data["categories"]:
                     cat_name = category.get("category", "Unknown Category")
-                    # Экранируем специальные символы
+                    # Escape special characters
                     cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
                     rank = category.get("rank", "N/A")
                     
                     details += f"• {cat_name}: *{rank}*\n"
                 
-                # Оборачиваем детали в спойлер
-                # Символы спойлера для MarkdownV2 - || в начале и конце текста
+                # Wrap details in spoiler
+                # Spoiler symbols for MarkdownV2 - || at the beginning and end of text
                 combined_message += f"||{details}||\n"
             else:
-                combined_message += f"❌ *{app_name}*: Данные о рейтинге недоступны\\.\n"
+                combined_message += f"❌ *{app_name}*: Ranking data unavailable\\.\n"
             
-            # Затем добавляем данные об индексе страха и жадности, если они доступны
+            # Then add Fear & Greed Index data if available
             if fear_greed_data:
-                # Добавляем разделитель между сообщениями
+                # Add separator between messages
                 combined_message += "\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
                 
-                # Добавляем только данные индекса без отдельной даты
+                # Add only index data without separate date
                 value = fear_greed_data.get("value", "N/A")
                 label = fear_greed_data.get("value_classification", "Unknown")
                 
-                # Основная информация о FGI (всегда видима)
-                # Экранируем дефис в строке
+                # Key information about FGI (always visible)
+                # Escape hyphen in string
                 label = label.replace("-", "\\-")
-                combined_message += f"🧠 *Индекс страха и жадности*: {value} \\- {label}\n"
+                combined_message += f"🧠 *Fear & Greed Index*: {value} \\- {label}\n"
                 
-                # Прогресс-бар и дополнительная информация (скрыта в спойлере)
+                # Progress bar and additional information (hidden in spoiler)
                 details = ""
                 
-                # Добавляем прогресс-бар в детали
+                # Add progress bar to details
                 if "value" in fear_greed_data:
                     progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10)
                     details += f"{progress_bar}\n"
                 
-                # Добавляем описание значений индекса
-                details += "Значения индекса:\\n"
-                details += "0\\-25: Экстремальный страх\\n"
-                details += "26\\-45: Страх\\n"
-                details += "46\\-55: Нейтрально\\n"
-                details += "56\\-75: Жадность\\n"
-                details += "76\\-100: Экстремальная жадность"
+                # Add descriptions of index values
+                details += "Index values:\\n"
+                details += "0\\\\\\-25: Extreme Fear\\n"
+                details += "26\\\\\\-45: Fear\\n"
+                details += "46\\\\\\-55: Neutral\\n"
+                details += "56\\\\\\-75: Greed\\n"
+                details += "76\\\\\\-100: Extreme Greed"
                 
-                # Оборачиваем детали в спойлер
+                # Wrap details in spoiler
                 combined_message += f"||{details}||"
             
-            # Отправляем объединенное сообщение
+            # Send the combined message
             if not self.telegram_bot.send_message(combined_message):
                 logger.error("Failed to send combined message to Telegram.")
                 return False

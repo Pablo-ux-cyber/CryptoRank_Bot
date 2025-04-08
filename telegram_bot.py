@@ -8,7 +8,7 @@ class TelegramBot:
         self.channel_id = TELEGRAM_CHANNEL_ID
         self.bot = None
         
-        # Проверяем, есть ли токен и ID чата (канал или группа)
+        # Check if token and chat ID (channel or group) are provided
         if not self.token:
             logger.error("Telegram bot token not provided. Please set TELEGRAM_BOT_TOKEN environment variable.")
         
@@ -44,11 +44,11 @@ class TelegramBot:
             return False
             
         try:
-            # Сначала попробуем получить обновления, чтобы найти ID администратора
+            # First try to get updates to find the admin ID
             updates = self.bot.get_updates()
             admin_id = None
             
-            # Ищем первый private чат в обновлениях
+            # Look for the first private chat in updates
             for update in updates:
                 if update.message and update.message.chat.type == 'private':
                     admin_id = update.message.chat.id
@@ -65,7 +65,7 @@ class TelegramBot:
                 return True
             else:
                 logger.error("Could not find admin ID. Send a message to the bot first.")
-                # В качестве запасного варианта логируем сообщение
+                # Log the message as a fallback
                 logger.info(f"Message that would be sent: {message}")
                 return False
                 
