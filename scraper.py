@@ -19,7 +19,7 @@ class SensorTowerScraper:
         Получает последние сообщения из канала Telegram через веб-интерфейс
         
         Returns:
-            list: Список последних сообщений из канала с информацией о дате
+            list: Список последних сообщений из канала
         """
         try:
             # Поскольку у нас нет прав администратора в канале, мы не можем использовать Bot API
@@ -42,53 +42,33 @@ class SensorTowerScraper:
                     return None
                 
                 html_content = response.text
-                messages_with_dates = []
+                messages = []
                 
-                # Ищем блоки сообщений вместе с датами
-                # Находим все сообщения с классом tgme_widget_message
-                message_blocks = re.findall(r'<div class="tgme_widget_message[^"]*"[^>]*>(.*?)<div class="tgme_widget_message_footer">', html_content, re.DOTALL)
+                # Находим все тексты сообщений на странице
+                # Страница отсортирована по умолчанию от новых к старым, так что первое сообщение - самое свежее
+                message_texts = re.findall(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', html_content, re.DOTALL)
                 
-                if message_blocks:
-                    for block in message_blocks:
-                        # Извлекаем текст сообщения
-                        text_match = re.search(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', block, re.DOTALL)
-                        if not text_match:
-                            continue
-                            
-                        text_content = text_match.group(1)
-                        clean_text = re.sub(r'<[^>]+>', ' ', text_content)
+                if message_texts:
+                    for text_html in message_texts:
+                        # Очищаем HTML-теги и форматируем текст
+                        clean_text = re.sub(r'<[^>]+>', ' ', text_html)
                         clean_text = re.sub(r'\s+', ' ', clean_text).strip()
-                        
-                        # Извлекаем дату сообщения
-                        date_match = re.search(r'<a[^>]*>([^<]*)</a>', block)
-                        message_date = date_match.group(1).strip() if date_match else None
-                        
-                        # Если нашли и текст и дату, добавляем в результат
-                        if clean_text and message_date:
-                            messages_with_dates.append({
-                                'text': clean_text,
-                                'date': message_date
-                            })
+                        if clean_text:
+                            messages.append(clean_text)
                     
-                    logger.info(f"Found {len(messages_with_dates)} messages with dates from the channel web page")
+                    logger.info(f"Found {len(messages)} messages from the channel web page")
                     
-                    # Сортируем сообщения по дате (от новых к старым)
-                    # Преобразовать строку даты в объект datetime сложно, так как формат может меняться,
-                    # поэтому просто предполагаем, что сообщения уже идут от новых к старым
-                    
-                    # Если нужно будет отсортировать, раскомментировать:
-                    # messages_with_dates.sort(key=lambda x: x['date'], reverse=True)
-                    
-                    # Возвращаем только тексты сообщений, но в порядке от новых к старым
-                    return [msg['text'] for msg in messages_with_dates]
-                else:
-                    # Запасной вариант - попробуем извлечь весь текст со страницы
+                    # Первое сообщение в списке - самое свежее
+                    return messages
+                
+                # Если выше ничего не нашли, используем trafilatura как запасной вариант
+                if not messages:
                     text_content = trafilatura.extract(html_content)
                     if text_content:
                         # Разбиваем на абзацы
                         paragraphs = re.split(r'\n+', text_content)
                         messages = [p.strip() for p in paragraphs if p.strip()]
-                        logger.info(f"Extracted {len(messages)} paragraphs using trafilatura (no dates)")
+                        logger.info(f"Extracted {len(messages)} paragraphs using trafilatura")
                         return messages
                 
                 return []
@@ -116,6 +96,15 @@ class SensorTowerScraper:
                 return None
                 
             # Пытаемся найти разные варианты упоминания рейтинга в сообщении
+            
+            # Вариант 0 (основной): "Coinbase Rank: X" (канал @coinbaseappstore)
+            pattern0 = r"Coinbase Rank:?\s*(\d+)"
+            match = re.search(pattern0, message, re.IGNORECASE)
+            
+            if match:
+                rank = int(match.group(1))
+                logger.info(f"Extracted ranking using pattern 0 (Coinbase Rank): {rank}")
+                return rank
             
             # Вариант 1: Текущая позиция: X
             pattern1 = r"Текущая позиция:?\s*\*?(\d+)\*?"
@@ -152,6 +141,16 @@ class SensorTowerScraper:
                 rank = int(match.group(1))
                 logger.info(f"Extracted ranking using pattern 4: {rank}")
                 return rank
+            
+            # Вариант 5: Просто число в коротком сообщении (если больше ничего нет)
+            if len(message.strip().split()) <= 3:
+                pattern5 = r"(\d+)"
+                match = re.search(pattern5, message)
+                
+                if match:
+                    rank = int(match.group(1))
+                    logger.info(f"Extracted ranking using pattern 5 (simple number): {rank}")
+                    return rank
             
             logger.warning(f"Could not extract ranking from message: {message[:100]}...")
             return None
