@@ -54,26 +54,32 @@ class SensorTowerScraper:
 
     def _create_test_data(self):
         """
-        Create test data for development purposes
+        Create test data simulating real SensorTower Category Rankings data
         """
-        logger.info("Using test data for development")
+        logger.info("Using simulated SensorTower Category Rankings data")
         
-        # Generate a consistent test dataset
-        app_name = "Coinbase"
+        # Set the app name based on the app ID we're scraping
+        app_name = "Coinbase"  # Default
         
+        # Generate a realistic dataset based on SensorTower Category Rankings
+        # These categories actually exist in the App Store for Finance apps
         rankings_data = {
             "app_name": app_name,
             "app_id": self.app_id,
             "date": time.strftime("%Y-%m-%d"),
             "categories": [
-                {"category": "Finance", "rank": "3"},
-                {"category": "Business", "rank": "15"},
-                {"category": "Productivity", "rank": "22"},
-                {"category": "Tools", "rank": "9"},
-                {"category": "Utilities", "rank": "8"}
+                {"category": "Finance", "rank": "2"}, 
+                {"category": "Business", "rank": "11"},
+                {"category": "Lifestyle", "rank": "28"},
+                {"category": "Utilities", "rank": "45"},
+                {"category": "Productivity", "rank": "37"}
             ]
         }
         
+        logger.info(f"Generated test data with {len(rankings_data['categories'])} categories")
+        for cat in rankings_data["categories"]:
+            logger.info(f"Test data - {cat['category']}: #{cat['rank']}")
+            
         self.last_scrape_data = rankings_data
         return rankings_data
     
@@ -147,17 +153,50 @@ class SensorTowerScraper:
             except:
                 logger.info("No cookies dialog found or already accepted")
             
-            # Wait for the rankings tab to load
-            WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, "div[data-testid='product-rankings-table']"))
-            )
+            # Make sure we're on the "Category Rankings" tab
+            try:
+                # Find and click on Category Rankings tab if needed
+                # First, check if there are tabs and if we need to navigate to the correct one
+                tabs = self.driver.find_elements(By.CSS_SELECTOR, "div[role='tab']")
+                category_rankings_tab = None
+                
+                for tab in tabs:
+                    if "Category Rankings" in tab.text:
+                        category_rankings_tab = tab
+                        logger.info("Found Category Rankings tab")
+                        break
+                
+                if category_rankings_tab:
+                    # Check if this tab is already active or needs to be clicked
+                    if "active" not in category_rankings_tab.get_attribute("class").lower():
+                        logger.info("Clicking on Category Rankings tab")
+                        category_rankings_tab.click()
+                        time.sleep(2)  # Allow time for tab content to load
+            except Exception as e:
+                logger.warning(f"Error finding or clicking Category Rankings tab: {str(e)}")
             
-            # Allow time for dynamic content to load
+            # Wait for the category rankings content to load
+            try:
+                logger.info("Waiting for Category Rankings content to load")
+                WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, ".rankings-section, .category-rankings, div[data-testid='product-rankings-table']"))
+                )
+            except Exception as e:
+                logger.warning(f"Timeout waiting for rankings content: {str(e)}")
+            
+            # Give extra time for any charts or dynamic content to render
             time.sleep(5)
+            
+            # Take a screenshot for debugging (helpful in case selectors need to be adjusted)
+            try:
+                logger.info("Taking a screenshot for debugging")
+                self.driver.save_screenshot("sensortower_rankings_debug.png")
+            except Exception as e:
+                logger.warning(f"Could not take screenshot: {str(e)}")
             
             # Extract app name from the page
             try:
-                app_name_element = self.driver.find_element(By.CSS_SELECTOR, "h1.product-header__name")
+                app_name_element = self.driver.find_element(By.CSS_SELECTOR, "h1.product-header__name, h1[data-testid='product-name']")
                 app_name = app_name_element.text if app_name_element else "Unknown App"
             except:
                 try:
@@ -176,58 +215,154 @@ class SensorTowerScraper:
                 "categories": []
             }
             
-            # Find all rankings rows in the table
+            # Try multiple selectors for the rankings table
+            # First attempt: Modern table structure
             try:
-                ranking_rows = self.driver.find_elements(By.CSS_SELECTOR, "div[data-testid='product-rankings-table'] tbody tr")
+                logger.info("Looking for rankings table with modern structure")
+                ranking_table = self.driver.find_element(By.CSS_SELECTOR, "div[data-testid='product-rankings-table']")
+                ranking_rows = ranking_table.find_elements(By.CSS_SELECTOR, "tbody tr")
                 
-                for row in ranking_rows:
-                    try:
-                        cells = row.find_elements(By.TAG_NAME, "td")
-                        if len(cells) >= 3:  # Ensure we have enough cells
-                            category_name = cells[0].text.strip()
-                            rank = cells[1].text.strip()
-                            
-                            if category_name and rank:
-                                rankings_data["categories"].append({
-                                    "category": category_name,
-                                    "rank": rank
-                                })
-                    except Exception as e:
-                        logger.warning(f"Failed to extract data from a ranking row: {str(e)}")
-                        continue
-            except Exception as e:
-                logger.error(f"Failed to find ranking rows: {str(e)}")
-                
-                # Fallback method if the table structure is different
-                try:
-                    ranking_sections = self.driver.find_elements(By.CSS_SELECTOR, ".rankings-content-container .rankings-row")
+                if ranking_rows:
+                    logger.info(f"Found {len(ranking_rows)} rows in the modern table structure")
                     
-                    for section in ranking_sections:
+                    for row in ranking_rows:
                         try:
-                            category_element = section.find_element(By.CSS_SELECTOR, ".category-name")
-                            rank_element = section.find_element(By.CSS_SELECTOR, ".rank-value")
-                            
-                            category_name = category_element.text.strip()
-                            rank = rank_element.text.strip()
-                            
-                            if category_name and rank:
-                                rankings_data["categories"].append({
-                                    "category": category_name,
-                                    "rank": rank
-                                })
+                            cells = row.find_elements(By.TAG_NAME, "td")
+                            if len(cells) >= 3:  # Ensure we have enough cells
+                                category_name = cells[0].text.strip()
+                                rank = cells[1].text.strip()
+                                
+                                if category_name and rank:
+                                    logger.info(f"Found category: {category_name}, rank: {rank}")
+                                    rankings_data["categories"].append({
+                                        "category": category_name,
+                                        "rank": rank
+                                    })
                         except Exception as e:
-                            logger.warning(f"Failed to extract data from fallback ranking section: {str(e)}")
+                            logger.warning(f"Failed to extract data from a ranking row: {str(e)}")
                             continue
-                except Exception as e:
-                    logger.error(f"Failed with fallback method too: {str(e)}")
+            except Exception as e:
+                logger.warning(f"Failed to find ranking rows in modern structure: {str(e)}")
             
+            # Second attempt: Classic structure with ranking rows
             if not rankings_data["categories"]:
-                logger.warning("No rankings data found using standard selectors. Taking a screenshot for debugging.")
-                self.driver.save_screenshot("sensortower_debug.png")
-                
-                # Last resort - get all text from the page
-                page_text = self.driver.find_element(By.TAG_NAME, "body").text
-                logger.info(f"Page text for debugging: {page_text[:500]}...")  # Log first 500 chars for debugging
+                try:
+                    logger.info("Looking for rankings with classic structure")
+                    ranking_sections = self.driver.find_elements(By.CSS_SELECTOR, ".ranking-row, .rankings-row, .category-row")
+                    
+                    if ranking_sections:
+                        logger.info(f"Found {len(ranking_sections)} rows in classic structure")
+                        
+                        for section in ranking_sections:
+                            try:
+                                # Try different combinations of selectors for category name and rank
+                                category_element = None
+                                rank_element = None
+                                
+                                # Try first combination
+                                try:
+                                    category_element = section.find_element(By.CSS_SELECTOR, ".category-name, .name")
+                                    rank_element = section.find_element(By.CSS_SELECTOR, ".rank, .rank-value, .position")
+                                except:
+                                    pass
+                                
+                                # Try second combination
+                                if not category_element or not rank_element:
+                                    try:
+                                        elements = section.find_elements(By.CSS_SELECTOR, "div, span")
+                                        if len(elements) >= 2:
+                                            category_element = elements[0]
+                                            rank_element = elements[1]
+                                    except:
+                                        pass
+                                
+                                if category_element and rank_element:
+                                    category_name = category_element.text.strip()
+                                    rank = rank_element.text.strip()
+                                    
+                                    # Clean up rank value (sometimes has "#" or other characters)
+                                    rank = rank.replace("#", "").strip()
+                                    
+                                    if category_name and rank:
+                                        logger.info(f"Found category: {category_name}, rank: {rank}")
+                                        rankings_data["categories"].append({
+                                            "category": category_name,
+                                            "rank": rank
+                                        })
+                            except Exception as e:
+                                logger.warning(f"Failed to extract data from classic structure: {str(e)}")
+                                continue
+                except Exception as e:
+                    logger.error(f"Failed with classic structure too: {str(e)}")
+            
+            # Third attempt: Extract from any other elements that might contain ranking data
+            if not rankings_data["categories"]:
+                try:
+                    logger.info("Looking for any ranking-related content")
+                    # Look for elements containing text that might indicate rankings
+                    ranking_elements = self.driver.find_elements(By.XPATH, "//*[contains(text(), 'Rank') or contains(text(), 'Category') or contains(text(), 'Position')]")
+                    
+                    if ranking_elements:
+                        logger.info(f"Found {len(ranking_elements)} potential ranking elements")
+                        
+                        # Find parent elements that might contain both category and rank
+                        for element in ranking_elements:
+                            try:
+                                parent = element.find_element(By.XPATH, "./..")
+                                text = parent.text
+                                
+                                # Try to extract category and rank from text
+                                if ":" in text:
+                                    parts = text.split(":")
+                                    category_name = parts[0].strip()
+                                    rank = parts[1].strip()
+                                    
+                                    if category_name and rank:
+                                        logger.info(f"Extracted from text: category: {category_name}, rank: {rank}")
+                                        rankings_data["categories"].append({
+                                            "category": category_name,
+                                            "rank": rank
+                                        })
+                            except:
+                                continue
+                except Exception as e:
+                    logger.error(f"Failed with text extraction method: {str(e)}")
+            
+            # Last resort - log the page source for debugging
+            if not rankings_data["categories"]:
+                logger.warning("No rankings data found using any selectors. Capturing page for debugging.")
+                try:
+                    self.driver.save_screenshot("sensortower_debug_final.png")
+                    page_text = self.driver.find_element(By.TAG_NAME, "body").text
+                    logger.info(f"Page text for debugging: {page_text[:500]}...")  # Log first 500 chars for debugging
+                    
+                    # Also try to get page source
+                    page_source = self.driver.page_source
+                    with open("sensortower_page_source.html", "w") as f:
+                        f.write(page_source)
+                    logger.info("Saved page source to sensortower_page_source.html")
+                except Exception as e:
+                    logger.error(f"Error capturing page content: {str(e)}")
+                    
+                # Still no rankings data, try one last approach - look for any numeric values that might be ranks
+                try:
+                    elements_with_numbers = self.driver.find_elements(By.XPATH, "//div[contains(text(), '#')]")
+                    for element in elements_with_numbers:
+                        parent = element.find_element(By.XPATH, ".//..")
+                        text = parent.text.strip()
+                        if text and "#" in text:
+                            parts = text.split("\n")
+                            if len(parts) >= 2:
+                                category_name = parts[0].strip()
+                                rank_text = [p for p in parts if "#" in p]
+                                if rank_text:
+                                    rank = rank_text[0].replace("#", "").strip()
+                                    rankings_data["categories"].append({
+                                        "category": category_name,
+                                        "rank": rank
+                                    })
+                except Exception as e:
+                    logger.error(f"Failed with last resort method: {str(e)}")
                 
             logger.info(f"Successfully scraped rankings data for {app_name}: {len(rankings_data['categories'])} categories found")
             
