@@ -3,6 +3,7 @@ import requests
 import trafilatura
 import re
 import random
+import os
 from datetime import datetime
 
 try:
@@ -17,7 +18,7 @@ try:
 except ImportError:
     SELENIUM_AVAILABLE = False
     
-from config import SENSORTOWER_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT
+from config import SENSORTOWER_URL, APP_ID, SELENIUM_DRIVER_PATH, SELENIUM_HEADLESS, SELENIUM_TIMEOUT, TELEGRAM_BOT_TOKEN, TELEGRAM_SOURCE_CHANNEL
 from logger import logger
 
 class SensorTowerScraper:
@@ -26,6 +27,8 @@ class SensorTowerScraper:
         self.app_id = APP_ID
         self.driver = None
         self.last_scrape_data = None
+        self.telegram_source_channel = TELEGRAM_SOURCE_CHANNEL  # Канал, откуда берем данные
+        self.limit = 10  # Количество последних сообщений для проверки
 
     def initialize_driver(self):
         """Initialize the Selenium WebDriver"""
@@ -72,10 +75,133 @@ class SensorTowerScraper:
         
         self.last_scrape_data = rankings_data
         return rankings_data
+
+    def _get_messages_from_telegram(self):
+        """
+        Получает последние сообщения из канала Telegram
+        
+        Returns:
+            list: Список последних сообщений из канала
+        """
+        try:
+            telegram_bot_token = TELEGRAM_BOT_TOKEN
+            
+            if not telegram_bot_token:
+                logger.error("Telegram bot token not found")
+                return None
+            
+            # Формируем API URL
+            telegram_api_url = f"https://api.telegram.org/bot{telegram_bot_token}"
+                
+            # Пробуем узнать информацию о канале
+            logger.info(f"Attempting to get info about channel: {self.telegram_source_channel}")
+            url = f"{telegram_api_url}/getChat"
+            params = {"chat_id": self.telegram_source_channel}
+            
+            response = requests.get(url, params=params, timeout=10)
+            
+            if not response.ok:
+                logger.error(f"Failed to get chat info: {response.text}")
+                return None
+                
+            # Если удалось получить информацию о канале, пробуем получить историю сообщений
+            # Мы не можем напрямую получить историю сообщений из канала через Bot API,
+            # поэтому нам нужно использовать другие методы, такие как getUpdates
+            
+            # Первый вариант: getUpdates
+            logger.info("Attempting to get messages using getUpdates")
+            url = f"{telegram_api_url}/getUpdates"
+            response = requests.get(url, timeout=10)
+            
+            if not response.ok:
+                logger.error(f"Failed to get updates: {response.text}")
+                return None
+                
+            updates = response.json()
+            
+            # Извлекаем сообщения из обновлений
+            messages = []
+            
+            for update in updates.get("result", []):
+                # Проверяем разные типы обновлений
+                if "channel_post" in update and update.get("channel_post", {}).get("chat", {}).get("username") == self.telegram_source_channel.replace("@", ""):
+                    messages.append(update["channel_post"].get("text", ""))
+                elif "message" in update and update.get("message", {}).get("chat", {}).get("username") == self.telegram_source_channel.replace("@", ""):
+                    messages.append(update["message"].get("text", ""))
+            
+            logger.info(f"Found {len(messages)} messages from the channel")
+            
+            # Если не удалось получить сообщения через getUpdates, значит у бота нет доступа к истории канала
+            # Мы можем попробовать другие методы, но они требуют дополнительных прав
+            if not messages:
+                logger.warning("Could not get messages via getUpdates, the bot might not have access to channel history")
+                
+            return messages
+        except Exception as e:
+            logger.error(f"Error getting messages from Telegram: {str(e)}")
+            return None
+    
+    def _extract_ranking_from_message(self, message):
+        """
+        Извлекает данные о рейтинге из сообщения Telegram
+        
+        Args:
+            message (str): Текст сообщения из Telegram
+            
+        Returns:
+            int or None: Значение рейтинга или None, если не удалось извлечь
+        """
+        try:
+            if not message:
+                return None
+                
+            # Пытаемся найти разные варианты упоминания рейтинга в сообщении
+            
+            # Вариант 1: Текущая позиция: X
+            pattern1 = r"Текущая позиция:?\s*\*?(\d+)\*?"
+            match = re.search(pattern1, message)
+            
+            if match:
+                rank = int(match.group(1))
+                logger.info(f"Extracted ranking using pattern 1: {rank}")
+                return rank
+            
+            # Вариант 2: Текущее место: X
+            pattern2 = r"Текущее место:?\s*\*?(\d+)\*?"
+            match = re.search(pattern2, message)
+            
+            if match:
+                rank = int(match.group(1))
+                logger.info(f"Extracted ranking using pattern 2: {rank}")
+                return rank
+            
+            # Вариант 3: Rank: X или Position: X
+            pattern3 = r"(?:Rank|Position|Позиция|Место):?\s*\*?#?(\d+)\*?"
+            match = re.search(pattern3, message, re.IGNORECASE)
+            
+            if match:
+                rank = int(match.group(1))
+                logger.info(f"Extracted ranking using pattern 3: {rank}")
+                return rank
+            
+            # Вариант 4: Ищем просто цифру с решеткой (#123)
+            pattern4 = r"#(\d+)"
+            match = re.search(pattern4, message)
+            
+            if match:
+                rank = int(match.group(1))
+                logger.info(f"Extracted ranking using pattern 4: {rank}")
+                return rank
+            
+            logger.warning(f"Could not extract ranking from message: {message[:100]}...")
+            return None
+        except Exception as e:
+            logger.error(f"Error extracting ranking: {str(e)}")
+            return None
     
     def _fallback_scrape_with_trafilatura(self):
         """
-        Fallback method to scrape data using trafilatura when Selenium fails
+        Fallback method to scrape data using trafilatura when Telegram and Selenium fail
         """
         logger.info("Attempting fallback scraping with trafilatura")
         
@@ -115,7 +241,68 @@ class SensorTowerScraper:
     
     def scrape_category_rankings(self):
         """
-        Scrape the category rankings data for the specified app from SensorTower
+        Scrape the category rankings data from Telegram channel @coinbaseappstore
+        
+        Returns:
+            dict: A dictionary containing the scraped rankings data
+        """
+        # Шаг 1: Получаем данные из Telegram
+        logger.info(f"Attempting to get ranking data from Telegram channel: {self.telegram_source_channel}")
+        
+        try:
+            # Получаем сообщения из Telegram канала
+            messages = self._get_messages_from_telegram()
+            
+            if not messages or len(messages) == 0:
+                logger.warning("No messages retrieved from Telegram channel")
+                # Переходим к запасному методу - SensorTower
+                logger.info("Falling back to SensorTower scraping")
+                return self._scrape_from_sensortower()
+            
+            # Ищем сообщение с рейтингом
+            ranking = None
+            message_with_ranking = None
+            
+            for message in messages:
+                extracted_ranking = self._extract_ranking_from_message(message)
+                if extracted_ranking is not None:
+                    ranking = extracted_ranking
+                    message_with_ranking = message
+                    break
+            
+            if ranking is None:
+                logger.warning("Could not find ranking in any of the messages")
+                # Переходим к запасному методу - SensorTower
+                logger.info("Falling back to SensorTower scraping")
+                return self._scrape_from_sensortower()
+            
+            # Создаем структуру данных с полученным рейтингом
+            app_name = "Coinbase"
+            
+            rankings_data = {
+                "app_name": app_name,
+                "app_id": self.app_id,
+                "date": time.strftime("%Y-%m-%d"),
+                "categories": [
+                    {"category": "US - iPhone - Top Free", "rank": str(ranking)}
+                ]
+            }
+            
+            logger.info(f"Successfully scraped ranking from Telegram: {ranking}")
+            
+            # Сохраняем данные для веб-интерфейса
+            self.last_scrape_data = rankings_data
+            return rankings_data
+            
+        except Exception as e:
+            logger.error(f"Error scraping from Telegram: {str(e)}")
+            # Переходим к запасному методу - SensorTower
+            logger.info("Falling back to SensorTower scraping due to error")
+            return self._scrape_from_sensortower()
+    
+    def _scrape_from_sensortower(self):
+        """
+        Fallback method to scrape data from SensorTower when Telegram fails
         
         Returns:
             dict: A dictionary containing the scraped rankings data

@@ -16,6 +16,8 @@ SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?o
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 # Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
 TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
+# Канал, откуда бот получает данные о рейтинге (источник данных)
+TELEGRAM_SOURCE_CHANNEL = os.getenv("TELEGRAM_SOURCE_CHANNEL", "@coinbaseappstore")
 
 # Scheduler Configuration
 SCHEDULE_HOUR = 8  # 8 AM
