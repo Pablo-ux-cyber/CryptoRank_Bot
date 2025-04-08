@@ -5,6 +5,7 @@ import trafilatura
 import re
 import random
 from datetime import datetime
+from twitter_scraper import TwitterScraper
 
 try:
     from selenium import webdriver
@@ -165,7 +166,8 @@ class SensorTowerScraper:
                 "app_name": "Coinbase",
                 "app_id": self.app_id,
                 "date": time.strftime("%Y-%m-%d"),
-                "categories": []
+                "categories": [],
+                "source": "SensorTower"
             }
             
             # Define the expected rankings based on historical data
@@ -527,8 +529,8 @@ class SensorTowerScraper:
                 
                 if response.status_code != 200:
                     logger.error(f"Failed to fetch page: HTTP {response.status_code}")
-                    logger.warning("Scraping failed - using fallback data as a last resort")
-                    return self._create_test_data()
+                    logger.warning("Scraping SensorTower failed - trying Twitter as alternative source")
+                    return self._fallback_scrape_from_twitter()
                     
                 # Extract text content using trafilatura
                 downloaded = response.text
@@ -538,13 +540,13 @@ class SensorTowerScraper:
                     logger.error("Trafilatura failed to extract any content")
                     logger.warning("Attempting to parse raw HTML as last resort")
                     
-                    # Try to parse directly from HTML before falling back to test data
+                    # Try to parse directly from HTML before trying Twitter
                     rankings_data = self._parse_from_raw_html(downloaded)
                     if rankings_data:
                         return rankings_data
                     
-                    logger.warning("Raw HTML parsing failed - using fallback data as a last resort")
-                    return self._create_test_data()
+                    logger.warning("Raw HTML parsing failed - trying Twitter as alternative source")
+                    return self._fallback_scrape_from_twitter()
                 
                 logger.info("Successfully extracted content with trafilatura")
                 
@@ -558,16 +560,18 @@ class SensorTowerScraper:
                     self.last_scrape_data = rankings_data
                     return rankings_data
                 else:
-                    logger.warning("Failed to extract rankings from text content - using fallback data as a last resort")
-                    return self._create_test_data()
+                    logger.warning("Failed to extract rankings from text content - trying Twitter as alternative source")
+                    return self._fallback_scrape_from_twitter()
                 
             except requests.exceptions.RequestException as e:
                 logger.error(f"Request failed: {str(e)}")
-                return self._create_test_data()
+                logger.warning("Trying Twitter as alternative source")
+                return self._fallback_scrape_from_twitter()
                 
         except Exception as e:
             logger.error(f"Fallback scraping failed: {str(e)}")
-            return self._create_test_data()
+            logger.warning("Trying Twitter as final fallback method")
+            return self._fallback_scrape_from_twitter()
             
     def _parse_from_raw_html(self, html_content):
         """
@@ -588,7 +592,8 @@ class SensorTowerScraper:
                 "app_name": app_name,
                 "app_id": self.app_id,
                 "date": time.strftime("%Y-%m-%d"),
-                "categories": []
+                "categories": [],
+                "source": "SensorTower (HTML)"
             }
             
             # Define categories we need to find
@@ -887,7 +892,8 @@ class SensorTowerScraper:
                 "app_name": app_name,
                 "app_id": self.app_id,
                 "date": time.strftime("%Y-%m-%d"),
-                "categories": []
+                "categories": [],
+                "source": "SensorTower (Trafilatura)"
             }
             
             # Try multiple patterns to find the rankings data
@@ -1069,6 +1075,34 @@ class SensorTowerScraper:
             logger.error(f"Error parsing text content: {str(e)}")
             return None
     
+    def _fallback_scrape_from_twitter(self):
+        """
+        Fallback method to scrape data from Twitter when other methods fail
+        
+        Returns:
+            dict: A dictionary containing the scraped rankings data or None if failed
+        """
+        logger.info("Attempting to scrape data from Twitter as last resort")
+        
+        try:
+            # Initialize the Twitter scraper
+            twitter_scraper = TwitterScraper()
+            
+            # Try to scrape rankings from Twitter
+            rankings_data = twitter_scraper.scrape_latest_rankings()
+            
+            if rankings_data and rankings_data["categories"]:
+                logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from Twitter")
+                # Validate and correct the rankings data
+                rankings_data = self.validate_and_correct_rankings(rankings_data)
+                return rankings_data
+            else:
+                logger.error("Failed to scrape any data from Twitter")
+                return None
+        except Exception as e:
+            logger.error(f"Error while scraping from Twitter: {str(e)}")
+            return None
+    
     def scrape_category_rankings(self):
         """
         Scrape the category rankings data for the specified app from SensorTower
@@ -1158,7 +1192,8 @@ class SensorTowerScraper:
                 "app_name": app_name,
                 "app_id": self.app_id,
                 "date": time.strftime("%Y-%m-%d"),
-                "categories": []
+                "categories": [],
+                "source": "SensorTower (Selenium)"
             }
             
             # Try multiple selectors for the rankings table
@@ -1385,10 +1420,22 @@ class SensorTowerScraper:
             
         except TimeoutException:
             logger.error(f"Timeout while loading the page: {self.url}")
-            return None
+            logger.info("Trying Trafilatura as fallback")
+            trafilatura_data = self._fallback_scrape_with_trafilatura()
+            if trafilatura_data and trafilatura_data.get("categories"):
+                return trafilatura_data
+                
+            logger.info("Trying Twitter as final fallback")
+            return self._fallback_scrape_from_twitter()
         except Exception as e:
             logger.error(f"Error while scraping SensorTower: {str(e)}")
-            return None
+            logger.info("Trying Trafilatura as fallback")
+            trafilatura_data = self._fallback_scrape_with_trafilatura()
+            if trafilatura_data and trafilatura_data.get("categories"):
+                return trafilatura_data
+                
+            logger.info("Trying Twitter as final fallback")
+            return self._fallback_scrape_from_twitter()
         finally:
             self.close_driver()
 
@@ -1408,23 +1455,25 @@ class SensorTowerScraper:
         if "categories" not in rankings_data or not rankings_data["categories"]:
             return "❌ No ranking categories found\\. SensorTower might have changed their page structure\\."
         
-        # Telegram MarkdownV2 требует экранирования следующих символов:
+        # Telegram MarkdownV2 requires escaping the following characters:
         # _ * [ ] ( ) ~ ` > # + - = | { } . !
         app_name = rankings_data.get("app_name", "Unknown App")
         app_name = app_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
         
         date = rankings_data.get("date", "Unknown Date")
+        source = rankings_data.get("source", "SensorTower")
         
-        # Используем простое форматирование без дефисов в заголовке
+        # Use simple formatting without hyphens in the header
         message = f"📊 *{app_name} App Rankings*\n"
-        message += f"📅 *Date:* {date}\n\n"
+        message += f"📅 *Date:* {date}\n"
+        message += f"🔍 *Source:* {source}\n\n"
         
         if not rankings_data["categories"]:
             message += "No ranking data available\\."
         else:
             for category in rankings_data["categories"]:
                 cat_name = category.get("category", "Unknown Category")
-                # Экранируем специальные символы
+                # Escape special characters for Telegram MarkdownV2
                 cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
                 rank = category.get("rank", "N/A")
                 message += f"🔹 *{cat_name}:* \\#{rank}\n"

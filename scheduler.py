@@ -83,6 +83,11 @@ class SensorTowerScheduler:
             # Format the data into a message
             message = self.scraper.format_rankings_message(rankings_data)
             
+            # Add source information if available 
+            if 'source' in rankings_data:
+                logger.info(f"Data source: {rankings_data['source']}")
+                message = message.replace("📊 *Coinbase App Rankings*\n", f"📊 *Coinbase App Rankings* (via {rankings_data['source']})\n")
+            
             # Send the message to Telegram
             if not self.telegram_bot.send_message(message):
                 logger.error("Failed to send message to Telegram.")
