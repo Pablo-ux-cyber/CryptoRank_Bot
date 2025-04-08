@@ -301,6 +301,7 @@ class SensorTowerScraper:
         """
         Scrape detailed category rankings directly from SensorTower detailed analysis page
         This method specifically targets the URL provided by the user to extract exact ranking information
+        Using the specific XPath selector provided by the user
         """
         if not SELENIUM_AVAILABLE:
             logger.warning("Selenium is not available for detailed scraping")
@@ -330,19 +331,115 @@ class SensorTowerScraper:
                 "categories": []
             }
             
-            # Find table rows or chart elements containing ranking data
+            # Use the specific XPath selector provided by the user
             try:
-                # Wait for table to be fully loaded
+                logger.info("Using specific XPath selector to extract ranking data")
+                # Use the XPath selector provided by the user: //*[@id=":rd:"]/div[5]/div/div[2]/div/div/div[2]/div[2]/div/p
+                # Note: The ID may be dynamic, so we'll try to use a more flexible approach
+                
+                # Wait for the content to load
+                logger.info("Waiting for content to load")
                 WebDriverWait(self.driver, 15).until(
-                    EC.presence_of_element_located((By.CSS_SELECTOR, "table, .chart-container, .rankings-table"))
+                    EC.presence_of_element_located((By.XPATH, "//div[contains(@id, ':r')]/div[5]/div/div[2]/div/div/div[2]/div[2]/div/p"))
                 )
                 
-                # Extract page content for analysis
-                page_content = self.driver.page_source
-                logger.info("Page content loaded, searching for ranking data")
+                # Try the specific selector first
+                try:
+                    logger.info("Trying specific XPath selector")
+                    ranking_element = self.driver.find_element(By.XPATH, "//*[@id=':rd:']/div[5]/div/div[2]/div/div/div[2]/div[2]/div/p")
+                    ranking_text = ranking_element.text
+                    logger.info(f"Found ranking text: {ranking_text}")
+                except Exception as e:
+                    logger.warning(f"Specific XPath selector failed: {str(e)}")
+                    logger.info("Trying more generic XPath selector")
+                    # Try a more generic selector that might match regardless of the specific ID
+                    ranking_element = self.driver.find_element(By.XPATH, "//div[contains(@id, ':r')]/div[5]/div/div[2]/div/div/div[2]/div[2]/div/p")
+                    ranking_text = ranking_element.text
+                    logger.info(f"Found ranking text with generic selector: {ranking_text}")
                 
-                # Look for specific category data - these selectors need to be adjusted based on actual page structure
-                # First, try to find specific text patterns for iPhone Free Apps category
+                if ranking_text:
+                    logger.info("Processing ranking text to extract category information")
+                    
+                    # Define patterns to identify our three target categories
+                    finance_pattern = re.compile(r'(finance|финансы).*?(\d+)', re.IGNORECASE)
+                    apps_pattern = re.compile(r'(apps|приложения).*?(\d+)', re.IGNORECASE)
+                    overall_pattern = re.compile(r'(overall|все категории|общий).*?(\d+)', re.IGNORECASE)
+                    
+                    # Check for each category in the text
+                    # Process multiline text in case the results include line breaks
+                    lines = ranking_text.split("\n")
+                    
+                    for line in lines:
+                        # Check for finance category
+                        finance_match = finance_pattern.search(line)
+                        if finance_match:
+                            rank = finance_match.group(2)
+                            logger.info(f"Found Finance rank: {rank}")
+                            rankings_data["categories"].append({
+                                "category": "iPhone - Free - Finance", 
+                                "rank": rank
+                            })
+                        
+                        # Check for apps category
+                        apps_match = apps_pattern.search(line)
+                        if apps_match:
+                            rank = apps_match.group(2)
+                            logger.info(f"Found Apps rank: {rank}")
+                            rankings_data["categories"].append({
+                                "category": "iPhone - Free - Apps",
+                                "rank": rank
+                            })
+                        
+                        # Check for overall category
+                        overall_match = overall_pattern.search(line)
+                        if overall_match:
+                            rank = overall_match.group(2)
+                            logger.info(f"Found Overall rank: {rank}")
+                            rankings_data["categories"].append({
+                                "category": "iPhone - Free - Overall",
+                                "rank": rank
+                            })
+                
+                # If we found any categories, return the data
+                if rankings_data["categories"]:
+                    logger.info(f"Successfully scraped {len(rankings_data['categories'])} categories from detailed SensorTower page")
+                    return rankings_data
+                else:
+                    # If no categories were found with regex, try looking for specific text patterns
+                    logger.info("No categories found with regex, trying to extract any numbers from the text")
+                    
+                    # Extract any numbers from the text as possible rankings
+                    number_pattern = re.compile(r'\b(\d+)\b')
+                    numbers = number_pattern.findall(ranking_text)
+                    
+                    if numbers:
+                        logger.info(f"Found numbers that could be rankings: {numbers}")
+                        
+                        # If we found exactly 3 numbers, assume they are our 3 categories in order
+                        if len(numbers) == 3:
+                            logger.info("Found exactly 3 numbers, assuming they are Finance, Apps, and Overall ranks")
+                            rankings_data["categories"] = [
+                                {"category": "iPhone - Free - Finance", "rank": numbers[0]},
+                                {"category": "iPhone - Free - Apps", "rank": numbers[1]},
+                                {"category": "iPhone - Free - Overall", "rank": numbers[2]}
+                            ]
+                            return rankings_data
+                        else:
+                            logger.warning(f"Found {len(numbers)} numbers, but expected exactly 3 for our categories")
+                            return None
+                    else:
+                        logger.warning("No ranking numbers found in the text")
+                        return None
+                        
+            except Exception as e:
+                logger.error(f"Error extracting rankings with XPath selector: {str(e)}")
+                logger.error("Falling back to full page content analysis")
+                
+                # Extract page content for analysis as a fallback
+                page_content = self.driver.page_source
+                logger.info("Page content loaded, searching for ranking data with regex")
+                
+                # Look for specific category data using regex
                 iphone_free_apps_pattern = re.compile(r'US\s*-\s*iPhone\s*-\s*Top\s*Free.*?(\d+)', re.IGNORECASE)
                 iphone_free_finance_pattern = re.compile(r'US\s*-\s*iPhone\s*-\s*Top\s*Free\s*Finance.*?(\d+)', re.IGNORECASE)
                 iphone_free_overall_pattern = re.compile(r'US\s*-\s*iPhone\s*-\s*Free\s*Overall.*?(\d+)', re.IGNORECASE)
@@ -384,10 +481,6 @@ class SensorTowerScraper:
                 else:
                     logger.warning("No rankings found in detailed SensorTower page")
                     return None
-                
-            except Exception as e:
-                logger.error(f"Error extracting rankings from detailed page: {str(e)}")
-                return None
                 
         except Exception as e:
             logger.error(f"Error navigating to detailed SensorTower page: {str(e)}")
