@@ -90,17 +90,58 @@ class SensorTowerScheduler:
                 logger.error(f"Error processing Fear & Greed Index: {str(e)}")
                 # Продолжаем выполнение даже при ошибке с индексом страха и жадности
             
-            # Формируем и отправляем единое сообщение
-            # Сначала форматируем данные о рейтинге
-            rankings_message = self.scraper.format_rankings_message(rankings_data)
+            # Создаем единое сообщение с одной общей датой
+            # Получаем текущую дату
+            current_date = rankings_data.get("date", time.strftime("%Y-%m-%d"))
+            
+            # Формируем заголовок с общей датой для всего сообщения
+            combined_message = f"📊 *Crypto Market Report*\n"
+            combined_message += f"📅 *Дата:* {current_date}\n\n"
+            
+            # Добавляем данные о рейтинге Coinbase (без отдельной даты)
+            app_name = rankings_data.get("app_name", "Coinbase").replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
+            combined_message += f"*{app_name} Рейтинг в App Store*\n"
+            
+            if rankings_data.get("categories"):
+                for category in rankings_data["categories"]:
+                    cat_name = category.get("category", "Unknown Category")
+                    # Экранируем специальные символы
+                    cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
+                    rank = category.get("rank", "N/A")
+                    
+                    # Добавляем эмодзи в зависимости от рейтинга
+                    if int(rank) <= 10:
+                        rank_icon = "🥇"  # Золото для топ-10
+                    elif int(rank) <= 50:
+                        rank_icon = "🥈"  # Серебро для топ-50
+                    elif int(rank) <= 100:
+                        rank_icon = "🥉"  # Бронза для топ-100
+                    elif int(rank) <= 200:
+                        rank_icon = "📊"  # Графики для топ-200
+                    else:
+                        rank_icon = "📉"  # Графики вниз для позиции ниже 200
+                    
+                    combined_message += f"{rank_icon} *{cat_name}*\n"
+                    combined_message += f"   Текущая позиция: *\\#{rank}*\n"
+            else:
+                combined_message += "Данные о рейтинге недоступны\\.\n"
             
             # Затем добавляем данные об индексе страха и жадности, если они доступны
-            combined_message = rankings_message
-            
             if fear_greed_data:
                 # Добавляем разделитель между сообщениями
-                fear_greed_message = "\n\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
-                fear_greed_message += self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+                fear_greed_message = "\n" + "➖➖➖➖➖➖➖➖➖➖➖➖" + "\n\n"
+                # Добавляем только данные индекса без отдельной даты
+                value = fear_greed_data.get("value", "N/A")
+                label = fear_greed_data.get("value_classification", "Unknown")
+                
+                fear_greed_message += f"🧠 *Индекс страха и жадности*\n"
+                fear_greed_message += f"📈 *Значение:* {value} ({label})\n"
+                
+                # Добавляем прогресс-бар
+                if "value" in fear_greed_data:
+                    progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10)
+                    fear_greed_message += f"{progress_bar}\n"
+                
                 combined_message += fear_greed_message
             
             # Отправляем объединенное сообщение

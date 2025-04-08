@@ -94,7 +94,17 @@ class SensorTowerScraper:
                     for i, msg in enumerate(messages[:3]):
                         logger.info(f"Message {i+1}: {msg[:50]}...")
                     
-                    return messages
+                    # Отфильтруем только те сообщения, которые содержат "Coinbase Rank"
+                    # Это защитит от рекламных и других сообщений в канале
+                    filtered_messages = [msg for msg in messages if "Coinbase Rank" in msg]
+                    
+                    if filtered_messages:
+                        logger.info(f"After filtering for 'Coinbase Rank', found {len(filtered_messages)} relevant messages")
+                        return filtered_messages
+                    else:
+                        # Если нет сообщений с Coinbase Rank, вернем все сообщения как запасной вариант
+                        logger.warning("No messages containing 'Coinbase Rank' found, using all messages")
+                        return messages
                 
                 # Если прямой поиск не сработал, используем запасной вариант
                 if not messages:
