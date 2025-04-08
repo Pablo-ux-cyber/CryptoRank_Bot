@@ -102,7 +102,7 @@ class SensorTowerScraper:
             
             # Step 1: Check ranking in Finance category
             logger.info("Fetching Finance category rankings")
-            finance_response = requests.get(ITUNES_CHARTS_API_URL, timeout=10)
+            finance_response = requests.get(ITUNES_FINANCE_CHARTS_API_URL, timeout=10)
             
             if finance_response.status_code == 200:
                 finance_data = finance_response.json()
@@ -151,21 +151,36 @@ class SensorTowerScraper:
                     logger.info("App not found in top Overall apps")
             else:
                 logger.error(f"Failed to fetch Overall rankings: HTTP {overall_response.status_code}")
+            
+            # Step 3: Check ranking in All Apps free category
+            logger.info("Fetching Free Apps rankings")
+            apps_response = requests.get(ITUNES_ALL_APPS_CHARTS_API_URL, timeout=10)
+            
+            if apps_response.status_code == 200:
+                apps_data = apps_response.json()
+                entries = apps_data.get("feed", {}).get("entry", [])
+                
+                apps_rank = None
+                for i, entry in enumerate(entries):
+                    app_id_info = entry.get("id", {}).get("attributes", {}).get("im:id")
+                    if app_id_info == str(self.app_id):
+                        apps_rank = i + 1
+                        logger.info(f"Found app at position {apps_rank} in All Apps category")
+                        break
+                
+                if apps_rank:
+                    rankings_data["categories"].append({
+                        "category": "iPhone - Free - Apps",
+                        "rank": str(apps_rank)
+                    })
+                else:
+                    logger.info("App not found in top All Apps category")
+            else:
+                logger.error(f"Failed to fetch All Apps rankings: HTTP {apps_response.status_code}")
                 
             # If we have at least one ranking, consider this successful
             if rankings_data["categories"]:
                 logger.info(f"Successfully retrieved {len(rankings_data['categories'])} rankings from Apple API")
-                
-                # The Apps category is technically the same as Overall for iPhone free apps
-                if any(cat["category"] == "iPhone - Free - Overall" for cat in rankings_data["categories"]):
-                    # Find the Overall ranking and duplicate it as Apps
-                    for cat in rankings_data["categories"]:
-                        if cat["category"] == "iPhone - Free - Overall":
-                            rankings_data["categories"].append({
-                                "category": "iPhone - Free - Apps",
-                                "rank": cat["rank"]
-                            })
-                            break
                 
                 self.last_scrape_data = rankings_data
                 return rankings_data
