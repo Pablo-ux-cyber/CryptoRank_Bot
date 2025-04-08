@@ -37,7 +37,7 @@ def signal_handler(sig, frame):
 @app.route('/')
 def index():
     """Render the home page"""
-    global last_scrape_data, last_scrape_time
+    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time
     
     # Check if scheduler is running
     status = "running" if scheduler and scheduler.running else "error"
@@ -70,7 +70,9 @@ def index():
                           next_run=next_run,
                           schedule_time=schedule_time,
                           last_scrape_time=last_scrape_time,
-                          categories=categories)
+                          categories=categories,
+                          last_fear_greed_data=last_fear_greed_data,
+                          last_fear_greed_time=last_fear_greed_time)
 
 @app.route('/test-telegram')
 def test_telegram():

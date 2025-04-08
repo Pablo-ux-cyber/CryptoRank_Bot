@@ -26,6 +26,9 @@
             font-size: 0.9rem;
             color: var(--bs-gray-600);
         }
+        .fear-greed-card {
+            border-left: 4px solid var(--bs-warning);
+        }
     </style>
 </head>
 <body>
@@ -168,19 +171,68 @@
                     </div>
                 </div>
                 
+                {% if last_fear_greed_data %}
+                <div class="card shadow-sm mb-4 fear-greed-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Crypto Fear & Greed Index</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>Last updated: {{ last_fear_greed_time }}</p>
+                        
+                        <div class="row mt-3">
+                            <div class="col-md-6">
+                                <div class="card bg-dark">
+                                    <div class="card-body text-center">
+                                        <h1 class="display-4">{{ last_fear_greed_data.value }}</h1>
+                                        <p class="lead">
+                                            {{ last_fear_greed_data.classification }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="progress" style="height: 30px;">
+                                    <div class="progress-bar 
+                                        {% if last_fear_greed_data.value <= 20 %}bg-danger
+                                        {% elif last_fear_greed_data.value <= 40 %}bg-warning
+                                        {% elif last_fear_greed_data.value <= 60 %}bg-info
+                                        {% elif last_fear_greed_data.value <= 80 %}bg-primary
+                                        {% else %}bg-success{% endif %}"
+                                        role="progressbar" 
+                                        style="width: {{ last_fear_greed_data.value }}%;"
+                                        aria-valuenow="{{ last_fear_greed_data.value }}" 
+                                        aria-valuemin="0" 
+                                        aria-valuemax="100">
+                                        {{ last_fear_greed_data.value }}/100
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">
+                                        <strong>What is this?</strong> The Fear & Greed Index measures sentiment in the crypto market.
+                                        Extreme fear can indicate buying opportunities, while extreme greed may suggest the market
+                                        is due for a correction.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+                
                 <div class="card shadow-sm">
                     <div class="card-header">
                         <h5 class="mb-0">About This Bot</h5>
                     </div>
                     <div class="card-body">
                         <p>This bot scrapes category rankings data for the specified app from SensorTower and posts it to a Telegram channel.</p>
-                        <p>It runs on a daily schedule and can also be triggered manually.</p>
+                        <p>It also tracks the Crypto Fear & Greed Index to help monitor market sentiment.</p>
+                        <p>Both reports run on a daily schedule and can also be triggered manually.</p>
                         
                         <h6 class="mt-3">Configuration:</h6>
                         <ul>
                             <li>App ID: {{ app_id }}</li>
                             <li>Schedule: Daily at {{ schedule_time }}</li>
-                            <li>Data Source: SensorTower</li>
+                            <li>Data Sources: SensorTower, Alternative.me Fear & Greed Index</li>
                         </ul>
                     </div>
                 </div>

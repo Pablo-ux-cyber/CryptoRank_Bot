@@ -8,12 +8,13 @@ class TelegramBot:
         self.channel_id = TELEGRAM_CHANNEL_ID
         self.bot = None
         
-        # Проверяем, есть ли токен и канал
+        # Проверяем, есть ли токен и ID чата (канал или группа)
         if not self.token:
             logger.error("Telegram bot token not provided. Please set TELEGRAM_BOT_TOKEN environment variable.")
         
         if not self.channel_id:
-            logger.error("Telegram channel ID not provided. Please set TELEGRAM_CHANNEL_ID environment variable.")
+            logger.error("Telegram chat ID not provided. Please set TELEGRAM_CHANNEL_ID environment variable.")
+            logger.info("Note: TELEGRAM_CHANNEL_ID can be a channel (@channel_name) or a group chat ID (-1001234567890)")
             
         self.initialize_bot()
     
@@ -76,22 +77,27 @@ class TelegramBot:
     
     def send_message(self, message):
         """
-        Send a message to the designated Telegram channel
+        Send a message to the designated Telegram channel or group
         
         Args:
             message (str): The message to send
             
         Returns:
             bool: True if the message was sent successfully, False otherwise
+            
+        Note:
+            This method supports sending to both channels (@channel_name) and
+            groups (using group chat ID like -1001234567890). The ID should be
+            provided in the TELEGRAM_CHANNEL_ID environment variable.
         """
         if not self.bot:
             logger.error("Telegram bot not initialized")
             return False
         
-        # Make sure we have a channel ID
+        # Make sure we have a chat ID (channel or group)
         if not self.channel_id:
-            logger.error("Telegram channel ID not provided")
-            # Если канал не указан, попробуем отправить сообщение администратору бота
+            logger.error("Telegram chat ID not provided")
+            # Если чат не указан, попробуем отправить сообщение администратору бота
             logger.info("Attempting to send message to bot admin instead")
             return self.send_message_to_bot_admin(message)
             
@@ -101,11 +107,13 @@ class TelegramBot:
         try:
             # Проверяем, что чат существует
             chat_id = self.channel_id
-            # Проверяем формат ID канала
+            # Проверяем формат ID чата
             if not (chat_id.startswith('@') or chat_id.startswith('-') or chat_id.isdigit()):
                 chat_id = '@' + chat_id
-                
-            logger.info(f"Attempting to send message to Telegram channel: {chat_id}")
+            
+            # Определяем тип чата по ID
+            chat_type = "group" if chat_id.startswith('-') else "channel"
+            logger.info(f"Attempting to send message to Telegram {chat_type}: {chat_id}")
             
             try:
                 # Сначала попробуем отправить обычный текст без форматирования
@@ -114,16 +122,16 @@ class TelegramBot:
                     text=message,
                     parse_mode=None
                 )
-                logger.info("Message sent to Telegram channel successfully")
+                logger.info(f"Message sent to Telegram {chat_type} successfully")
                 return True
-            except Exception as channel_error:
-                # Если отправка в канал не удалась, попробуем отправить администратору
-                logger.error(f"Failed to send to channel: {str(channel_error)}")
+            except Exception as chat_error:
+                # Если отправка в чат не удалась, попробуем отправить администратору
+                logger.error(f"Failed to send to {chat_type}: {str(chat_error)}")
                 logger.info("Attempting to send message to bot admin instead")
                 return self.send_message_to_bot_admin(message)
                 
         except Exception as e:
-            logger.error(f"Failed to send message to Telegram channel: {str(e)}")
+            logger.error(f"Failed to send message to Telegram chat: {str(e)}")
             # В случае ошибки попробуем отправить сообщение администратору
             return self.send_message_to_bot_admin(message)
 

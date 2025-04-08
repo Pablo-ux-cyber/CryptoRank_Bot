@@ -14,6 +14,7 @@ SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?o
 
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+# Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
 TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
 
 # Scheduler Configuration
