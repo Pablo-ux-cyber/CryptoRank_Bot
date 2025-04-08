@@ -94,13 +94,13 @@ class SensorTowerScheduler:
             # Get current date
             current_date = rankings_data.get("date", time.strftime("%Y-%m-%d"))
             
-            # Simplified minimal message format without dates and descriptions
-            # Just direct values as requested by the user
+            # Visual presentation format as requested by the user
+            # Keeping only the meaningful data with visual elements
+            combined_message = ""
             
-            # Add Coinbase ranking data
+            # Add Coinbase ranking data first
             app_name = rankings_data.get("app_name", "Coinbase").replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
             
-            # Status and visible part
             if rankings_data.get("categories") and len(rankings_data["categories"]) > 0:
                 category = rankings_data["categories"][0]
                 rank = category.get("rank", "N/A")
@@ -117,39 +117,46 @@ class SensorTowerScheduler:
                 else:
                     rank_icon = "📉"  # Downward charts for position below 200
                 
-                # Just the app and rank, nothing else
-                combined_message = f"{rank_icon} *{app_name} App Store Rank*: *{rank}*\n"
+                # Just app name and current rank with emoji
+                combined_message = f"{rank_icon} *{app_name}*: *{rank}*\n\n"
             else:
-                combined_message = f"❌ *{app_name}*: Ranking data unavailable\\.\n"
+                combined_message = f"❌ *{app_name}*: Ranking data unavailable\\.\n\n"
             
             # Then add Fear & Greed Index data if available
             if fear_greed_data:
-                # Add separator between messages
-                combined_message += "\n"
-                
-                # Add only index value and classification, no other details
                 value = fear_greed_data.get("value", "N/A")
                 label = fear_greed_data.get("classification", "Unknown")
                 
                 # Choose emoji based on classification
+                filled_char = "⚪" # Default
                 if label == "Extreme Fear":
                     emoji = "😱"
+                    filled_char = "🔴"
                 elif label == "Fear":
                     emoji = "😨"
+                    filled_char = "🟠"
                 elif label == "Neutral":
                     emoji = "😐"
+                    filled_char = "🟡"
                 elif label == "Greed":
                     emoji = "😏"
+                    filled_char = "🟢"
                 elif label == "Extreme Greed":
                     emoji = "🤑"
+                    filled_char = "🟢"
                 else:
                     emoji = "❓"
-                
+                    
                 # Escape hyphen in string
                 label = label.replace("-", "\\-")
                 
-                # Just the value and classification, nothing else
-                combined_message += f"{emoji} *Fear & Greed Index*: *{value}* \\- *{label}*"
+                # Format with value, status and progress bar - visually appealing
+                combined_message += f"{emoji} *Value:* {value}/100\n"
+                combined_message += f"*Status:* {label}\n"
+                
+                # Add progress bar
+                progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10, filled_char)
+                combined_message += f"{progress_bar}"
             
             # Send the combined message
             if not self.telegram_bot.send_message(combined_message):
