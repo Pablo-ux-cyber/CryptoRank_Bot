@@ -15,6 +15,18 @@ class SensorTowerScraper:
         self.telegram_source_channel = TELEGRAM_SOURCE_CHANNEL  # Channel where we get data from
         self.limit = 10  # Number of recent messages to check
         self.previous_rank = None  # Will be initialized with first value obtained
+        
+        # Попытка загрузить последний рейтинг из файла истории
+        try:
+            history_file = "/tmp/coinbasebot_rank_history.txt"
+            if os.path.exists(history_file):
+                with open(history_file, "r") as f:
+                    saved_rank = f.read().strip()
+                    if saved_rank and saved_rank.isdigit():
+                        self.previous_rank = int(saved_rank)
+                        logger.info(f"Загружен предыдущий рейтинг из файла истории: {self.previous_rank}")
+        except Exception as e:
+            logger.error(f"Ошибка при чтении файла истории рейтинга в scraper: {str(e)}")
 
     def _get_messages_from_telegram(self):
         """
@@ -363,31 +375,30 @@ class SensorTowerScraper:
                 ]
             }
             
-            # Save previous rank value before updating data
+            # Добавить данные о тренде, сравнив с предыдущим значением
             current_rank_int = int(rank)
             
-            # For tracking rank changes
             if self.previous_rank is None:
                 self.previous_rank = current_rank_int
+                rankings_data["trend"] = {"direction": "same", "previous": current_rank_int}
+            else:
+                # Determine trend direction
+                if current_rank_int < self.previous_rank:
+                    # Rank improved (smaller number is better)
+                    rankings_data["trend"] = {"direction": "up", "previous": self.previous_rank}
+                elif current_rank_int > self.previous_rank:
+                    # Rank worsened (larger number is worse)
+                    rankings_data["trend"] = {"direction": "down", "previous": self.previous_rank}
+                else:
+                    # Rank stayed the same
+                    rankings_data["trend"] = {"direction": "same", "previous": self.previous_rank}
+                
+                # Log the trend
+                trend_direction = rankings_data["trend"]["direction"]
+                logger.info(f"Rank trend: {self.previous_rank} → {current_rank_int} ({trend_direction})")
             
-            # Calculate trend (will be used in scheduler)
-            if "trend" not in rankings_data:
-                rankings_data["trend"] = {
-                    "previous_rank": self.previous_rank,
-                    "current_rank": current_rank_int,
-                    "direction": "same" if self.previous_rank == current_rank_int else
-                                 "up" if self.previous_rank > current_rank_int else "down"
-                }
-                
-            # Log the trend
-            trend_direction = rankings_data["trend"]["direction"]
-            logger.info(f"Rank trend: {self.previous_rank} → {current_rank_int} ({trend_direction})")
-                
             # Save data for web interface
             self.last_scrape_data = rankings_data
-            
-            # Update previous rank for next time
-            self.previous_rank = current_rank_int
             
             return rankings_data
             
