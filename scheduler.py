@@ -17,6 +17,7 @@ class SensorTowerScheduler:
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
         self.last_sent_rank = None  # Для отслеживания последнего отправленного значения
+        self.lockfile = None  # Для блокировки файла (предотвращения запуска нескольких экземпляров)
     
     def _scheduler_loop(self):
         """
@@ -43,6 +44,18 @@ class SensorTowerScheduler:
     def start(self):
         """Start the scheduler"""
         try:
+            # Проверка на наличие уже запущенного экземпляра
+            import fcntl
+            import os
+            
+            self.lockfile = open("/tmp/coinbasebot.lock", "w")
+            try:
+                fcntl.lockf(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                logger.info("Получена блокировка файла. Этот экземпляр бота будет единственным запущенным.")
+            except IOError:
+                logger.error("Другой экземпляр бота уже запущен. Завершение работы.")
+                return False
+                
             if self.running:
                 logger.warning("Scheduler is already running")
                 return True
@@ -71,6 +84,15 @@ class SensorTowerScheduler:
             self.stop_event.set()
             if self.thread:
                 self.thread.join(timeout=1)
+            # Освобождаем блокировку файла при остановке
+            if hasattr(self, 'lockfile'):
+                import fcntl
+                try:
+                    fcntl.lockf(self.lockfile, fcntl.LOCK_UN)
+                    self.lockfile.close()
+                    logger.info("Блокировка файла освобождена")
+                except Exception as e:
+                    logger.error(f"Ошибка при освобождении блокировки файла: {str(e)}")
             logger.info("Scheduler stopped")
     
     def _send_combined_message(self, rankings_data, fear_greed_data=None):
@@ -202,21 +224,35 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Fear & Greed Index: {str(e)}")
             
-            # Проверяем, изменился ли рейтинг с последнего успешного скрапинга
-            if self.last_sent_rank is None or current_rank != self.last_sent_rank:
+            # Подробная проверка на изменение рейтинга
+            if self.last_sent_rank is None:
+                logger.info(f"Первый запуск, предыдущее значение отсутствует. Текущий рейтинг: {current_rank}")
+                need_to_send = True
+            elif current_rank != self.last_sent_rank:
                 logger.info(f"Обнаружено изменение рейтинга: {current_rank} (предыдущий: {self.last_sent_rank})")
-                
+                # Добавляем префикс для понимания, улучшение или ухудшение
+                if current_rank < self.last_sent_rank:
+                    logger.info(f"Улучшение рейтинга: {self.last_sent_rank} → {current_rank}")
+                else:
+                    logger.info(f"Ухудшение рейтинга: {self.last_sent_rank} → {current_rank}")
+                need_to_send = True
+            else:
+                logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}). Сообщение не отправлено.")
+                need_to_send = False
+            
+            # Отправляем сообщение только если нужно
+            if need_to_send:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
                 result = self._send_combined_message(rankings_data, fear_greed_data)
                 
                 if result:
                     # Обновляем последний отправленный рейтинг
+                    previous_rank = self.last_sent_rank
                     self.last_sent_rank = current_rank
-                    logger.info(f"Успешно обновлен последний отправленный рейтинг: {self.last_sent_rank}")
+                    logger.info(f"Успешно обновлен последний отправленный рейтинг: {previous_rank} → {self.last_sent_rank}")
                 return result
             else:
-                logger.info(f"Рейтинг не изменился ({current_rank}). Сообщение не отправлено.")
-                return True
+                return True  # Работа выполнена успешно, сообщение не требовалось отправлять
                 
         except Exception as e:
             error_message = f"❌ Произошла ошибка во время задания скрапинга: {str(e)}"
