@@ -11,6 +11,7 @@ dependencies = [
     "gunicorn>=23.0.0",
     "psycopg2-binary>=2.9.10",
     "python-telegram-bot==13.7",
+    "pytrends>=4.9.2",
     "pytz>=2025.2",
     "requests>=2.32.3",
     "selenium>=4.31.0",
