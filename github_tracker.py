@@ -114,7 +114,12 @@ class GitHubTracker:
             try:
                 # Получаем коммиты за последний месяц
                 monthly_commits_iterator = repository.get_commits(since=one_month_ago)
-                monthly_commits = monthly_commits_iterator.totalCount
+                # Вместо использования totalCount, который может вызвать ошибку,
+                # используем безопасный подсчет первых 100 коммитов
+                monthly_commits = len(list(monthly_commits_iterator[:100]))
+                # Если количество равно 100, возможно есть еще коммиты, но мы ограничиваем запрос
+                if monthly_commits == 100:
+                    monthly_commits = f"{monthly_commits}+"
             except Exception as e:
                 logger.error(f"Ошибка при подсчете коммитов за месяц для {owner}/{repo}: {str(e)}")
             
@@ -229,10 +234,18 @@ class GitHubTracker:
         
         message += "\n*🔥 MONTHLY COMMITS:*\n"
         
+        # Создаем функцию для безопасной сортировки
+        def get_commits_for_sorting(repo):
+            monthly_commits = repo.get('monthly_commits', 0)
+            if isinstance(monthly_commits, str) and monthly_commits.endswith('+'):
+                # Если значение вида "100+", берем число без "+"
+                return int(monthly_commits[:-1])
+            return monthly_commits if isinstance(monthly_commits, int) else 0
+            
         # Сортируем по количеству коммитов за месяц
         sorted_by_commits = sorted(
             activity_data['repositories'],
-            key=lambda x: x.get('monthly_commits', 0),
+            key=get_commits_for_sorting,
             reverse=True
         )
         
