@@ -241,6 +241,28 @@ def google_trends():
         flash(f"Error: {str(e)}", "danger")
         return redirect(url_for('index'))
 
+@app.route('/github-activity')
+def github_activity():
+    """Manually fetch GitHub activity data and send a message"""
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+        
+    try:
+        # Get the GitHub activity data and send a message
+        result = scheduler.send_github_activity_message()
+        
+        if result:
+            flash("Successfully sent GitHub Activity data.", "success")
+        else:
+            flash("Failed to fetch and send GitHub Activity data.", "danger")
+            
+        return redirect(url_for('index'))
+        
+    except Exception as e:
+        logger.error(f"Error fetching GitHub Activity data: {str(e)}")
+        flash(f"Error: {str(e)}", "danger")
+        return redirect(url_for('index'))
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
