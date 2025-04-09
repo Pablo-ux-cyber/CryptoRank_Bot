@@ -1,3 +1,4 @@
+import os
 import threading
 import time
 from datetime import datetime, timedelta
@@ -16,7 +17,24 @@ class SensorTowerScheduler:
         self.scraper = SensorTowerScraper()
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
-        self.last_sent_rank = None  # Для отслеживания последнего отправленного значения
+        self.rank_history_file = "/tmp/coinbasebot_rank_history.txt"
+        
+        # Пытаемся загрузить последний отправленный рейтинг из файла
+        try:
+            if os.path.exists(self.rank_history_file):
+                with open(self.rank_history_file, "r") as f:
+                    saved_rank = f.read().strip()
+                    if saved_rank and saved_rank.isdigit():
+                        self.last_sent_rank = int(saved_rank)
+                        logger.info(f"Загружен предыдущий рейтинг из файла: {self.last_sent_rank}")
+                    else:
+                        self.last_sent_rank = None
+            else:
+                self.last_sent_rank = None
+        except Exception as e:
+            logger.error(f"Ошибка при чтении файла истории рейтинга: {str(e)}")
+            self.last_sent_rank = None
+            
         self.lockfile = None  # Для блокировки файла (предотвращения запуска нескольких экземпляров)
     
     def _scheduler_loop(self):
@@ -228,13 +246,18 @@ class SensorTowerScheduler:
             if self.last_sent_rank is None:
                 logger.info(f"Первый запуск, предыдущее значение отсутствует. Текущий рейтинг: {current_rank}")
                 need_to_send = True
+                # Нет предыдущего значения, тренд не указываем
             elif current_rank != self.last_sent_rank:
                 logger.info(f"Обнаружено изменение рейтинга: {current_rank} (предыдущий: {self.last_sent_rank})")
                 # Добавляем префикс для понимания, улучшение или ухудшение
                 if current_rank < self.last_sent_rank:
                     logger.info(f"Улучшение рейтинга: {self.last_sent_rank} → {current_rank}")
+                    # Добавляем информацию о тренде в данные для отображения стрелки вверх
+                    rankings_data["trend"] = {"direction": "up", "previous": self.last_sent_rank}
                 else:
                     logger.info(f"Ухудшение рейтинга: {self.last_sent_rank} → {current_rank}")
+                    # Добавляем информацию о тренде в данные для отображения стрелки вниз
+                    rankings_data["trend"] = {"direction": "down", "previous": self.last_sent_rank}
                 need_to_send = True
             else:
                 logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}). Сообщение не отправлено.")
@@ -250,6 +273,14 @@ class SensorTowerScheduler:
                     previous_rank = self.last_sent_rank
                     self.last_sent_rank = current_rank
                     logger.info(f"Успешно обновлен последний отправленный рейтинг: {previous_rank} → {self.last_sent_rank}")
+                    
+                    # Сохраняем рейтинг в файл для восстановления при перезапуске
+                    try:
+                        with open(self.rank_history_file, "w") as f:
+                            f.write(str(current_rank))
+                        logger.info(f"Рейтинг {current_rank} сохранен в файл {self.rank_history_file}")
+                    except Exception as e:
+                        logger.error(f"Ошибка при сохранении рейтинга в файл: {str(e)}")
                 return result
             else:
                 return True  # Работа выполнена успешно, сообщение не требовалось отправлять

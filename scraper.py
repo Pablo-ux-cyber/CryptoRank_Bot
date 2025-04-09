@@ -2,6 +2,7 @@ import time
 import requests
 import trafilatura
 import re
+import os
 from datetime import datetime
 
 from config import APP_ID, TELEGRAM_SOURCE_CHANNEL
@@ -256,7 +257,59 @@ class SensorTowerScraper:
         logger.info(f"Attempting to get ranking data from Telegram channel: {self.telegram_source_channel}")
         
         try:
-            # Get messages from Telegram channel
+            # Проверяем наличие тестового файла для ручного ввода рейтинга
+            test_rank_file = "/tmp/test_rank"
+            if os.path.exists(test_rank_file):
+                try:
+                    with open(test_rank_file, "r") as f:
+                        test_rank = f.read().strip()
+                        if test_rank and test_rank.isdigit():
+                            test_rank = int(test_rank)
+                            logger.info(f"Using test rank from file: {test_rank}")
+                            # Удаляем файл после использования
+                            os.remove(test_rank_file)
+                            
+                            # Create a structured data format
+                            data = {
+                                "app_name": "Coinbase",
+                                "app_id": self.app_id,
+                                "date": time.strftime("%Y-%m-%d"),
+                                "categories": [
+                                    {"category": "US - iPhone - Top Free", "rank": str(test_rank)}
+                                ]
+                            }
+                            
+                            # Для тестирования тренда сравним с предыдущим значением
+                            current_rank_int = test_rank
+                            
+                            if self.previous_rank is None:
+                                self.previous_rank = current_rank_int
+                                data["trend"] = {"direction": "same", "previous": current_rank_int}
+                            else:
+                                # Determine trend direction
+                                if current_rank_int < self.previous_rank:
+                                    # Rank improved (smaller number is better)
+                                    data["trend"] = {"direction": "up", "previous": self.previous_rank}
+                                elif current_rank_int > self.previous_rank:
+                                    # Rank worsened (larger number is worse)
+                                    data["trend"] = {"direction": "down", "previous": self.previous_rank}
+                                else:
+                                    # Rank stayed the same
+                                    data["trend"] = {"direction": "same", "previous": self.previous_rank}
+                                
+                                # Log the trend
+                                trend_direction = data["trend"]["direction"]
+                                logger.info(f"Test rank trend: {self.previous_rank} → {current_rank_int} ({trend_direction})")
+                            
+                            # Update previous rank for next time
+                            self.previous_rank = current_rank_int
+                            self.last_scrape_data = data
+                            
+                            return data
+                except Exception as e:
+                    logger.error(f"Error reading test rank file: {str(e)}")
+            
+            # If no test rank, get messages from Telegram channel as usual
             messages = self._get_messages_from_telegram()
             
             if not messages or len(messages) == 0:
