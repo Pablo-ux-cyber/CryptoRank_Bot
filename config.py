@@ -31,16 +31,3 @@ SELENIUM_TIMEOUT = 30  # seconds
 # Logging Configuration
 LOG_LEVEL = "INFO"
 LOG_FILE = "sensortower_bot.log"
-
-# Google Trends Configuration
-GOOGLE_TRENDS_TIMEFRAME = "now 7-d"  # Default timeframe for Google Trends
-
-# GitHub Configuration
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN", "")  # Токен для доступа к GitHub API (опционально)
-GITHUB_DAYS_TO_ANALYZE = 7  # Количество дней для анализа активности на GitHub
-
-# Общие настройки
-# Установите True, чтобы включить отправку данных Google Trends
-ENABLE_GOOGLE_TRENDS = True
-# Установите True, чтобы включить отправку данных GitHub активности
-ENABLE_GITHUB_ACTIVITY = True
