@@ -16,11 +16,6 @@ class GoogleTrendsTracker:
         # Ключевые термины для отслеживания
         self.crypto_terms = {
             "bitcoin": {"name": "Bitcoin", "icon": "₿"},
-            "buy crypto": {"name": "Buy Crypto", "icon": "💰"},
-            "coinbase": {"name": "Coinbase", "icon": "🟦"},
-            "crypto wallet": {"name": "Crypto Wallet", "icon": "👛"},
-            "ethereum": {"name": "Ethereum", "icon": "Ξ"},
-            "nft": {"name": "NFT", "icon": "🖼️"}
         }
         
         # Период времени для отслеживания тренда (на прошлую неделю по умолчанию)
@@ -160,37 +155,65 @@ class GoogleTrendsTracker:
         Returns:
             str: Отформатированное сообщение для Telegram
         """
-        if not trends_data or 'terms' not in trends_data:
+        if not trends_data or 'terms' not in trends_data or not trends_data['terms']:
             return "❌ Не удалось получить данные Google Trends."
         
         # Получаем информацию о временном периоде
         timeframe = trends_data.get('timeframe', 'неизвестно')
         timeframe_display = timeframe.replace('now ', 'последние ').replace('-d', ' дней')
         
-        # Форматируем сообщение с заголовком
-        message = f"📈 *Google Trends Pulse* ({timeframe_display})\n\n"
+        # Получаем данные по Bitcoin
+        bitcoin_data = trends_data['terms'].get('bitcoin')
+        if not bitcoin_data:
+            return "❌ Не удалось получить данные о Bitcoin в Google Trends."
         
-        # Сортируем термины по убыванию текущего значения
-        sorted_terms = sorted(
-            trends_data['terms'].items(),
-            key=lambda x: x[1]['last_value'],
-            reverse=True
-        )
+        # Определяем цветовой индикатор
+        value = int(bitcoin_data['last_value'])
+        if value >= 70:
+            level_icon = "🟢"
+            level_text = "ВЫСОКИЙ"
+        elif value >= 40:
+            level_icon = "🟡"
+            level_text = "СРЕДНИЙ"
+        else:
+            level_icon = "🔴"
+            level_text = "НИЗКИЙ"
+            
+        # Определяем тренд
+        trend_icon = "🔼" if bitcoin_data['trend'] == 'up' else "🔽" if bitcoin_data['trend'] == 'down' else "➡️"
+        trend_text = "РАСТЁТ" if bitcoin_data['trend'] == 'up' else "ПАДАЕТ" if bitcoin_data['trend'] == 'down' else "СТАБИЛЕН"
         
-        # Добавляем информацию о каждом термине
-        for term, data in sorted_terms:
-            trend_icon = "🔼" if data['trend'] == 'up' else "🔽" if data['trend'] == 'down' else "➡️"
-            
-            # Форматируем значения в процентах от максимума (100)
-            last_value = int(data['last_value'])
-            
-            # Создаем графическое представление прогресса
-            progress_bar = self._generate_progress_bar(last_value, 100, 5)
-            
-            message += f"{data['icon']} *{data['name']}*: {trend_icon} {last_value}/100\n"
-            message += f"{progress_bar}\n"
+        # Создаем базовый прогресс-бар
+        progress_bar = self._generate_progress_bar(value, 100, 10)
         
-        return message
+        # Форматируем сообщение в нескольких вариантах
+        
+        # Вариант 1: Подробный с прогресс-баром
+        message = f"📊 *BITCOIN TRENDS PULSE* ({timeframe_display})\n\n"
+        message += f"₿ Интерес: {level_icon} *{value}/100* {trend_icon}\n"
+        message += f"📈 Тренд: *{trend_text}*\n"
+        message += f"⏱️ Относительно среднего: {trend_icon} {trend_text}\n"
+        message += f"{progress_bar}\n\n"
+        
+        # Вариант 2: Компактный для быстрого восприятия
+        compact_message = f"₿ *BITCOIN PULSE*: {level_icon}{value} {trend_icon} | {level_text} ИНТЕРЕС, {trend_text}\n"
+        
+        # Вариант 3: Процентное отношение к максимуму/минимуму
+        avg_value = int(bitcoin_data['average'])
+        min_value = int(bitcoin_data['min'])
+        max_value = int(bitcoin_data['max'])
+        
+        pct_from_min = int(((value - min_value) / (max_value - min_value if max_value > min_value else 1)) * 100) if min_value < value else 0
+        pct_from_avg = int(((value - avg_value) / avg_value if avg_value > 0 else 0) * 100)
+        
+        analytical_message = f"₿ *BITCOIN* ({bitcoin_data['last_date']}): {value}/100 ({pct_from_avg:+d}% от среднего)\n"
+        analytical_message += f"Мин: {min_value} | Сред: {avg_value} | Макс: {max_value} | Текущий: {value} ({pct_from_min}% диапазона)\n"
+        analytical_message += f"{progress_bar}\n\n"
+        
+        # Объединяем всё в одно сообщение
+        full_message = message + "---\n" + compact_message + "\n---\n" + analytical_message
+        
+        return full_message
 
     def _generate_progress_bar(self, value, max_value, length, filled_char="█", empty_char="░"):
         """
