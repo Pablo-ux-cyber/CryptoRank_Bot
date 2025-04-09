@@ -219,26 +219,6 @@ def get_fear_greed():
         logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/get-google-trends')
-def get_google_trends():
-    """Manually fetch Google Trends data and send as a full report"""
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-    
-    try:
-        # Send full Google Trends message
-        result = scheduler.send_google_trends_message(force=True)
-        
-        if result:
-            flash("Google Trends data sent successfully!", "success")
-        else:
-            flash("Failed to send Google Trends data.", "warning")
-            
-        return redirect(url_for('index'))
-    except Exception as e:
-        logger.error(f"Error in get_google_trends route: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
 @app.route('/health')
 def health():
     """Health check endpoint"""

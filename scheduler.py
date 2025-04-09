@@ -7,7 +7,6 @@ from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
-from google_trends import GoogleTrendsPulse
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -18,16 +17,7 @@ class SensorTowerScheduler:
         self.scraper = SensorTowerScraper()
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
-        self.google_trends = GoogleTrendsPulse()
         self.rank_history_file = "/tmp/coinbasebot_rank_history.txt"
-        
-        # Последние данные Google Trends
-        self.last_trends_data = None
-        self.last_trends_time = None
-        
-        # Счетчик для периодической отправки трендов Google (каждые 6 часов)
-        self.trends_counter = 0
-        self.trends_send_interval = 72  # 72 * 5 минут = 6 часов
         
         # Пытаемся загрузить последний отправленный рейтинг из файла
         try:
@@ -56,16 +46,6 @@ class SensorTowerScheduler:
             try:
                 # Run the job
                 self.run_scraping_job()
-                
-                # Увеличиваем счетчик для периодической отправки трендов Google
-                self.trends_counter += 1
-                
-                # Проверяем, нужно ли отправить данные трендов Google
-                # Отправляем каждые N итераций (настроено на каждые 6 часов)
-                if self.trends_counter >= self.trends_send_interval:
-                    logger.info(f"Пришло время для отправки данных Google Trends (счетчик: {self.trends_counter})")
-                    self.send_google_trends_message()
-                    self.trends_counter = 0  # Сбрасываем счетчик
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {str(e)}")
             
@@ -133,14 +113,13 @@ class SensorTowerScheduler:
                     logger.error(f"Ошибка при освобождении блокировки файла: {str(e)}")
             logger.info("Scheduler stopped")
     
-    def _send_combined_message(self, rankings_data, fear_greed_data=None, include_trends=True):
+    def _send_combined_message(self, rankings_data, fear_greed_data=None):
         """
-        Отправляет комбинированное сообщение с данными о рейтинге, индексе страха/жадности и Google Trends
+        Отправляет комбинированное сообщение с данными о рейтинге и индексе страха и жадности
         
         Args:
             rankings_data (dict): Данные о рейтинге приложения
             fear_greed_data (dict, optional): Данные индекса страха и жадности
-            include_trends (bool): Если True, добавляем данные Google Trends в сообщение
             
         Returns:
             bool: True если сообщение успешно отправлено, False в противном случае
@@ -203,56 +182,7 @@ class SensorTowerScheduler:
                 
                 # Добавляем прогресс-бар
                 progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10, filled_char)
-                combined_message += f"{progress_bar}\n\n"
-            
-            # Получаем и добавляем данные Google Trends, если включено
-            if include_trends:
-                try:
-                    # Получаем данные Google Trends
-                    trends_data = self.get_google_trends_data()
-                    
-                    if trends_data and "keywords" in trends_data:
-                        # Создаем краткую версию сообщения с трендами
-                        # Выбираем 2-3 наиболее популярных ключевых слова для краткого отображения
-                        top_keywords = sorted(
-                            trends_data["keywords"].items(), 
-                            key=lambda x: x[1].get("current", 0), 
-                            reverse=True
-                        )[:3]  # Берем top 3
-                        
-                        # Добавляем заголовок
-                        combined_message += "🔍 *Google Trends Pulse* \\(краткая версия\\):\n"
-                        
-                        # Добавляем каждое ключевое слово и его тренд
-                        for kw, data in top_keywords:
-                            kw_display = kw.capitalize()
-                            current_value = data.get("current", "N/A")
-                            
-                            # Добавляем иконку тренда
-                            if "trend" in data:
-                                if data["trend"] == "up":
-                                    trend_icon = "🔼"  # Рост популярности
-                                elif data["trend"] == "down":
-                                    trend_icon = "🔽"  # Падение популярности
-                                else:
-                                    trend_icon = "➡️"  # Без изменений
-                            else:
-                                trend_icon = "🆕"  # Новое измерение
-                            
-                            combined_message += f"{trend_icon} *{kw_display}:* {current_value}"
-                            
-                            if "previous" in data:
-                                combined_message += f" \\(было: {data['previous']}\\)"
-                            
-                            combined_message += "\n"
-                        
-                        # Добавляем ссылку на полную версию в конце поста
-                        # Учитывая ограничения формата
-                        combined_message += "\n_Следите за полным Google Trends Pulse отчетом каждые 6 часов\\._"
-                    else:
-                        logger.warning("Данные Google Trends недоступны для добавления в сообщение")
-                except Exception as e:
-                    logger.error(f"Ошибка при добавлении данных Google Trends в сообщение: {str(e)}")
+                combined_message += f"{progress_bar}"
             
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
@@ -336,8 +266,7 @@ class SensorTowerScheduler:
             # Отправляем сообщение только если нужно
             if need_to_send:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
-                # Включаем данные Google Trends в сообщение
-                result = self._send_combined_message(rankings_data, fear_greed_data, include_trends=True)
+                result = self._send_combined_message(rankings_data, fear_greed_data)
                 
                 if result:
                     # Обновляем последний отправленный рейтинг
@@ -377,73 +306,6 @@ class SensorTowerScheduler:
         except Exception as e:
             logger.error(f"Error getting Fear & Greed Index: {str(e)}")
             return None
-            
-    def get_google_trends_data(self):
-        """
-        Получает текущие данные о популярности криптозапросов в Google Trends
-        
-        Returns:
-            dict: Данные Google Trends или None в случае ошибки
-        """
-        try:
-            logger.info("Получение данных Google Trends...")
-            trends_data = self.google_trends.get_trends_data()
-            
-            if trends_data:
-                # Сохраняем последние данные и время их получения
-                self.last_trends_data = trends_data
-                self.last_trends_time = datetime.now()
-                logger.info(f"Успешно получены данные Google Trends: {len(trends_data['keywords'])} ключевых слов")
-                return trends_data
-            else:
-                logger.warning("Не удалось получить данные Google Trends")
-                return None
-        except Exception as e:
-            logger.error(f"Ошибка при получении данных Google Trends: {str(e)}")
-            return None
-            
-    def send_google_trends_message(self, force=False):
-        """
-        Получает и отправляет данные о популярности запросов в Google Trends
-        
-        Args:
-            force (bool): Если True, отправляет сообщение даже если данные не изменились
-            
-        Returns:
-            bool: True если данные успешно отправлены, False в противном случае
-        """
-        try:
-            # Проверяем соединение с Telegram
-            if not self.telegram_bot.test_connection():
-                logger.error("Ошибка соединения с Telegram. Сообщение Google Trends не отправлено.")
-                return False
-                
-            # Получаем данные трендов
-            trends_data = self.get_google_trends_data()
-            
-            if not trends_data:
-                logger.error("Не удалось получить данные Google Trends для отправки")
-                return False
-                
-            # Форматируем сообщение
-            trends_message = self.google_trends.format_trends_message(trends_data)
-            
-            # Отправляем сообщение
-            if not self.telegram_bot.send_message(trends_message):
-                logger.error("Не удалось отправить сообщение Google Trends в Telegram")
-                return False
-                
-            logger.info("Сообщение Google Trends успешно отправлено в Telegram")
-            return True
-            
-        except Exception as e:
-            error_message = f"❌ Произошла ошибка при отправке данных Google Trends: {str(e)}"
-            logger.error(error_message)
-            try:
-                self.telegram_bot.send_message(error_message)
-            except:
-                pass
-            return False
             
     def run_now(self, force_send=False):
         """
