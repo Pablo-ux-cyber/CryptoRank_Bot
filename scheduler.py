@@ -7,8 +7,6 @@ from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
-from google_trends import GoogleTrendsTracker
-from github_tracker import GitHubTracker
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -19,11 +17,7 @@ class SensorTowerScheduler:
         self.scraper = SensorTowerScraper()
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
-        self.google_trends_tracker = GoogleTrendsTracker()
-        self.github_tracker = GitHubTracker()  # Инициализация трекера GitHub
         self.rank_history_file = "/tmp/coinbasebot_rank_history.txt"
-        self.last_google_trends_check = None  # Для отслеживания последней проверки Google Trends
-        self.last_github_check = None  # Для отслеживания последней проверки GitHub активности
         
         # Пытаемся загрузить последний отправленный рейтинг из файла
         try:
@@ -48,26 +42,10 @@ class SensorTowerScheduler:
         The main scheduler loop that runs in a background thread.
         Sleeps for 5 minutes between executions.
         """
-        google_trends_interval = 24 * 60 * 60   # Отправка Google Trends каждые 24 часа
-        github_interval = 12 * 60 * 60          # Отправка GitHub Activity каждые 12 часов
-        
         while not self.stop_event.is_set():
             try:
                 # Run the job
                 self.run_scraping_job()
-                
-                # Текущее время для проверки интервалов
-                current_time = datetime.now()
-                
-                # Проверяем, нужно ли отправлять данные Google Trends
-                if self.last_google_trends_check is None or (current_time - self.last_google_trends_check).total_seconds() >= google_trends_interval:
-                    logger.info("Отправка данных Google Trends (запланированная)")
-                    self.send_google_trends_message()
-                
-                # Проверяем, нужно ли отправлять данные GitHub Activity
-                if self.last_github_check is None or (current_time - self.last_github_check).total_seconds() >= github_interval:
-                    logger.info("Отправка данных GitHub Activity (запланированная)")
-                    self.send_github_activity_message()
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {str(e)}")
             
@@ -328,126 +306,6 @@ class SensorTowerScheduler:
         except Exception as e:
             logger.error(f"Error getting Fear & Greed Index: {str(e)}")
             return None
-    
-    def get_google_trends_data(self, terms=None, timeframe=None, geo=None):
-        """
-        Получает данные Google Trends для указанных терминов
-        
-        Args:
-            terms (list, optional): Список терминов для отслеживания
-            timeframe (str, optional): Период времени в формате Google Trends
-            geo (str, optional): Код страны или '' для всего мира
-            
-        Returns:
-            dict: Данные трендов или None в случае ошибки
-        """
-        try:
-            return self.google_trends_tracker.get_interest_over_time(terms, timeframe, geo)
-        except Exception as e:
-            logger.error(f"Ошибка при получении данных Google Trends: {str(e)}")
-            return None
-        
-    def send_google_trends_message(self):
-        """
-        Отправляет сообщение с данными Google Trends в Telegram
-        
-        Returns:
-            bool: True если сообщение успешно отправлено, False в противном случае
-        """
-        try:
-            # Убедимся, что телеграм-бот правильно инициализирован
-            if not self.telegram_bot.test_connection():
-                logger.error("Ошибка соединения с Telegram. Сообщение Google Trends не отправлено.")
-                return False
-            
-            # Получаем данные трендов
-            trends_data = self.get_google_trends_data()
-            
-            if not trends_data:
-                logger.error("Не удалось получить данные Google Trends.")
-                return False
-            
-            # Форматируем сообщение
-            message = self.google_trends_tracker.format_trends_message(trends_data)
-            
-            # Отправляем сообщение
-            if not self.telegram_bot.send_message(message):
-                logger.error("Не удалось отправить сообщение Google Trends в Telegram.")
-                return False
-            
-            logger.info("Сообщение Google Trends успешно отправлено")
-            self.last_google_trends_check = datetime.now()
-            return True
-            
-        except Exception as e:
-            error_message = f"❌ Произошла ошибка при отправке сообщения Google Trends: {str(e)}"
-            logger.error(error_message)
-            try:
-                self.telegram_bot.send_message(error_message)
-            except:
-                pass
-            return False
-            
-    def get_github_activity_data(self):
-        """
-        Получает данные об активности репозиториев GitHub
-        
-        Returns:
-            dict: Данные об активности или None в случае ошибки
-        """
-        try:
-            logger.info("Запрос данных об активности GitHub репозиториев")
-            # Получаем данные об активности всех отслеживаемых репозиториев
-            return self.github_tracker.get_all_repos_activity()
-        except Exception as e:
-            logger.error(f"Ошибка при получении данных GitHub: {str(e)}")
-            return None
-    
-    def send_github_activity_message(self):
-        """
-        Отправляет сообщение с данными об активности GitHub репозиториев в Telegram
-        
-        Returns:
-            bool: True если сообщение успешно отправлено, False в противном случае
-        """
-        try:
-            # Убедимся, что телеграм-бот правильно инициализирован
-            if not self.telegram_bot.test_connection():
-                logger.error("Ошибка соединения с Telegram. Сообщение GitHub Activity не отправлено.")
-                return False
-            
-            # Получаем данные об активности GitHub
-            activity_data = self.get_github_activity_data()
-            
-            if not activity_data:
-                logger.error("Не удалось получить данные об активности GitHub.")
-                return False
-            
-            # Форматируем сообщение (более детальная версия)
-            message = self.github_tracker.format_activity_message(activity_data)
-            
-            # Отправляем сообщение
-            if not self.telegram_bot.send_message(message):
-                logger.error("Не удалось отправить сообщение GitHub Activity в Telegram.")
-                return False
-            
-            # Отправляем компактную версию для быстрого просмотра
-            compact_message = self.github_tracker.format_compact_message(activity_data)
-            if not self.telegram_bot.send_message(compact_message):
-                logger.error("Не удалось отправить компактное сообщение GitHub Activity в Telegram.")
-            
-            logger.info("Сообщение GitHub Activity успешно отправлено")
-            self.last_github_check = datetime.now()
-            return True
-            
-        except Exception as e:
-            error_message = f"❌ Произошла ошибка при отправке сообщения GitHub Activity: {str(e)}"
-            logger.error(error_message)
-            try:
-                self.telegram_bot.send_message(error_message)
-            except:
-                pass
-            return False
             
     def run_now(self, force_send=False):
         """

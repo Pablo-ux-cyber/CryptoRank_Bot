@@ -116,8 +116,6 @@
                                 <a href="/trigger-scrape" class="btn btn-primary">Trigger Manual Scrape</a>
                                 <a href="/trigger-scrape?force=true" class="btn btn-danger">Force Send Message</a>
                                 <a href="/get-fear-greed" class="btn btn-warning">Get Fear & Greed Index</a>
-                                <a href="/google-trends" class="btn btn-success">Get Google Trends Pulse</a>
-                                <a href="/github-activity" class="btn btn-secondary">Get GitHub Activity</a>
                                 <a href="/test-telegram" class="btn btn-info">Test Telegram Connection</a>
                                 <a href="/logs" class="btn btn-outline-secondary">View Logs</a>
                             </div>
@@ -236,22 +234,14 @@
                     </div>
                     <div class="card-body">
                         <p>This bot scrapes category rankings data for the specified app from SensorTower and posts it to a Telegram channel.</p>
-                        <p>It also tracks the Crypto Fear & Greed Index and Google Trends data to help monitor market sentiment and interest.</p>
-                        <p>The bot checks for new data every 5 minutes but only posts ranking messages when the ranking changes.</p>
+                        <p>It also tracks the Crypto Fear & Greed Index to help monitor market sentiment.</p>
+                        <p>The bot checks for new data every 5 minutes but only posts messages when the ranking changes.</p>
                         
                         <h6 class="mt-3">Configuration:</h6>
                         <ul>
                             <li>App ID: {{ app_id }}</li>
                             <li>Schedule: Every 5 minutes</li>
-                            <li>Data Sources:
-                                <ul>
-                                    <li>SensorTower (app rankings)</li>
-                                    <li>Alternative.me (Fear & Greed Index)</li>
-                                    <li>Google Trends (search term popularity)</li>
-                                    <li>GitHub (repository activity, stars and commits)</li>
-                                </ul>
-                            </li>
-                            <li>Google Trends Terms: bitcoin, buy crypto, coinbase, crypto wallet, ethereum, nft</li>
+                            <li>Data Sources: SensorTower, Alternative.me Fear & Greed Index</li>
                         </ul>
                     </div>
                 </div>

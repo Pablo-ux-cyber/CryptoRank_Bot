@@ -219,50 +219,6 @@ def get_fear_greed():
         logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/google-trends')
-def google_trends():
-    """Manually fetch Google Trends data and send a message"""
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-        
-    try:
-        # Get the Google Trends data and send a message
-        result = scheduler.send_google_trends_message()
-        
-        if result:
-            flash("Successfully sent Google Trends data.", "success")
-        else:
-            flash("Failed to fetch and send Google Trends data.", "danger")
-            
-        return redirect(url_for('index'))
-        
-    except Exception as e:
-        logger.error(f"Error fetching Google Trends data: {str(e)}")
-        flash(f"Error: {str(e)}", "danger")
-        return redirect(url_for('index'))
-
-@app.route('/github-activity')
-def github_activity():
-    """Manually fetch GitHub activity data and send a message"""
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-        
-    try:
-        # Get the GitHub activity data and send a message
-        result = scheduler.send_github_activity_message()
-        
-        if result:
-            flash("Successfully sent GitHub Activity data.", "success")
-        else:
-            flash("Failed to fetch and send GitHub Activity data.", "danger")
-            
-        return redirect(url_for('index'))
-        
-    except Exception as e:
-        logger.error(f"Error fetching GitHub Activity data: {str(e)}")
-        flash(f"Error: {str(e)}", "danger")
-        return redirect(url_for('index'))
-
 @app.route('/health')
 def health():
     """Health check endpoint"""
