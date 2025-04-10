@@ -7,6 +7,7 @@ from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
+from google_trends_pulse import GoogleTrendsPulse
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -17,6 +18,7 @@ class SensorTowerScheduler:
         self.scraper = SensorTowerScraper()
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
+        self.google_trends_pulse = GoogleTrendsPulse()
         self.rank_history_file = "/tmp/coinbasebot_rank_history.txt"
         
         # Пытаемся загрузить последний отправленный рейтинг из файла
