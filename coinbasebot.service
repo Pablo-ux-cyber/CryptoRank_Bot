@@ -1,0 +1,16 @@
+[Unit]
+Description=Coinbase AppStore Rank Bot
+After=network.target
+
+[Service]
+User=YOUR_USERNAME
+WorkingDirectory=/path/to/coinbasebot
+ExecStart=/usr/bin/python3 /path/to/coinbasebot/main.py
+Restart=always
+RestartSec=10
+Environment="TELEGRAM_BOT_TOKEN=your_token_here"
+Environment="TELEGRAM_CHANNEL_ID=your_channel_id_here"
+Environment="SESSION_SECRET=your_session_secret_here"
+
+[Install]
+WantedBy=multi-user.target
