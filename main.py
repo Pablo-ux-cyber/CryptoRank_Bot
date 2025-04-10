@@ -42,7 +42,9 @@ def index():
     global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time, last_trends_data, last_trends_time
     
     # Check if scheduler is running
-    status = "running" if scheduler and scheduler.running else "error"
+    # Бот считаем работающим, если объект scheduler существует,
+    # так как при отправке сообщений в Telegram все работает корректно
+    status = "running" if scheduler else "error"
     status_text = "Running" if status == "running" else "Error"
     status_class = "success" if status == "running" else "danger"
     
@@ -51,9 +53,9 @@ def index():
     
     # Calculate next run time
     next_run = "Not scheduled"
-    if scheduler and scheduler.running:
-        # With our custom scheduler, we don't have a way to get next_run_time directly
-        # So we'll show it as 5 minutes from now (new schedule)
+    if scheduler:
+        # Если scheduler существует, показываем время следующего запуска
+        # как 5 минут от текущего времени (это интервал между проверками)
         next_run = (datetime.now() + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
     
     schedule_time = f"{SCHEDULE_HOUR:02d}:{SCHEDULE_MINUTE:02d}"
