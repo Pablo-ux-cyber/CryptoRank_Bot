@@ -1,0 +1,36 @@
+venv) root@imm1:~/coinbaserank_bot# cd /root/coinbaserank_bot
+source venv/bin/activate
+
+# Установите необходимое расширение для lxml
+pip install lxml[html_clean]
+
+# Если предыдущая команда не сработает, попробуйте установить lxml_html_clean напрямую
+pip install lxml_html_clean
+
+# Переустановите trafilatura чтобы убедиться, что она использует обновленные библиотеки 
+pip install --upgrade trafilatura
+Requirement already satisfied: lxml[html_clean] in ./venv/lib/python3.10/site-packages (5.3.2)
+WARNING: lxml 5.3.2 does not provide the extra 'html_clean'
+Collecting lxml_html_clean
+  Downloading lxml_html_clean-0.4.2-py3-none-any.whl (14 kB)
+Requirement already satisfied: lxml in ./venv/lib/python3.10/site-packages (from lxml_html_clean) (5.3.2)
+Installing collected packages: lxml_html_clean
+Successfully installed lxml_html_clean-0.4.2
+Requirement already satisfied: trafilatura in ./venv/lib/python3.10/site-packages (2.0.0)
+Requirement already satisfied: certifi in ./venv/lib/python3.10/site-packages (from trafilatura) (2025.1.31)
+Requirement already satisfied: courlan>=1.3.2 in ./venv/lib/python3.10/site-packages (from trafilatura) (1.3.2)
+Requirement already satisfied: lxml>=5.3.0 in ./venv/lib/python3.10/site-packages (from trafilatura) (5.3.2)
+Requirement already satisfied: urllib3<3,>=1.26 in ./venv/lib/python3.10/site-packages (from trafilatura) (2.4.0)
+Requirement already satisfied: htmldate>=1.9.2 in ./venv/lib/python3.10/site-packages (from trafilatura) (1.9.3)
+Requirement already satisfied: justext>=3.0.1 in ./venv/lib/python3.10/site-packages (from trafilatura) (3.0.2)
+Requirement already satisfied: charset_normalizer>=3.4.0 in ./venv/lib/python3.10/site-packages (from trafilatura) (3.4.1)
+Requirement already satisfied: tld>=0.13 in ./venv/lib/python3.10/site-packages (from courlan>=1.3.2->trafilatura) (0.13)
+Requirement already satisfied: babel>=2.16.0 in ./venv/lib/python3.10/site-packages (from courlan>=1.3.2->trafilatura) (2.17.0)
+Requirement already satisfied: dateparser>=1.1.2 in ./venv/lib/python3.10/site-packages (from htmldate>=1.9.2->trafilatura) (1.2.1)
+Requirement already satisfied: python-dateutil>=2.9.0.post0 in ./venv/lib/python3.10/site-packages (from htmldate>=1.9.2->trafilatura) (2.9.0.post0)
+Requirement already satisfied: regex!=2019.02.19,!=2021.8.27,>=2015.06.24 in ./venv/lib/python3.10/site-packages (from dateparser>=1.1.2->htmldate>=1.9.2->trafilatura) (2024.11.6)
+Requirement already satisfied: tzlocal>=0.2 in ./venv/lib/python3.10/site-packages (from dateparser>=1.1.2->htmldate>=1.9.2->trafilatura) (5.3.1)
+Requirement already satisfied: pytz>=2024.2 in ./venv/lib/python3.10/site-packages (from dateparser>=1.1.2->htmldate>=1.9.2->trafilatura) (2025.2)
+WARNING: lxml 5.3.2 does not provide the extra 'html_clean'
+Requirement already satisfied: six>=1.5 in ./venv/lib/python3.10/site-packages (from python-dateutil>=2.9.0.post0->htmldate>=1.9.2->trafilatura) (1.17.0)
+(venv) root@imm1:~/coinbaserank_bot# 

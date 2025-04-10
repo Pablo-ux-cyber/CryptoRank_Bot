@@ -1,0 +1,56 @@
+(venv) root@imm1:~/coinbaserank_bot# cd /root/coinbaserank_bot
+source venv/bin/activate
+gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app
+[2025-04-10 19:01:34 +0300] [1119468] [INFO] Starting gunicorn 23.0.0
+[2025-04-10 19:01:34 +0300] [1119468] [INFO] Listening at: http://0.0.0.0:5000 (1119468)
+[2025-04-10 19:01:34 +0300] [1119468] [INFO] Using worker: sync
+[2025-04-10 19:01:34 +0300] [1119469] [INFO] Booting worker with pid: 1119469
+[2025-04-10 19:01:34 +0300] [1119469] [ERROR] Exception in worker process
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+    worker.init_process()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/workers/base.py", line 135, in init_process
+    self.load_wsgi()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+    self.wsgi = self.app.wsgi()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/app/base.py", line 66, in wsgi
+    self.callable = self.load()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+    return self.load_wsgiapp()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+    return util.import_app(self.app_uri)
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/gunicorn/util.py", line 370, in import_app
+    mod = importlib.import_module(module)
+  File "/usr/lib/python3.10/importlib/__init__.py", line 126, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1050, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1027, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1006, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 688, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 883, in exec_module
+  File "<frozen importlib._bootstrap>", line 241, in _call_with_frames_removed
+  File "/root/coinbaserank_bot/main.py", line 9, in <module>
+    from scheduler import SensorTowerScheduler
+  File "/root/coinbaserank_bot/scheduler.py", line 7, in <module>
+    from scraper import SensorTowerScraper
+  File "/root/coinbaserank_bot/scraper.py", line 3, in <module>
+    import trafilatura
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/trafilatura/__init__.py", line 16, in <module>
+    from .core import bare_extraction, extract
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/trafilatura/core.py", line 18, in <module>
+    from .external import compare_extraction
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/trafilatura/external.py", line 11, in <module>
+    from justext.core import ParagraphMaker, classify_paragraphs, revise_paragraph_classification  # type: ignore
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/justext/__init__.py", line 12, in <module>
+    from .core import justext
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/justext/core.py", line 21, in <module>
+    from lxml.html.clean import Cleaner
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/lxml/html/clean.py", line 18, in <module>
+    raise ImportError(
+ImportError: lxml.html.clean module is now a separate project lxml_html_clean.
+Install lxml[html_clean] or lxml_html_clean directly.
+[2025-04-10 19:01:34 +0300] [1119469] [INFO] Worker exiting (pid: 1119469)
+[2025-04-10 19:01:34 +0300] [1119468] [ERROR] Worker (pid:1119469) exited with code 3
+[2025-04-10 19:01:34 +0300] [1119468] [ERROR] Shutting down: Master
+[2025-04-10 19:01:34 +0300] [1119468] [ERROR] Reason: Worker failed to boot.
+(venv) root@imm1:~/coinbaserank_bot# 
