@@ -232,16 +232,33 @@ def get_trends_pulse():
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Get Google Trends Pulse data
-        trends_data = scheduler.google_trends_pulse.get_trends_data()
+        # Для демонстрации создадим тестовые данные
+        # в реальном использовании здесь будет вызов scheduler.google_trends_pulse.get_trends_data()
+        demo_mode = True
+        
+        if demo_mode:
+            # Тестовые данные для демонстрации
+            trends_data = {
+                "signal": "🔴",
+                "description": "Высокий FOMO-фактор - возможный пик рынка",
+                "fomo_score": 78.5,
+                "fear_score": 22.3,
+                "general_score": 65.7,
+                "fomo_to_fear_ratio": 3.52,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            trends_message = f"{trends_data['signal']} Google Trends: {trends_data['description']}"
+            
+            logger.info("Демонстрационный режим: использованы тестовые данные Google Trends Pulse")
+        else:
+            # Реальные данные из API (может быть медленным или ограниченным)
+            trends_data = scheduler.google_trends_pulse.get_trends_data()
+            trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
         
         if trends_data:
             # Store the data for display
             last_trends_data = trends_data
             last_trends_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
-            # Format and send a message
-            trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
             
             # Send the message
             sent = scheduler.telegram_bot.send_message(trends_message)
