@@ -232,9 +232,8 @@ def get_trends_pulse():
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Для демонстрации создадим тестовые данные
-        # в реальном использовании здесь будет вызов scheduler.google_trends_pulse.get_trends_data()
-        demo_mode = True
+        # Используем реальные данные из Google Trends API
+        demo_mode = False
         
         if demo_mode:
             # Тестовые данные для демонстрации
@@ -252,8 +251,10 @@ def get_trends_pulse():
             logger.info("Демонстрационный режим: использованы тестовые данные Google Trends Pulse")
         else:
             # Реальные данные из API (может быть медленным или ограниченным)
+            logger.info("Запрос реальных данных из Google Trends API...")
             trends_data = scheduler.google_trends_pulse.get_trends_data()
             trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
+            logger.info(f"Получены реальные данные Google Trends: {trends_data['signal']} - {trends_data['description']}")
         
         if trends_data:
             # Store the data for display
