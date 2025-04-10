@@ -49,10 +49,22 @@ check_ssh_config() {
     read -r
   fi
   
-  # Проверяем соединение с GitHub
-  if ! ssh -T git@github.com -o StrictHostKeyChecking=no 2>&1 | grep -q "successfully authenticated"; then
-    echo "Failed to authenticate with GitHub. Please make sure your SSH key is added to GitHub."
-    exit 1
+  # Проверяем соединение с GitHub (более гибкий подход)
+  echo "Testing connection to GitHub..."
+  SSH_TEST=$(ssh -T git@github.com -o StrictHostKeyChecking=no 2>&1)
+  
+  if echo "$SSH_TEST" | grep -q "successfully authenticated" || echo "$SSH_TEST" | grep -q "You've successfully authenticated"; then
+    echo "Successfully authenticated with GitHub!"
+  else
+    echo "Warning: Unable to verify GitHub authentication."
+    echo "Output was: $SSH_TEST"
+    echo ""
+    echo "If you're sure your SSH key is added to GitHub, you can proceed anyway."
+    read -p "Continue anyway? (y/n): " continue_anyway
+    if [ "$continue_anyway" != "y" ] && [ "$continue_anyway" != "Y" ]; then
+      exit 1
+    fi
+    echo "Continuing..."
   fi
 }
 
@@ -157,23 +169,64 @@ setup_repository() {
     fi
   fi
   
-  # Пробуем получить данные из репозитория
-  echo "Fetching from remote repository..."
-  if git fetch origin; then
-    # Если ветка существует удаленно, настраиваем слежение
-    if git show-ref --verify --quiet "refs/remotes/origin/$GIT_BRANCH"; then
-      echo "Setting up tracking for branch $GIT_BRANCH..."
-      git checkout "$GIT_BRANCH" || git checkout -b "$GIT_BRANCH"
-      git branch --set-upstream-to="origin/$GIT_BRANCH" "$GIT_BRANCH"
-    else
-      # Если ветки нет, создаем ее
-      echo "Creating new branch $GIT_BRANCH..."
-      git checkout -b "$GIT_BRANCH"
-    fi
-    echo "Repository setup completed successfully."
+  # Проверяем, существует ли репозиторий на GitHub
+  echo "Would you like to create a new repository or use an existing one?"
+  echo "1. Use existing repository (default)"
+  echo "2. Create a new empty repository (will overwrite remote repository!)"
+  read -p "Choose option (1/2): " repo_option
+  
+  if [ "$repo_option" = "2" ]; then
+    echo "Creating new repository (this will overwrite any existing repository)..."
+    
+    # Создаем начальный коммит
+    echo "Creating initial commit..."
+    git add .
+    git commit -m "Initial commit from server"
+    
+    # Используем force push для создания новой истории
+    echo "Pushing to remote repository (force)..."
+    git push -f origin "$GIT_BRANCH"
+    
+    echo "Repository created successfully."
   else
-    echo "Failed to fetch from remote repository. Make sure your SSH key is added to GitHub and the repository exists."
-    exit 1
+    # Пробуем получить данные из существующего репозитория
+    echo "Fetching from remote repository..."
+    if git fetch origin; then
+      # Если ветка существует удаленно, настраиваем слежение
+      if git show-ref --verify --quiet "refs/remotes/origin/$GIT_BRANCH"; then
+        echo "Setting up tracking for branch $GIT_BRANCH..."
+        git checkout "$GIT_BRANCH" 2>/dev/null || git checkout -b "$GIT_BRANCH"
+        git branch --set-upstream-to="origin/$GIT_BRANCH" "$GIT_BRANCH" 2>/dev/null || true
+        
+        # Получаем изменения
+        echo "Pulling latest changes..."
+        git pull origin "$GIT_BRANCH" || echo "Warning: Could not pull changes. Repository might be empty."
+      else
+        # Если ветки нет, создаем ее
+        echo "Creating new branch $GIT_BRANCH..."
+        git checkout -b "$GIT_BRANCH"
+      fi
+      echo "Repository setup completed successfully."
+    else
+      echo "Warning: Failed to fetch from remote repository. Repository might be empty or not exist yet."
+      echo "Would you like to initialize it? (y/n): "
+      read -p "> " init_repo
+      if [ "$init_repo" = "y" ] || [ "$init_repo" = "Y" ]; then
+        echo "Creating initial commit..."
+        git add .
+        git commit -m "Initial commit from server"
+        
+        echo "Pushing to remote repository..."
+        git push -u origin "$GIT_BRANCH" || {
+          echo "Push failed. Trying force push..."
+          git push -f -u origin "$GIT_BRANCH"
+        }
+        echo "Repository initialized successfully."
+      else
+        echo "Setup aborted. Please create the repository manually or try again."
+        exit 1
+      fi
+    fi
   fi
 }
 
