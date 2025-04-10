@@ -261,11 +261,18 @@ def get_trends_pulse():
             last_trends_data = trends_data
             last_trends_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
-            # Send the message
-            sent = scheduler.telegram_bot.send_message(trends_message)
+            # В ручном режиме объединяем с данными о рейтинге для отправки полного сообщения
+            # Получаем последние данные о рейтинге
+            rankings_data = last_scrape_data if last_scrape_data else scheduler.scraper.scrape_category_rankings()
+            
+            # Получаем данные Fear & Greed Index
+            fear_greed_data = scheduler.fear_greed_tracker.get_fear_greed_index()
+            
+            # Отправляем полное комбинированное сообщение со всеми данными
+            sent = scheduler.run_now(force_send=True)
             
             if sent:
-                flash(f"Google Trends Pulse data successfully fetched and sent to Telegram! Signal: {trends_data['signal']}", "success")
+                flash(f"Complete data with Google Trends Pulse ({trends_data['signal']}) successfully sent to Telegram!", "success")
             else:
                 flash("Data fetched but failed to send to Telegram.", "warning")
                 

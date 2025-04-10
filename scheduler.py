@@ -196,10 +196,10 @@ class SensorTowerScheduler:
                     if fear_greed_data:
                         combined_message += "\n\n"
                         
-                    # Добавляем сообщение о трендах
+                    # Добавляем сообщение о трендах на английском языке
                     trends_message = self.google_trends_pulse.format_trends_message(trends_data)
                     combined_message += trends_message
-                    logger.info(f"Добавлены данные Google Trends Pulse: {trends_data['signal']} - {trends_data['description']}")
+                    logger.info(f"Added Google Trends Pulse data: {trends_data['signal']} - {trends_data['description']}")
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Google Trends Pulse: {str(e)}")
                 # Продолжаем без данных трендов
