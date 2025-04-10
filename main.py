@@ -17,6 +17,8 @@ last_scrape_data = None
 last_scrape_time = None
 last_fear_greed_data = None
 last_fear_greed_time = None
+last_trends_data = None
+last_trends_time = None
 
 def start_scheduler_thread():
     """Start the scheduler in a separate thread"""
@@ -37,7 +39,7 @@ def signal_handler(sig, frame):
 @app.route('/')
 def index():
     """Render the home page"""
-    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time
+    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time, last_trends_data, last_trends_time
     
     # Check if scheduler is running
     status = "running" if scheduler and scheduler.running else "error"
@@ -72,7 +74,9 @@ def index():
                           last_scrape_time=last_scrape_time,
                           categories=categories,
                           last_fear_greed_data=last_fear_greed_data,
-                          last_fear_greed_time=last_fear_greed_time)
+                          last_fear_greed_time=last_fear_greed_time,
+                          last_trends_data=last_trends_data,
+                          last_trends_time=last_trends_time)
 
 @app.route('/test-telegram')
 def test_telegram():
@@ -217,6 +221,41 @@ def get_fear_greed():
             return jsonify({"status": "error", "message": "Failed to retrieve Fear & Greed Index data"}), 500
     except Exception as e:
         logger.error(f"Error fetching data: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/get-trends-pulse')
+def get_trends_pulse():
+    """Manually fetch Google Trends Pulse data and send it as a message"""
+    global last_trends_data, last_trends_time, last_scrape_data, last_scrape_time
+    
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+    
+    try:
+        # Get Google Trends Pulse data
+        trends_data = scheduler.google_trends_pulse.get_trends_data()
+        
+        if trends_data:
+            # Store the data for display
+            last_trends_data = trends_data
+            last_trends_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Format and send a message
+            trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
+            
+            # Send the message
+            sent = scheduler.telegram_bot.send_message(trends_message)
+            
+            if sent:
+                flash(f"Google Trends Pulse data successfully fetched and sent to Telegram! Signal: {trends_data['signal']}", "success")
+            else:
+                flash("Data fetched but failed to send to Telegram.", "warning")
+                
+            return redirect(url_for('index'))
+        else:
+            return jsonify({"status": "error", "message": "Failed to retrieve Google Trends Pulse data"}), 500
+    except Exception as e:
+        logger.error(f"Error fetching Google Trends Pulse data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/health')

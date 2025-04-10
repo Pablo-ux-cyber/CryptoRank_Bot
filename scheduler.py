@@ -117,7 +117,8 @@ class SensorTowerScheduler:
     
     def _send_combined_message(self, rankings_data, fear_greed_data=None):
         """
-        Отправляет комбинированное сообщение с данными о рейтинге и индексе страха и жадности
+        Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
+        и сигналом от Google Trends Pulse
         
         Args:
             rankings_data (dict): Данные о рейтинге приложения
@@ -185,6 +186,23 @@ class SensorTowerScheduler:
                 # Добавляем прогресс-бар
                 progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10, filled_char)
                 combined_message += f"{progress_bar}"
+            
+            # Добавляем данные от Google Trends Pulse
+            try:
+                # Получаем данные трендов
+                trends_data = self.google_trends_pulse.get_trends_data()
+                if trends_data:
+                    # Добавляем пустую строку для разделения от предыдущего блока данных
+                    if fear_greed_data:
+                        combined_message += "\n\n"
+                        
+                    # Добавляем сообщение о трендах
+                    trends_message = self.google_trends_pulse.format_trends_message(trends_data)
+                    combined_message += trends_message
+                    logger.info(f"Добавлены данные Google Trends Pulse: {trends_data['signal']} - {trends_data['description']}")
+            except Exception as e:
+                logger.error(f"Ошибка при получении данных Google Trends Pulse: {str(e)}")
+                # Продолжаем без данных трендов
             
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
