@@ -230,7 +230,7 @@
                 {% endif %}
                 
                 {% if last_trends_data %}
-                <div class="card shadow-sm mb-4" style="border-left: 4px solid var(--bs-success);">
+                <div class="card shadow-sm mb-4" style="border-left: 4px solid var(--bs-info);">
                     <div class="card-header">
                         <h5 class="mb-0">Google Trends Pulse</h5>
                     </div>
@@ -253,17 +253,19 @@
                                     <div class="card-body">
                                         <p class="mb-2">FOMO Score: {{ last_trends_data.fomo_score|round|int }}/100</p>
                                         <div class="progress mb-3">
-                                            <div class="progress-bar bg-danger" 
+                                            <div class="progress-bar bg-success" 
                                                  role="progressbar" 
-                                                 style="width: {{ last_trends_data.fomo_score }}%;">
+                                                 style="width: {{ last_trends_data.fomo_score }}%;"
+                                                 title="High FOMO can indicate market peaks (similar to Greed)">
                                             </div>
                                         </div>
                                         
                                         <p class="mb-2">Fear Score: {{ last_trends_data.fear_score|round|int }}/100</p>
                                         <div class="progress mb-3">
-                                            <div class="progress-bar bg-warning" 
+                                            <div class="progress-bar bg-danger" 
                                                  role="progressbar" 
-                                                 style="width: {{ last_trends_data.fear_score }}%;">
+                                                 style="width: {{ last_trends_data.fear_score }}%;"
+                                                 title="High Fear can indicate buying opportunities">
                                             </div>
                                         </div>
                                         
@@ -286,8 +288,14 @@
                         </div>
                         <div class="mt-3">
                             <small class="text-muted">
-                                <strong>What is this?</strong> Google Trends Pulse analyzes search patterns to detect market sentiment. 
-                                A very high FOMO score might indicate market peaks, while elevated fear levels with low FOMO could signal potential entry points.
+                                <strong>What is this?</strong> Google Trends Pulse analyzes search patterns to detect market sentiment.
+                                <br><br>
+                                The signals follow the same color scheme as the Fear & Greed Index:<br>
+                                - 🔴 <strong>Red</strong>: High fear, low FOMO - potential buying opportunity<br>
+                                - 🟡 <strong>Yellow</strong>: Rising interest in cryptocurrencies<br>
+                                - ⚪ <strong>White</strong>: Neutral market interest<br>
+                                - 🟢 <strong>Green</strong>: High FOMO, low fear - possible market peak<br>
+                                - 🔵 <strong>Blue</strong>: Very low interest - market hibernation
                             </small>
                         </div>
                     </div>
