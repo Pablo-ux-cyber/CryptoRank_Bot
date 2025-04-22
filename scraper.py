@@ -326,9 +326,8 @@ class SensorTowerScraper:
             
             if not messages or len(messages) == 0:
                 logger.warning("No messages retrieved from Telegram channel")
-                # Using fixed ranking value
-                rank = "350"  # Fixed value
-                logger.info(f"Using fixed ranking value: {rank}")
+                logger.error("Cannot get reliable data - returning None instead of using fallback value")
+                return None
             else:
                 # First message (the most recent by date) containing the ranking
                 ranking = None
@@ -356,9 +355,8 @@ class SensorTowerScraper:
                 
                 if ranking is None:
                     logger.warning("Could not find ranking in any of the messages")
-                    # Using fixed ranking value
-                    rank = "350"  # Fixed value
-                    logger.info(f"Using fixed ranking value: {rank}")
+                    logger.error("Cannot get reliable data - returning None instead of using fallback value")
+                    return None
                 else:
                     rank = str(ranking)
                     logger.info(f"Successfully scraped ranking from Telegram: {rank}")
@@ -404,24 +402,8 @@ class SensorTowerScraper:
             
         except Exception as e:
             logger.error(f"Error scraping from Telegram: {str(e)}")
-            # Using fixed ranking value
-            app_name = "Coinbase"
-            rank = "350"  # Fixed value
-            
-            logger.info(f"Using fixed ranking value: {rank}")
-            
-            rankings_data = {
-                "app_name": app_name,
-                "app_id": self.app_id,
-                "date": time.strftime("%Y-%m-%d"),
-                "categories": [
-                    {"category": "US - iPhone - Top Free", "rank": rank}
-                ]
-            }
-            
-            # Save data for web interface
-            self.last_scrape_data = rankings_data
-            return rankings_data
+            logger.error("Cannot get reliable data due to error - returning None")
+            return None
     
     def format_rankings_message(self, rankings_data):
         """

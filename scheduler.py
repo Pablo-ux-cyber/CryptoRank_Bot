@@ -250,7 +250,9 @@ class SensorTowerScheduler:
             if not rankings_data:
                 error_message = "❌ Failed to scrape SensorTower data."
                 logger.error(error_message)
-                self.telegram_bot.send_message(error_message)
+                # Отправляем сообщение об ошибке, но только если это не связано с ошибкой получения данных
+                if "Failed to scrape SensorTower data" not in error_message:
+                    self.telegram_bot.send_message(error_message)
                 return False
             
             # Проверяем наличие данных о категориях и рейтинге

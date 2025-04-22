@@ -1,0 +1,30 @@
+025-04-22 07:31:36,072 - sensortower_bot - INFO - Выполняется запланированное задание скрапинга в 2025-04-22 07:31:34.630734
+2025-04-22 07:33:21,837 - sensortower_bot - INFO - Connected to Telegram as baserank_bot
+2025-04-22 07:33:34,704 - sensortower_bot - INFO - Attempting to get ranking data from Telegram channel: @coinbaseappstore
+2025-04-22 07:33:47,117 - sensortower_bot - INFO - Attempting to scrape web version of channel: https://t.me/s/coinbaseappstore
+2025-04-22 07:34:18,156 - werkzeug - INFO - 169.212.179.160 - - [22/Apr/2025 07:34:17] "GET / HTTP/1.0" 200 -
+2025-04-22 07:34:39,674 - sensortower_bot - ERROR - Request failed: HTTPSConnectionPool(host='t.me', port=443): Max retries exceeded with url: /s/coinbaseappstore (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fd6d26fe950>: Failed to resolve 't.me' ([Errno -3] Temporary failure in name resolution)"))
+2025-04-22 07:34:39,697 - sensortower_bot - WARNING - No messages retrieved from Telegram channel
+2025-04-22 07:34:39,698 - sensortower_bot - INFO - Using fixed ranking value: 350
+2025-04-22 07:34:39,698 - sensortower_bot - INFO - Rank trend: 205 → 350 (down)
+2025-04-22 07:34:39,698 - sensortower_bot - INFO - Fetching Fear & Greed Index data
+2025-04-22 07:35:14,430 - sensortower_bot - ERROR - Request to Fear & Greed API failed: HTTPSConnectionPool(host='api.alternative.me', port=443): Max retries exceeded with url: /fng/?limit=1 (Caused by NameResolutionError("<urllib3.connection.HTTPSConnection object at 0x7fd6d26feb60>: Failed to resolve 'api.alternative.me' ([Errno -3] Temporary failure in name resolution)"))
+2025-04-22 07:35:26,477 - sensortower_bot - INFO - Using last known Fear & Greed data
+2025-04-22 07:35:26,496 - sensortower_bot - INFO - Успешно получены данные Fear & Greed Index: 47 (Neutral)
+2025-04-22 07:35:26,496 - sensortower_bot - INFO - Обнаружено изменение рейтинга: 350 (предыдущий: 398)
+2025-04-22 07:35:26,496 - sensortower_bot - INFO - Улучшение рейтинга: 398 → 350
+2025-04-22 07:36:20,358 - sensortower_bot - INFO - Connected to Telegram as baserank_bot
+2025-04-22 07:36:21,711 - sensortower_bot - INFO - Используем кешированные данные Google Trends (проверка менее 6 часов назад)
+2025-04-22 07:36:22,162 - sensortower_bot - INFO - Added Google Trends Pulse data: ⚪ - Neutral interest in cryptocurrencies
+2025-04-22 07:36:22,162 - sensortower_bot - INFO - Message content to send: 🔼 Coinbase Appstore Rank: 350
+
+😐 Neutral: 47/100
+🟡🟡🟡🟡░░░░░░
+
+⚪ Google Trends: Neutral interest in cr...
+2025-04-22 07:36:22,162 - sensortower_bot - INFO - Attempting to send message to Telegram channel: @cryptorankbase
+2025-04-22 07:36:53,721 - sensortower_bot - INFO - Message sent to Telegram channel successfully with MarkdownV2
+2025-04-22 07:37:00,592 - sensortower_bot - INFO - Комбинированное сообщение успешно отправлено
+2025-04-22 07:37:12,293 - sensortower_bot - INFO - Успешно обновлен последний отправленный рейтинг: 398 → 350
+2025-04-22 07:37:13,872 - sensortower_bot - INFO - Рейтинг 350 сохранен в файл /tmp/coinbasebot_rank_history.txt
+2025-04-22 07:37:14,242 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
