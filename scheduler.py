@@ -20,17 +20,9 @@ class SensorTowerScheduler:
         self.fear_greed_tracker = FearGreedIndexTracker()
         self.google_trends_pulse = GoogleTrendsPulse()
         
-        # Определяем пути для хранения данных в директории проекта вместо /tmp
-        # Создаем подкаталог data для хранения истории и других файлов бота
-        self.data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
-        if not os.path.exists(self.data_dir):
-            try:
-                os.makedirs(self.data_dir, exist_ok=True)
-            except Exception as e:
-                logger.error(f"Ошибка при создании директории для данных: {str(e)}")
-                # Используем текущую директорию как запасной вариант
-                self.data_dir = os.path.dirname(os.path.abspath(__file__))
-                
+        # Определяем пути для хранения данных непосредственно в директории бота вместо /tmp
+        # Используем корневую директорию бота для файлов истории
+        self.data_dir = os.path.dirname(os.path.abspath(__file__))
         self.rank_history_file = os.path.join(self.data_dir, "rank_history.txt")
         logger.info(f"Файл истории рейтинга будет храниться по пути: {self.rank_history_file}")
         
