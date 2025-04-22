@@ -1,0 +1,37 @@
+2025-04-22 22:30:05,769 - sensortower_bot - INFO - Запрос реальных данных из Google Trends API...
+2025-04-22 22:30:05,770 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin price']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:05,770 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:30:08,273 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto millionaire']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:08,273 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:30:11,277 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['buy bitcoin now']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:11,277 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto crash']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:11,277 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:30:13,780 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin scam']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:13,780 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:30:16,784 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto tax']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:16,784 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:16,784 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:30:19,287 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['cryptocurrency']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:19,288 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:30:22,291 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['blockchain']: Retry.__init__() got an unexpected keyword argument 'method_whitelist'
+2025-04-22 22:30:22,291 - sensortower_bot - INFO - Успешно получены данные Google Trends: ⚪ - Neutral interest in cryptocurrencies
+2025-04-22 22:30:22,291 - sensortower_bot - INFO - Получены реальные данные Google Trends: ⚪ - Neutral interest in cryptocurrencies
+2025-04-22 22:30:22,292 - sensortower_bot - INFO - Attempting to get ranking data from Telegram channel: @coinbaseappstore
+2025-04-22 22:30:22,292 - sensortower_bot - INFO - Attempting to scrape web version of channel: https://t.me/s/coinbaseappstore
+2025-04-22 22:30:22,389 - sensortower_bot - INFO - Found string 'Coinbase Rank: 240' in the raw HTML!
+2025-04-22 22:30:22,390 - sensortower_bot - INFO - Found message with ID 510 (should contain rank 240)
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Content of message 510: Coinbase Rank: 240 @spx_vix 😱
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Found 19 messages with IDs
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Message 1: [ID: 526] Coinbase Rank: 379 👍...
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Message 2: [ID: 525] Coinbase Rank: 398...
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Message 3: [ID: 524] Coinbase Rank: 412 😒...
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - After filtering for 'Coinbase Rank', found 18 relevant messages
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Checking most recent message for ranking...
+2025-04-22 22:30:22,391 - sensortower_bot - INFO - Extracted ranking using pattern 0 (Coinbase Rank): 379
+2025-04-22 22:30:22,392 - sensortower_bot - INFO - Found ranking in the most recent message: 379
+2025-04-22 22:30:22,392 - sensortower_bot - INFO - Successfully scraped ranking from Telegram: 379
+2025-04-22 22:30:22,392 - sensortower_bot - INFO - Rank trend: 379 → 379 (same)
+2025-04-22 22:30:22,392 - sensortower_bot - INFO - Fetching Fear & Greed Index data
+2025-04-22 22:30:22,703 - sensortower_bot - INFO - Successfully fetched Fear & Greed Index: 47 (Neutral)
+2025-04-22 22:30:22,704 - sensortower_bot - INFO - Manual scraping job triggered
+2025-04-22 22:30:22,704 - sensortower_bot - INFO - Выполняется запланированное задание скрапинга в 2025-04-22 22:30:22.704207
