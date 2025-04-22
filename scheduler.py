@@ -19,7 +19,20 @@ class SensorTowerScheduler:
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
         self.google_trends_pulse = GoogleTrendsPulse()
-        self.rank_history_file = "/tmp/coinbasebot_rank_history.txt"
+        
+        # Определяем пути для хранения данных в директории проекта вместо /tmp
+        # Создаем подкаталог data для хранения истории и других файлов бота
+        self.data_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+        if not os.path.exists(self.data_dir):
+            try:
+                os.makedirs(self.data_dir, exist_ok=True)
+            except Exception as e:
+                logger.error(f"Ошибка при создании директории для данных: {str(e)}")
+                # Используем текущую директорию как запасной вариант
+                self.data_dir = os.path.dirname(os.path.abspath(__file__))
+                
+        self.rank_history_file = os.path.join(self.data_dir, "rank_history.txt")
+        logger.info(f"Файл истории рейтинга будет храниться по пути: {self.rank_history_file}")
         
         # Пытаемся загрузить последний отправленный рейтинг из файла
         try:
@@ -68,12 +81,17 @@ class SensorTowerScheduler:
             import fcntl
             import os
             
-            self.lockfile = open("/tmp/coinbasebot.lock", "w")
+            # Перемещаем файл блокировки также в директорию данных
+            lockfile_path = os.path.join(self.data_dir, "coinbasebot.lock")
+            logger.info(f"Файл блокировки будет храниться по пути: {lockfile_path}")
+            
             try:
+                self.lockfile = open(lockfile_path, "w")
                 fcntl.lockf(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)
                 logger.info("Получена блокировка файла. Этот экземпляр бота будет единственным запущенным.")
             except IOError:
                 logger.error("Другой экземпляр бота уже запущен. Завершение работы.")
+                self.lockfile = None
                 return False
                 
             if self.running:
