@@ -105,7 +105,7 @@ class SensorTowerScheduler:
             if self.thread:
                 self.thread.join(timeout=1)
             # Освобождаем блокировку файла при остановке
-            if hasattr(self, 'lockfile'):
+            if hasattr(self, 'lockfile') and self.lockfile is not None:
                 import fcntl
                 try:
                     fcntl.lockf(self.lockfile, fcntl.LOCK_UN)
@@ -288,19 +288,27 @@ class SensorTowerScheduler:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
                 result = self._send_combined_message(rankings_data, fear_greed_data)
                 
-                if result:
-                    # Обновляем последний отправленный рейтинг
-                    previous_rank = self.last_sent_rank
-                    self.last_sent_rank = current_rank
-                    logger.info(f"Успешно обновлен последний отправленный рейтинг: {previous_rank} → {self.last_sent_rank}")
+                # Обновляем последний отправленный рейтинг независимо от результата отправки
+                # Это поможет избежать множественных сообщений при сбоях отправки
+                previous_rank = self.last_sent_rank
+                self.last_sent_rank = current_rank
+                logger.info(f"Обновлен последний отправленный рейтинг: {previous_rank} → {self.last_sent_rank}")
+                
+                # Сохраняем рейтинг в файл для восстановления при перезапуске
+                # Делаем это синхронно с обновлением переменной, чтобы избежать рассинхронизации
+                try:
+                    with open(self.rank_history_file, "w") as f:
+                        f.write(str(current_rank))
+                    logger.info(f"Рейтинг {current_rank} сохранен в файл {self.rank_history_file}")
                     
-                    # Сохраняем рейтинг в файл для восстановления при перезапуске
-                    try:
-                        with open(self.rank_history_file, "w") as f:
-                            f.write(str(current_rank))
-                        logger.info(f"Рейтинг {current_rank} сохранен в файл {self.rank_history_file}")
-                    except Exception as e:
-                        logger.error(f"Ошибка при сохранении рейтинга в файл: {str(e)}")
+                    # Проверка записи в файл
+                    if os.path.exists(self.rank_history_file):
+                        with open(self.rank_history_file, "r") as check_file:
+                            saved_value = check_file.read().strip()
+                            if saved_value != str(current_rank):
+                                logger.error(f"Ошибка записи: в файле {saved_value}, должно быть {current_rank}")
+                except Exception as e:
+                    logger.error(f"Ошибка при сохранении рейтинга в файл: {str(e)}")
                 return result
             else:
                 return True  # Работа выполнена успешно, сообщение не требовалось отправлять
@@ -350,6 +358,13 @@ class SensorTowerScheduler:
             # If job failed, restore the old value
             if not result:
                 self.last_sent_rank = old_last_sent_rank
+                # Также восстановим значение в файле истории
+                try:
+                    with open(self.rank_history_file, "w") as f:
+                        f.write(str(old_last_sent_rank))
+                    logger.info(f"Восстановлен рейтинг в файле: {old_last_sent_rank}")
+                except Exception as e:
+                    logger.error(f"Ошибка при восстановлении рейтинга в файле: {str(e)}")
                 
             return result
         else:
