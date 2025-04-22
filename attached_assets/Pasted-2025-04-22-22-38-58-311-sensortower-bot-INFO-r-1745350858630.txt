@@ -1,0 +1,138 @@
+2025-04-22 22:38:58,311 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-04-22 22:38:58,311 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 379
+2025-04-22 22:38:58,312 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-04-22 22:38:58,312 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-04-22 22:38:58,312 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-04-22 22:39:01,751 - werkzeug - INFO - 143.244.46.77 - - [22/Apr/2025 22:39:01] "GET / HTTP/1.1" 200 -
+2025-04-22 22:39:02,920 - sensortower_bot - INFO - Запрос реальных данных из Google Trends API...
+2025-04-22 22:39:02,920 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['bitcoin price'], таймфрейм: now 7-d
+2025-04-22 22:39:03,099 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin price']: The request failed: Google returned a response with code 429
+2025-04-22 22:39:03,099 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 156, in _get_category_score
+    current_data = self.pytrends.interest_over_time()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 232, in interest_over_time
+    req_json = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 159, in _get_data
+    raise exceptions.TooManyRequestsError.from_response(response)
+pytrends.exceptions.TooManyRequestsError: The request failed: Google returned a response with code 429
+
+2025-04-22 22:39:03,100 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:39:05,603 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['crypto millionaire'], таймфрейм: now 7-d
+2025-04-22 22:39:07,849 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto millionaire']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:07,850 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:07,850 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:39:10,853 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['buy bitcoin now'], таймфрейм: now 7-d
+2025-04-22 22:39:13,111 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['buy bitcoin now']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:13,111 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:13,112 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['crypto crash'], таймфрейм: now 7-d
+2025-04-22 22:39:15,366 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto crash']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:15,366 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:15,367 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:39:17,869 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['bitcoin scam'], таймфрейм: now 7-d
+2025-04-22 22:39:20,100 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin scam']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:20,101 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:20,101 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:39:23,104 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['crypto tax'], таймфрейм: now 7-d
+2025-04-22 22:39:25,383 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto tax']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:25,383 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:25,384 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['bitcoin'], таймфрейм: now 7-d
+2025-04-22 22:39:27,674 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:27,674 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:27,675 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:39:30,177 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['cryptocurrency'], таймфрейм: now 7-d
+2025-04-22 22:39:32,464 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['cryptocurrency']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:32,464 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:32,464 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:39:35,468 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['blockchain'], таймфрейм: now 7-d
+2025-04-22 22:39:37,708 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['blockchain']: The request failed: Google returned a response with code 400
+2025-04-22 22:39:37,708 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 171, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-22 22:39:37,709 - sensortower_bot - INFO - Успешно получены данные Google Trends: ⚪ - Neutral interest in cryptocurrencies

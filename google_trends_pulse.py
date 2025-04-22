@@ -70,19 +70,37 @@ class GoogleTrendsPulse:
             # Проверяем, прошло ли достаточно времени с последней проверки
             current_time = datetime.now()
             
-            # Если данные уже проверялись в течение настроенного срока кеширования, используем кешированные данные
-            if self.last_check_time and (current_time - self.last_check_time).total_seconds() < self.cache_duration and self.last_data:
-                logger.info(f"Используем кешированные данные Google Trends (проверка менее {self.cache_duration//3600} часов назад)")
+            # ВАЖНО: Увеличен срок кеширования до 24 часов (вместо 12), 
+            # чтобы минимизировать нагрузку на Google API и снизить вероятность блокировки
+            if self.last_check_time and (current_time - self.last_check_time).total_seconds() < 24 * 3600 and self.last_data:
+                logger.info(f"Используем кешированные данные Google Trends (проверка менее 24 часов назад)")
                 return self.last_data
-                
-            # Получаем данные для FOMO-запросов
-            fomo_score = self._get_category_score(self.fomo_keywords)
             
-            # Получаем данные для негативных запросов
-            fear_score = self._get_category_score(self.fear_keywords)
+            logger.info("Запрос реальных данных из Google Trends API...")
             
-            # Получаем данные для общих запросов
-            general_score = self._get_category_score(self.general_keywords)
+            # Делаем первоначальную паузу перед запросами, чтобы избежать 429 Too Many Requests
+            time.sleep(3)
+            
+            # Снижаем количество ключевых слов для запроса
+            # Запрашиваем только один ключевой запрос из каждой категории для снижения нагрузки
+            
+            # Получаем данные для FOMO-запросов (только первая группа)
+            fomo_keywords_limited = self.fomo_keywords[:1]
+            fomo_score = self._get_category_score(fomo_keywords_limited)
+            
+            # Делаем паузу между категориями
+            time.sleep(3)
+            
+            # Получаем данные для негативных запросов (только первая группа)
+            fear_keywords_limited = self.fear_keywords[:1]
+            fear_score = self._get_category_score(fear_keywords_limited)
+            
+            # Делаем паузу между категориями
+            time.sleep(3)
+            
+            # Получаем данные для общих запросов (только первая группа)
+            general_keywords_limited = self.general_keywords[:1]
+            general_score = self._get_category_score(general_keywords_limited)
             
             # Анализируем соотношения и тренды
             fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Предотвращаем деление на ноль
@@ -105,7 +123,7 @@ class GoogleTrendsPulse:
             self.last_check_time = current_time
             self.last_data = trends_data
             
-            logger.info(f"Успешно получены данные Google Trends: {signal} - {description}")
+            logger.info(f"Получены реальные данные Google Trends: {signal} - {description}")
             return trends_data
             
         except Exception as e:
@@ -117,15 +135,17 @@ class GoogleTrendsPulse:
                 return self.last_data
                 
             # Иначе возвращаем нейтральные данные
-            return {
+            neutral_data = {
                 "signal": "⚪",  # Белый сигнал для нейтрального состояния
-                "description": "Нейтральный интерес к криптовалютам",
+                "description": "Neutral interest in cryptocurrencies",
                 "fomo_score": 50,
                 "fear_score": 50,
                 "general_score": 50,
                 "fomo_to_fear_ratio": 1.0,
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
+            logger.info(f"Используем нейтральные данные Google Trends: {neutral_data['signal']} - {neutral_data['description']}")
+            return neutral_data
     
     def _get_category_score(self, keyword_groups):
         """
