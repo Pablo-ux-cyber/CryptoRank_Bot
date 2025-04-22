@@ -1,0 +1,32 @@
+2025-04-22 22:35:21,073 - sensortower_bot - INFO - Telegram bot initialized successfully
+2025-04-22 22:35:21,082 - werkzeug - WARNING -  * Debugger is active!
+2025-04-22 22:35:21,083 - werkzeug - INFO -  * Debugger PIN: 397-221-360
+2025-04-22 22:35:21,144 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-04-22 22:35:21,144 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 379
+2025-04-22 22:35:21,144 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-04-22 22:35:21,144 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-04-22 22:35:21,144 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-04-22 22:35:29,612 - werkzeug - INFO - 143.244.46.77 - - [22/Apr/2025 22:35:29] "GET / HTTP/1.1" 200 -
+2025-04-22 22:35:33,241 - sensortower_bot - INFO - Запрос реальных данных из Google Trends API...
+2025-04-22 22:35:35,536 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin price']: The request failed: Google returned a response with code 400
+2025-04-22 22:35:35,536 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:35:40,323 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto millionaire']: The request failed: Google returned a response with code 400
+2025-04-22 22:35:40,324 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:35:45,677 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['buy bitcoin now']: The request failed: Google returned a response with code 400
+2025-04-22 22:35:47,958 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto crash']: The request failed: Google returned a response with code 400
+2025-04-22 22:35:47,958 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:35:52,724 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin scam']: The request failed: Google returned a response with code 400
+2025-04-22 22:35:52,724 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:35:58,027 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto tax']: The request failed: Google returned a response with code 400
+2025-04-22 22:36:00,315 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin']: The request failed: Google returned a response with code 400
+2025-04-22 22:36:00,316 - sensortower_bot - INFO - Делаем паузу 2.5 секунд между запросами Google Trends
+2025-04-22 22:36:05,071 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['cryptocurrency']: The request failed: Google returned a response with code 400
+2025-04-22 22:36:05,072 - sensortower_bot - INFO - Делаем паузу 3.0 секунд между запросами Google Trends
+2025-04-22 22:36:10,412 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['blockchain']: The request failed: Google returned a response with code 400
+2025-04-22 22:36:10,413 - sensortower_bot - INFO - Успешно получены данные Google Trends: ⚪ - Neutral interest in cryptocurrencies
+2025-04-22 22:36:10,413 - sensortower_bot - INFO - Получены реальные данные Google Trends: ⚪ - Neutral interest in cryptocurrencies
+2025-04-22 22:36:10,413 - sensortower_bot - INFO - Attempting to get ranking data from Telegram channel: @coinbaseappstore
+2025-04-22 22:36:10,413 - sensortower_bot - INFO - Attempting to scrape web version of channel: https://t.me/s/coinbaseappstore
+2025-04-22 22:36:10,518 - sensortower_bot - INFO - Found string 'Coinbase Rank: 240' in the raw HTML!
+2025-04-22 22:36:10,519 - sensortower_bot - INFO - Found message with ID 510 (should contain rank 240)
+2025-04-22 22:

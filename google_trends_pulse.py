@@ -151,11 +151,13 @@ class GoogleTrendsPulse:
                 
                 # Получаем данные трендов за текущую неделю
                 try:
+                    logger.info(f"Запрос Google Trends для ключевых слов: {keyword_group}, таймфрейм: {self.timeframes['current']}")
                     self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["current"])
                     current_data = self.pytrends.interest_over_time()
                     
                     # Если данных нет, используем нейтральное значение для этой группы
                     if current_data.empty:
+                        logger.warning(f"Google Trends вернул пустой ответ для {keyword_group}")
                         results.append(50)
                         continue
                     
@@ -187,7 +189,11 @@ class GoogleTrendsPulse:
                     results.append(min(max(adjusted_score, 0), 100))
                     
                 except Exception as e:
+                    # Добавляем подробную информацию об ошибке
                     logger.error(f"Ошибка при получении данных для группы ключевых слов {keyword_group}: {str(e)}")
+                    # Дополнительная информация для отладки
+                    import traceback
+                    logger.error(f"Трассировка ошибки Google Trends:\n{traceback.format_exc()}")
                     results.append(50)  # Нейтральное значение при ошибке для этой группы
             
             # Если не удалось получить никаких данных, возвращаем нейтральное значение
