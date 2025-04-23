@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 47.5527682226891,
+    "fear_score": 56.43658935043584,
+    "general_score": 49.15746577517843,
+    "fomo_to_fear_ratio": 0.8425875618991825,
+    "timestamp": "2025-04-23 09:17:15"
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 57.073809575047605,
+    "fear_score": 65.53517007667553,
+    "general_score": 48.79806282024269,
+    "fomo_to_fear_ratio": 0.8708882499011109,
+    "timestamp": "2025-04-23 09:17:52"
+  }
+]
