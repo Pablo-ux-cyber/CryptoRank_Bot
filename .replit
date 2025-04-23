@@ -2,7 +2,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["geckodriver", "openssl"]
+packages = ["geckodriver"]
 
 [deployment]
 deploymentTarget = "autoscale"
