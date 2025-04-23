@@ -9,8 +9,21 @@ import logging
 from logger import logger
 
 # Создаем отдельный логгер для Google Trends для более детального отслеживания
-# (Настройка логгера уже произведена в logger.py, не нужно добавлять хендлеры)
 trends_logger = logging.getLogger('google_trends')
+trends_logger.setLevel(logging.DEBUG)
+
+# Настраиваем вывод в файл
+trends_file_handler = logging.FileHandler('google_trends_debug.log')
+trends_file_handler.setLevel(logging.DEBUG)
+trends_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+trends_file_handler.setFormatter(trends_formatter)
+trends_logger.addHandler(trends_file_handler)
+
+# Добавляем также обработчик для вывода в консоль
+trends_stream_handler = logging.StreamHandler()
+trends_stream_handler.setLevel(logging.INFO)
+trends_stream_handler.setFormatter(trends_formatter)
+trends_logger.addHandler(trends_stream_handler)
 
 class GoogleTrendsPulse:
     def __init__(self):
@@ -170,36 +183,27 @@ class GoogleTrendsPulse:
             # Получаем базовый HTML для анализа
             session = requests.Session()
             
-            # Если получаем ошибку 429, попробуем несколько разных User-Agent
-            user_agents = [
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-                'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.1 Safari/605.1.15',
-                'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.81 Safari/537.36'
-            ]
-            
-            # Выбираем случайный User-Agent
-            user_agent = random.choice(user_agents)
-            trends_logger.info(f"Используем User-Agent: {user_agent[:30]}...")
-            
             # Имитируем браузер
             session.headers.update({
-                'User-Agent': user_agent,
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
                 'Accept-Language': 'en-US,en;q=0.9',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Referer': 'https://trends.google.com/'
             })
             
+            # Заменяем на одиночные запросы с более короткими периодами и большей паузой
+            import random
+            
             # Случайный выбор ключевого слова из каждой категории для разнообразия запросов
-            fomo_term = markers['fomo'][0]  # Первый термин из списка FOMO
-            fear_term = markers['fear'][0]  # Первый термин из списка Fear
+            fomo_term = random.choice(markers['fomo'])
+            fear_term = random.choice(markers['fear'])
             
             # Запрашиваем популярность для FOMO с оптимальным периодом (14 дней)
             fomo_html = session.get(f"{base_url}?q={fomo_term}&date=now+14-d")
             logger.info(f"Получение fallback данных для FOMO ({fomo_term}): статус {fomo_html.status_code}")
             
-            # Фиксированная пауза между запросами (7 секунд)
-            delay = 7.0
+            # Более длительная случайная пауза между запросами (5-10 секунд)
+            delay = random.uniform(5.0, 10.0)
             logger.debug(f"Пауза между запросами: {delay:.2f} секунд")
             time.sleep(delay)
             
@@ -281,77 +285,27 @@ class GoogleTrendsPulse:
                 # Создаем новый экземпляр для этого вызова
                 trends_logger.debug("Создание нового экземпляра TrendReq")
                 # Используем самые простые параметры для минимального воздействия
-                # Делаем несколько попыток с разными параметрами, так как Google Trends может блокировать некоторые запросы
+                pytrends = TrendReq(hl='en-US', tz=0, timeout=(10,25))
+                
+                # Используем только один ключевой термин и оптимальный период (14 дней)
+                trends_logger.info("Запрос к Google Trends API для 'bitcoin'")
+                pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 14-d')
+                
+                # Получаем данные об интересе с небольшим таймаутом
+                trends_logger.debug("Получение данных interest_over_time")
+                trends_data_frame = pytrends.interest_over_time()
+                
+                # Теперь делаем второй запрос для 'crypto crash' после паузы
+                time.sleep(3)  # Пауза между запросами
+                trends_logger.info("Запрос к Google Trends API для 'crypto crash'")
+                fear_data_frame = None
                 try:
-                    # Попытка 1: короткий промежуток времени (7 дней)
-                    trends_logger.info("Попытка 1: Запрос к Google Trends API для 'bitcoin' (7 дней)")
-                    pytrends = TrendReq(hl='en-US', tz=0, timeout=(10,25))
-                    pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 7-d')
-                    trends_data_frame = pytrends.interest_over_time()
-                    
-                    # Если первая попытка успешна, делаем запрос для 'crypto crash'
-                    if not trends_data_frame.empty:
-                        time.sleep(5)  # Увеличиваем паузу между запросами
-                        trends_logger.info("Запрос к Google Trends API для 'crypto crash' (7 дней)")
-                        pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 7-d')
-                        fear_data_frame = pytrends.interest_over_time()
-                        trends_logger.debug("Успешно получены данные для 'crypto crash'")
-                    else:
-                        trends_logger.warning("Первая попытка вернула пустые данные")
-                        raise Exception("Empty response")
-                        
-                except Exception as e1:
-                    trends_logger.warning(f"Ошибка в первой попытке: {str(e1)}")
-                    trends_logger.info("Попытка 2: Запрос с другими параметрами (5 дней)")
-                    
-                    try:
-                        # Попытка 2: меньший промежуток (5 дней) и другой user-agent
-                        time.sleep(5)  # Более длительная пауза перед второй попыткой
-                        pytrends = TrendReq(hl='en-US', tz=0, timeout=(15,30))
-                        pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 5-d')
-                        trends_data_frame = pytrends.interest_over_time()
-                        
-                        # Если вторая попытка успешна, делаем запрос для 'crypto crash'
-                        if not trends_data_frame.empty:
-                            time.sleep(5)
-                            trends_logger.info("Запрос к Google Trends API для 'crypto crash' (5 дней)")
-                            pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 5-d')
-                            fear_data_frame = pytrends.interest_over_time()
-                        else:
-                            trends_logger.warning("Вторая попытка вернула пустые данные")
-                            raise Exception("Empty response on second attempt")
-                    
-                    except Exception as e2:
-                        trends_logger.warning(f"Ошибка во второй попытке: {str(e2)}")
-                        trends_logger.info("Попытка 3: Использование запасного метода получения данных")
-                        
-                        # Попытка 3: Используем веб-скрапинг как запасной вариант
-                        fallback_data = self.get_fallback_data_from_web()
-                        if fallback_data:
-                            fomo_score, fear_score, general_score = fallback_data
-                            trends_logger.info(f"Получены данные через запасной метод: FOMO={fomo_score}, Fear={fear_score}")
-                            # Переходим сразу к анализу результатов
-                            fomo_to_fear_ratio = fomo_score / fear_score if fear_score > 0 else 1.0
-                            
-                            # Определяем рыночный сигнал
-                            signal, description = self._determine_market_signal(
-                                fomo_score, fear_score, general_score, fomo_to_fear_ratio
-                            )
-                            trends_logger.info(f"Определен рыночный сигнал: {signal} - {description}")
-                            
-                            return {
-                                "signal": signal,
-                                "description": description,
-                                "fomo_score": fomo_score,
-                                "fear_score": fear_score,
-                                "general_score": general_score,
-                                "fomo_to_fear_ratio": fomo_to_fear_ratio,
-                                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                            }
-                        else:
-                            trends_logger.error("Не удалось получить данные даже через запасной метод")
-                            trends_data_frame = pd.DataFrame()
-                            fear_data_frame = None
+                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 14-d')
+                    fear_data_frame = pytrends.interest_over_time()
+                    trends_logger.debug("Успешно получены данные для 'crypto crash'")
+                except Exception as e:
+                    trends_logger.warning(f"Не удалось получить данные для 'crypto crash': {str(e)}")
+                    # Продолжаем с данными только для 'bitcoin'
                 trends_logger.debug(f"Получены данные: {not trends_data_frame.empty}, размер: {len(trends_data_frame) if not trends_data_frame.empty else 0}")
                 
                 if trends_data_frame.empty:
@@ -423,7 +377,6 @@ class GoogleTrendsPulse:
             
             # Расчет соотношения FOMO к страху
             fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Избегаем деления на ноль
-            trends_logger.info(f"FOMO/Fear Ratio: {fomo_to_fear_ratio:.2f}")
             
             # Определяем сигнал на основе полученных данных
             signal, description = self._determine_market_signal(fomo_score, fear_score, general_score, fomo_to_fear_ratio)
@@ -495,43 +448,30 @@ class GoogleTrendsPulse:
         Returns:
             tuple: (emoji-сигнал, текстовое описание на английском)
         """
-        # Детальное логирование для отладки определения сигнала
-        trends_logger.info(f"Определение рыночного сигнала. Параметры:")
-        trends_logger.info(f"FOMO score: {fomo_score:.2f}")
-        trends_logger.info(f"Fear score: {fear_score:.2f}")
-        trends_logger.info(f"General interest: {general_score:.2f}")
-        trends_logger.info(f"FOMO/Fear ratio: {fomo_to_fear_ratio:.2f}")
-        
         # Правило 1: Высокий FOMO и низкий страх = возможный пик рынка
         # Согласованно с индексом страха и жадности - зеленый для потенциального пика
         if fomo_score > 70 and fomo_to_fear_ratio > 3.0:
-            trends_logger.info(f"Определен сигнал: 🟢 (Высокий FOMO > 70 и FOMO/Fear > 3.0)")
             return "🟢", "High FOMO factor - possible market peak"
             
         # Правило 2: Растущий FOMO, средний страх = разогрев рынка
         elif fomo_score > 60 and fomo_to_fear_ratio > 1.5:
-            trends_logger.info(f"Определен сигнал: 🟡 (Растущий FOMO > 60 и FOMO/Fear > 1.5)")
             return "🟡", "Growing interest in cryptocurrencies - market warming up"
             
         # Правило 3: Высокий страх, низкий FOMO = возможная точка входа
         # Согласованно с индексом страха и жадности - красный для потенциальной точки входа
         elif fear_score > 70 and fomo_to_fear_ratio < 0.7:
-            trends_logger.info(f"Определен сигнал: 🔴 (Высокий страх > 70 и FOMO/Fear < 0.7)")
             return "🔴", "High fear and low FOMO - possible buying opportunity"
             
         # Правило 4: Средний страх, снижающийся FOMO = охлаждение рынка
         elif fear_score > 50 and fomo_to_fear_ratio < 1.0:
-            trends_logger.info(f"Определен сигнал: 🟠 (Средний страх > 50 и FOMO/Fear < 1.0)")
             return "🟠", "Decreasing interest in cryptocurrencies - market cooling down"
             
         # Правило 5: Низкий общий интерес = затишье на рынке
         elif general_score < 30:
-            trends_logger.info(f"Определен сигнал: 🔵 (Низкий общий интерес < 30)")
             return "🔵", "Low interest in cryptocurrencies - market hibernation"
             
         # По умолчанию - нейтральный сигнал
         else:
-            trends_logger.info(f"Определен сигнал: ⚪ (Нейтральный - ни одно условие не выполнено)")
             return "⚪", "Neutral interest in cryptocurrencies"
     
     def format_trends_message(self, trends_data=None):

@@ -401,8 +401,7 @@ class SensorTowerScheduler:
                                 classification=fear_greed_data['classification']
                             )
                             
-                        # Всегда сохраняем данные Google Trends независимо от изменения рейтинга
-                        # так как они могут измениться без изменения рейтинга
+                        # Если доступны данные Google Trends, сохраняем и их
                         trends_data = self.google_trends_pulse.get_trends_data()
                         if trends_data and 'signal' in trends_data and 'description' in trends_data:
                             history_api.save_google_trends_history(
