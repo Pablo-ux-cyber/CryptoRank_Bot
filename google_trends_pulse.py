@@ -64,6 +64,9 @@ class GoogleTrendsPulse:
             backoff_factor=1.5
         )
         
+        # Инициализация прокси-клиента для Google Trends с улучшенной стабильностью
+        self.proxy_trends = ProxyGoogleTrends()
+        
         # Категории ключевых слов для анализа
         self.fomo_keywords = ["bitcoin price", "crypto millionaire", "buy bitcoin now"]
         self.fear_keywords = ["crypto crash", "bitcoin scam", "crypto tax"]
