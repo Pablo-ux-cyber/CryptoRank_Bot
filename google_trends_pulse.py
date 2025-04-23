@@ -191,13 +191,25 @@ class GoogleTrendsPulse:
                 'Referer': 'https://trends.google.com/'
             })
             
-            # Запрашиваем популярность для каждой категории
-            fomo_html = session.get(f"{base_url}?q={markers['fomo'][0]}&date=now+7-d")
-            logger.info(f"Получение fallback данных для FOMO: статус {fomo_html.status_code}")
-            time.sleep(5)  # Пауза между запросами
+            # Заменяем на одиночные запросы с более короткими периодами и большей паузой
+            import random
             
-            fear_html = session.get(f"{base_url}?q={markers['fear'][0]}&date=now+7-d")
-            logger.info(f"Получение fallback данных для Fear: статус {fear_html.status_code}")
+            # Случайный выбор ключевого слова из каждой категории для разнообразия запросов
+            fomo_term = random.choice(markers['fomo'])
+            fear_term = random.choice(markers['fear'])
+            
+            # Запрашиваем популярность для FOMO с меньшим периодом (1 день)
+            fomo_html = session.get(f"{base_url}?q={fomo_term}&date=now+1-d")
+            logger.info(f"Получение fallback данных для FOMO ({fomo_term}): статус {fomo_html.status_code}")
+            
+            # Более длительная случайная пауза между запросами (5-10 секунд)
+            delay = random.uniform(5.0, 10.0)
+            logger.debug(f"Пауза между запросами: {delay:.2f} секунд")
+            time.sleep(delay)
+            
+            # Запрашиваем популярность для Fear с меньшим периодом
+            fear_html = session.get(f"{base_url}?q={fear_term}&date=now+1-d")
+            logger.info(f"Получение fallback данных для Fear ({fear_term}): статус {fear_html.status_code}")
             time.sleep(5)  # Пауза между запросами
             
             general_html = session.get(f"{base_url}?q={markers['general'][0]}&date=now+7-d")
@@ -272,44 +284,69 @@ class GoogleTrendsPulse:
                 
                 # Создаем новый экземпляр для этого вызова
                 trends_logger.debug("Создание нового экземпляра TrendReq")
-                # Используем только базовые параметры без retries, так как в новых версиях библиотеки
-                # изменились параметры для Retry объекта (метод method_whitelist был заменен)
+                # Используем самые простые параметры для минимального воздействия
                 pytrends = TrendReq(hl='en-US', tz=0, timeout=(10,25))
                 
-                # Получаем данные для ключевых слов за последние 3 месяца
-                trends_logger.info("Запрос к Google Trends API для 'bitcoin', 'crypto crash'")
-                pytrends.build_payload(['bitcoin', 'crypto crash'], cat=0, timeframe='today 3-m')
+                # Используем только один ключевой термин и небольшой период (7 дней)
+                trends_logger.info("Запрос к Google Trends API для 'bitcoin'")
+                pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 7-d')
                 
-                # Получаем данные об интересе со временем
+                # Получаем данные об интересе с небольшим таймаутом
                 trends_logger.debug("Получение данных interest_over_time")
                 trends_data_frame = pytrends.interest_over_time()
+                
+                # Теперь делаем второй запрос для 'crypto crash' после паузы
+                time.sleep(3)  # Пауза между запросами
+                trends_logger.info("Запрос к Google Trends API для 'crypto crash'")
+                fear_data_frame = None
+                try:
+                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 7-d')
+                    fear_data_frame = pytrends.interest_over_time()
+                    trends_logger.debug("Успешно получены данные для 'crypto crash'")
+                except Exception as e:
+                    trends_logger.warning(f"Не удалось получить данные для 'crypto crash': {str(e)}")
+                    # Продолжаем с данными только для 'bitcoin'
                 trends_logger.debug(f"Получены данные: {not trends_data_frame.empty}, размер: {len(trends_data_frame) if not trends_data_frame.empty else 0}")
                 
                 if trends_data_frame.empty:
-                    trends_logger.warning("Google Trends вернул пустые данные")
+                    trends_logger.warning("Google Trends вернул пустые данные для bitcoin")
                     # Используем значения по умолчанию
                     fomo_score = 50
                     fear_score = 50
                     general_score = 50
                 else:
-                    # Получаем последние 7 дней данных
-                    recent_data = trends_data_frame.tail(7)
+                    # Получаем данные bitcoin
+                    fomo_score = trends_data_frame['bitcoin'].mean()
                     
-                    # Средние значения для каждого термина
-                    trends_logger.debug(f"Расчет средних значений из {len(recent_data)} записей")
-                    fomo_score = recent_data['bitcoin'].mean()
-                    fear_score = recent_data['crypto crash'].mean()
+                    # Проверяем, получили ли мы данные для crypto crash
+                    if fear_data_frame is not None and not fear_data_frame.empty:
+                        fear_score = fear_data_frame['crypto crash'].mean()
+                    else:
+                        # Если не удалось получить данные для crypto crash, используем значение по умолчанию
+                        fear_score = 50
+                    
+                    # Рассчитываем общий интерес как среднее
                     general_score = (fomo_score + fear_score) / 2
+                    
+                    trends_logger.debug(f"Расчет средних значений:")
+                    trends_logger.debug(f"Bitcoin данные: {len(trends_data_frame)} записей")
+                    if fear_data_frame is not None:
+                        trends_logger.debug(f"Crypto crash данные: {len(fear_data_frame)} записей")
                     
                     trends_logger.info(f"Получены данные из Google Trends:")
                     trends_logger.info(f"FOMO (bitcoin): {fomo_score}")
                     trends_logger.info(f"Fear (crypto crash): {fear_score}")
                     trends_logger.info(f"General interest: {general_score}")
                     
-                    # Подробная информация для отладки
-                    trends_logger.debug("Детальные данные по дням:")
-                    for date, row in recent_data.iterrows():
-                        trends_logger.debug(f"  {date}: bitcoin={row['bitcoin']}, crypto crash={row['crypto crash']}")
+                        # Подробная информация для отладки
+                    trends_logger.debug("Детальные данные bitcoin по дням:")
+                    for date, row in trends_data_frame.iterrows():
+                        trends_logger.debug(f"  {date}: bitcoin={row['bitcoin']}")
+                    
+                    if fear_data_frame is not None and not fear_data_frame.empty:
+                        trends_logger.debug("Детальные данные crypto crash по дням:")
+                        for date, row in fear_data_frame.iterrows():
+                            trends_logger.debug(f"  {date}: crypto crash={row['crypto crash']}")
                 
             except Exception as e:
                 trends_logger.error(f"Ошибка при работе с Google Trends API: {str(e)}")

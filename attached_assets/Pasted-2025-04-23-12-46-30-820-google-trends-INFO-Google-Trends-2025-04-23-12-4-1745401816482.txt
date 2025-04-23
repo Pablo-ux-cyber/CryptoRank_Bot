@@ -1,0 +1,36 @@
+2025-04-23 12:46:30,820 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 12:46:30.820582, последняя проверка: None
+2025-04-23 12:46:30,820 - google_trends - INFO - Получение реальных данных из Google Trends API...
+2025-04-23 12:46:30,821 - google_trends - DEBUG - Создание нового экземпляра TrendReq
+2025-04-23 12:46:30,893 - google_trends - INFO - Запрос к Google Trends API для 'bitcoin', 'crypto crash'
+2025-04-23 12:46:31,269 - google_trends - DEBUG - Получение данных interest_over_time
+2025-04-23 12:46:31,384 - google_trends - ERROR - Ошибка при работе с Google Trends API: The request failed: Google returned a response with code 429
+2025-04-23 12:46:31,385 - google_trends - ERROR - Трассировка ошибки:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 285, in get_trends_data
+    trends_data_frame = pytrends.interest_over_time()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 232, in interest_over_time
+    req_json = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 159, in _get_data
+    raise exceptions.TooManyRequestsError.from_response(response)
+pytrends.exceptions.TooManyRequestsError: The request failed: Google returned a response with code 429
+
+2025-04-23 12:46:35,870 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 12:46:35.870357, последняя проверка: None
+2025-04-23 12:46:35,870 - google_trends - INFO - Получение реальных данных из Google Trends API...
+2025-04-23 12:46:35,870 - google_trends - DEBUG - Создание нового экземпляра TrendReq
+2025-04-23 12:46:35,936 - google_trends - INFO - Запрос к Google Trends API для 'bitcoin', 'crypto crash'
+2025-04-23 12:46:36,002 - google_trends - DEBUG - Получение данных interest_over_time
+2025-04-23 12:46:36,093 - google_trends - ERROR - Ошибка при работе с Google Trends API: The request failed: Google returned a response with code 429
+2025-04-23 12:46:36,094 - google_trends - ERROR - Трассировка ошибки:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 285, in get_trends_data
+    trends_data_frame = pytrends.interest_over_time()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 232, in interest_over_time
+    req_json = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 159, in _get_data
+    raise exceptions.TooManyRequestsError.from_response(response)
+pytrends.exceptions.TooManyRequestsError: The request failed: Google returned a response with code 429
+
+2025-04-23 12:46:53,801 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 12:46:53.801260, последняя проверка: 2025-04-23 12:46:35
+2025-04-23 12:46:53,801 - google_trends - INFO - Используем кешированные данные Google Trends (проверка менее 24 часов назад)
+2025-04-23 12:47:34,002 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 12:47:34.002322, последняя проверка: 2025-04-23 12:46:35
+2025-04-23 12:47:34,002 - google_trends - INFO - Используем кешированные данные Google Trends (проверка менее 24 часов назад)
