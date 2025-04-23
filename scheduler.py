@@ -47,11 +47,12 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения и Fear & Greed Index каждые 5 минут
+        - Проверяет рейтинг приложения и Fear & Greed Index один раз в день в 11:10
         - Проверяет Google Trends только раз в день, примерно в 10:00
         """
-        # Переменная для отслеживания, когда последний раз обновлялись данные Google Trends
+        # Переменные для отслеживания, когда последний раз обновлялись данные
         self.last_trends_update_date = None
+        self.last_rank_update_date = None
         
         # При старте получаем свежие данные Google Trends
         try:
@@ -64,17 +65,23 @@ class SensorTowerScheduler:
         
         while not self.stop_event.is_set():
             try:
-                # Проверяем, не нужно ли обновить данные Google Trends
-                # (только один раз в день, примерно в 10:00)
+                # Текущее время и дата
                 now = datetime.now()
                 today = now.date()
                 update_trends = False
+                update_rank = False
                 
-                # Если сейчас примерно 10 часов (9:45 - 10:15) и мы ещё не обновляли данные сегодня
+                # Проверяем, не нужно ли обновить данные Google Trends (около 10:00)
                 if (now.hour == 9 and now.minute >= 45) or (now.hour == 10 and now.minute <= 15):
                     if self.last_trends_update_date is None or self.last_trends_update_date < today:
                         update_trends = True
                         logger.info(f"Запланировано обновление данных Google Trends в {now}")
+                
+                # Проверяем, не нужно ли обновить данные о рейтинге Coinbase (в 11:10)
+                if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
+                    if self.last_rank_update_date is None or self.last_rank_update_date < today:
+                        update_rank = True
+                        logger.info(f"Запланировано обновление данных о рейтинге Coinbase в {now}")
                 
                 # Обновляем данные Google Trends, если нужно
                 if update_trends:
@@ -89,7 +96,16 @@ class SensorTowerScheduler:
                 # Проверяем, не выполняется ли ручная операция скрапинга
                 manual_lock_file = os.path.join(self.data_dir, "manual_operation.lock")
                 
-                if os.path.exists(manual_lock_file):
+                # Обновляем данные о рейтинге, если пришло время и нет ручной блокировки
+                if update_rank and not os.path.exists(manual_lock_file):
+                    try:
+                        logger.info("Получение данных о рейтинге Coinbase (ежедневное обновление в 11:10)")
+                        self.run_scraping_job()
+                        self.last_rank_update_date = today
+                        logger.info(f"Данные о рейтинге Coinbase успешно обновлены: {now}")
+                    except Exception as e:
+                        logger.error(f"Ошибка при получении данных о рейтинге Coinbase: {str(e)}")
+                elif os.path.exists(manual_lock_file):
                     try:
                         import fcntl
                         with open(manual_lock_file, "r") as manual_lock:
@@ -98,18 +114,14 @@ class SensorTowerScheduler:
                                 fcntl.lockf(manual_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                                 # Если получили блокировку, значит никто ее не держит
                                 fcntl.lockf(manual_lock, fcntl.LOCK_UN)
-                                # Запускаем задание (используем кешированные данные Google Trends)
-                                self.run_scraping_job()
+                                # Проверяем, не наступило ли время ежедневного обновления данных
+                                if update_rank:
+                                    logger.info("Пропуск планового обновления рейтинга из-за выполнения ручной операции")
                             except IOError:
                                 # Блокировка занята - пропускаем текущий запуск
                                 logger.info("Пропуск планового запуска из-за выполнения ручной операции")
                     except Exception as e:
                         logger.error(f"Ошибка при проверке блокировки ручной операции: {str(e)}")
-                        # В случае ошибки работы с блокировкой все равно выполняем задание
-                        self.run_scraping_job()
-                else:
-                    # Файла блокировки нет, запускаем задание как обычно
-                    self.run_scraping_job()
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {str(e)}")
             
