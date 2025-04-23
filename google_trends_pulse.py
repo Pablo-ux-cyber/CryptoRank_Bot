@@ -125,7 +125,6 @@ class GoogleTrendsPulse:
                 result = pytrends.interest_over_time()
                 trends_logger.info(f"Успешно получены данные с Google Trends (попытка {attempt})")
                 return result
-                
             except TooManyRequestsError:
                 if attempt == retries:
                     # После последней неудачи — пробрасываем ошибку
@@ -134,13 +133,6 @@ class GoogleTrendsPulse:
                 trends_logger.warning(f"429 Too Many Requests (попытка {attempt}/{retries}), ждем {delay} секунд...")
                 time.sleep(delay)
                 delay *= 2  # Экспоненциальный рост задержки
-            except Exception as e:
-                trends_logger.error(f"Неожиданная ошибка в safe_interest_over_time: {str(e)}")
-                if attempt == retries:
-                    raise
-                trends_logger.warning(f"Повторная попытка {attempt+1}/{retries} через {delay} секунд...")
-                time.sleep(delay)
-                delay *= 1.5
         return None
     
     def get_term_interest(self, term, locale='en-US'):
@@ -158,10 +150,12 @@ class GoogleTrendsPulse:
         trends_logger.info(f"Получение данных для термина: {term}")
         
         try:
-            # Используем формат "now 14-d" для последних 14 дней, как предложил пользователь
-            timeframe = 'now 14-d'
+            # Диапазон за последние 30 дней в формате "YYYY-MM-DD YYYY-MM-DD"
+            today = datetime.utcnow().date()
+            start = today - timedelta(days=30)
+            timeframe = f"{start} {today}"  # "YYYY-MM-DD YYYY-MM-DD"
             
-            trends_logger.info(f"Используем временной диапазон: {timeframe}")
+            trends_logger.info(f"Сформирован диапазон дат: {timeframe}")
             
             # Создаём клиента с указанной локалью 'en-US' и часовым поясом UTC
             pytrends = TrendReq(hl=locale, tz=0)
