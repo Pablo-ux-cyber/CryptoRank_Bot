@@ -56,8 +56,10 @@ else
     [ -f "$TARGET_DIR/sensortower_bot.log" ] && cp "$TARGET_DIR/sensortower_bot.log" "$BACKUP_DIR/"
     [ -f "$TARGET_DIR/google_trends_debug.log" ] && cp "$TARGET_DIR/google_trends_debug.log" "$BACKUP_DIR/"
     
-    # Сохраняем локальные изменения, если они есть
-    git stash
+    # Сброс всех локальных изменений и неотслеживаемых файлов в Git
+    echo "Resetting Git repository state..."
+    git reset --hard
+    git clean -fd
     
     # Переключаемся на нужную ветку
     git checkout "$BRANCH"
@@ -85,8 +87,8 @@ else
     # Удаляем временную директорию с бэкапами
     rm -rf "$BACKUP_DIR"
     
-    # При необходимости, применяем сохраненные локальные изменения
-    git stash pop
+    # Удаляем остатки пул-реквестов (если были)
+    echo "Cleaning up repository state..."
 fi
 
 # Дополнительные действия после обновления кода
