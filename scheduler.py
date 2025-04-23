@@ -48,7 +48,7 @@ class SensorTowerScheduler:
         """
         The main scheduler loop that runs in a background thread.
         - Проверяет рейтинг приложения и Fear & Greed Index каждые 5 минут
-        - Проверяет Google Trends только раз в день, примерно в 11:00
+        - Проверяет Google Trends только раз в день, примерно в 10:00
         """
         # Переменная для отслеживания, когда последний раз обновлялись данные Google Trends
         self.last_trends_update_date = None
@@ -65,7 +65,7 @@ class SensorTowerScheduler:
         while not self.stop_event.is_set():
             try:
                 # Проверяем, не нужно ли обновить данные Google Trends
-                # (только один раз в день, примерно в 11:00)
+                # (только один раз в день, примерно в 10:00)
                 now = datetime.now()
                 today = now.date()
                 update_trends = False
