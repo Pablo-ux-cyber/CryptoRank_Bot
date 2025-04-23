@@ -456,9 +456,9 @@ class GoogleTrendsPulse:
                 pytrends = TrendReq(hl='en-US', tz=0)
                 
                 try:
-                    # Используем период 14 дней согласно требованиям
-                    trends_logger.info("Запрос к Google Trends API для 'bitcoin' за 14 дней")
-                    pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 14-d')
+                    # Используем период 3 месяца вместо 14 дней из-за возможных проблем с API
+                    trends_logger.info("Запрос к Google Trends API для 'bitcoin' за 3 месяца")
+                    pytrends.build_payload(['bitcoin'], cat=0, timeframe='today 3-m')
                     
                     # Получаем данные об интересе
                     trends_logger.debug("Получение данных interest_over_time")
@@ -469,11 +469,11 @@ class GoogleTrendsPulse:
                     time.sleep(3)  
                     
                     # Если первый запрос успешен, делаем второй
-                    trends_logger.info("Запрос к Google Trends API для 'crypto crash' за 14 дней")
+                    trends_logger.info("Запрос к Google Trends API для 'crypto crash' за 3 месяца")
                     fear_data_frame = None
                     
                     # Используем тот же временной период
-                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 14-d')
+                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='today 3-m')
                     fear_data_frame = pytrends.interest_over_time()
                     
                     if not fear_data_frame.empty:
