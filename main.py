@@ -14,19 +14,12 @@ from routes.trends_routes import trends_bp
 
 # Create Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
+app.secret_key = "sensortower_bot_secret"
 
-# Добавляем фильтр now для шаблонов
+# Добавляем фильтр now() для шаблонов
 @app.template_filter('now')
 def template_now(_=None):
-    """Return current datetime"""
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-# Установить сегодняшнюю дату для шаблонов
-@app.context_processor
-def inject_today_date():
-    """Inject current date for templates"""
-    return {'today_date': datetime.now().strftime("%Y-%m-%d")}
+    return datetime.now()
 
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
@@ -246,151 +239,6 @@ def get_fear_greed():
         logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/preview-message')
-def preview_message():
-    """Preview the message that would be sent to Telegram without actually sending it"""
-    global last_trends_data, last_trends_time, last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time
-    
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-    
-    try:
-        # Используем только кешированные данные, не делаем новых запросов к API
-        # Для App Rankings
-        if last_scrape_data:
-            rankings_data = last_scrape_data
-        else:
-            # Если нет кешированных данных, получаем из истории
-            try:
-                history_api = HistoryAPI()
-                rank_history = history_api.get_rank_history(limit=1)
-                if rank_history and len(rank_history) > 0:
-                    last_rank = rank_history[0]
-                    rankings_data = {
-                        "app_name": "Coinbase",
-                        "current_rank": last_rank.get("rank", 0),
-                        "previous_rank": None,
-                        "change_direction": last_rank.get("change_direction", "none"),
-                        "change_value": last_rank.get("change_value", 0),
-                        "category": last_rank.get("category", "Finance")
-                    }
-                else:
-                    rankings_data = {
-                        "app_name": "Coinbase",
-                        "current_rank": 0,
-                        "previous_rank": None,
-                        "change_direction": "none",
-                        "change_value": 0,
-                        "category": "Finance"
-                    }
-            except Exception as e:
-                logger.error(f"Error loading rank history: {str(e)}")
-                rankings_data = {
-                    "app_name": "Coinbase",
-                    "current_rank": 0,
-                    "previous_rank": None,
-                    "change_direction": "none",
-                    "change_value": 0,
-                    "category": "Finance"
-                }
-        
-        # Для Fear & Greed Index
-        if last_fear_greed_data:
-            fear_greed_data = last_fear_greed_data
-        else:
-            # Если нет кешированных данных, получаем из истории
-            try:
-                history_api = HistoryAPI()
-                fear_greed_history = history_api.get_fear_greed_history(limit=1)
-                if fear_greed_history and len(fear_greed_history) > 0:
-                    last_fg = fear_greed_history[0]
-                    fear_greed_data = {
-                        "value": last_fg.get("value", 50),
-                        "classification": last_fg.get("classification", "Neutral")
-                    }
-                else:
-                    fear_greed_data = {"value": 50, "classification": "Neutral"}
-            except Exception as e:
-                logger.error(f"Error loading fear greed history: {str(e)}")
-                fear_greed_data = {"value": 50, "classification": "Neutral"}
-        
-        # Для Google Trends
-        if last_trends_data:
-            trends_data = last_trends_data
-        else:
-            # Если нет кешированных данных, получаем из истории
-            try:
-                history_api = HistoryAPI()
-                trends_history = history_api.get_google_trends_history(limit=1)
-                if trends_history and len(trends_history) > 0:
-                    last_trend = trends_history[0]
-                    trends_data = {
-                        "signal": last_trend.get("signal", "⚪"),
-                        "description": last_trend.get("description", "Neutral interest in cryptocurrencies"),
-                        "fomo_score": last_trend.get("fomo_score", 50),
-                        "fear_score": last_trend.get("fear_score", 50),
-                        "general_score": last_trend.get("general_score", 50),
-                        "fomo_to_fear_ratio": last_trend.get("fomo_to_fear_ratio", 1.0)
-                    }
-                else:
-                    trends_data = {
-                        "signal": "⚪",
-                        "description": "Neutral interest in cryptocurrencies",
-                        "fomo_score": 50,
-                        "fear_score": 50,
-                        "general_score": 50,
-                        "fomo_to_fear_ratio": 1.0
-                    }
-            except Exception as e:
-                logger.error(f"Error loading trends history: {str(e)}")
-                trends_data = {
-                    "signal": "⚪",
-                    "description": "Neutral interest in cryptocurrencies",
-                    "fomo_score": 50,
-                    "fear_score": 50,
-                    "general_score": 50,
-                    "fomo_to_fear_ratio": 1.0
-                }
-        
-        # Compose the message that would be sent to Telegram
-        message_preview = ""
-        try:
-            if rankings_data:
-                message_format = scheduler.scraper.format_rankings_message(rankings_data)
-                if message_format:
-                    message_preview += message_format
-                    message_preview += "\n\n" + "------------" + "\n\n"
-        except Exception as e:
-            logger.error(f"Error formatting rankings message: {str(e)}")
-            
-        try:
-            if fear_greed_data:
-                message_format = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-                if message_format:
-                    message_preview += message_format
-                    message_preview += "\n\n" + "------------" + "\n\n"
-        except Exception as e:
-            logger.error(f"Error formatting fear greed message: {str(e)}")
-            
-        try:
-            if trends_data:
-                message_format = f"{trends_data['signal']} Google Trends Pulse: {trends_data['description']}"
-                message_preview += message_format
-        except Exception as e:
-            logger.error(f"Error formatting trends message: {str(e)}")
-        
-        # Show the message preview
-        return render_template('message_preview.html', 
-                              message=message_preview, 
-                              rankings_data=rankings_data,
-                              fear_greed_data=fear_greed_data,
-                              trends_data=trends_data,
-                              preview_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        
-    except Exception as e:
-        logger.error(f"Error creating message preview: {str(e)}")
-        return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
-
 @app.route('/get-trends-pulse')
 def get_trends_pulse():
     """Manually fetch Google Trends Pulse data and send it as a message"""
@@ -420,7 +268,7 @@ def get_trends_pulse():
         else:
             # Реальные данные из API (может быть медленным или ограниченным)
             logger.info("Запрос реальных данных из Google Trends API...")
-            trends_data = scheduler.google_trends_pulse.refresh_trends_data()
+            trends_data = scheduler.google_trends_pulse.get_trends_data()
             trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
             logger.info(f"Получены реальные данные Google Trends: {trends_data['signal']} - {trends_data['description']}")
         

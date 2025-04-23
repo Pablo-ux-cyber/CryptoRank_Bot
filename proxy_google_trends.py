@@ -12,15 +12,7 @@ import random
 import logging
 import requests
 from datetime import datetime, timedelta
-
-# Пробуем сначала использовать нашу исправленную версию
-try:
-    from fixed_trends import TrendReq
-    logging.getLogger('google_trends_proxy').info("Используем исправленную версию TrendReq")
-except ImportError:
-    # Если не удалось, используем оригинальную библиотеку
-    from pytrends.request import TrendReq
-    logging.getLogger('google_trends_proxy').info("Используем стандартную версию TrendReq")
+from pytrends.request import TrendReq
 
 # Настройка логгера
 logging.basicConfig(
@@ -73,19 +65,6 @@ class ProxyGoogleTrends:
         
         self.last_request_time = datetime.now()
     
-    def get_interest_with_retry(self, keyword, locale='en-US'):
-        """
-        Получает данные об интересе к ключевому слову с повторными попытками
-        
-        Args:
-            keyword (str): Ключевое слово для анализа
-            locale (str): Локаль для анализа (например, 'en-US', 'ru-RU')
-            
-        Returns:
-            tuple: (интерес, временной_период, статус_успеха)
-        """
-        return self.get_interest_data(keyword, locale)
-        
     def get_interest_data(self, keyword, locale='en-US'):
         """
         Получает данные об интересе к ключевому слову, пробуя разные временные периоды
@@ -135,8 +114,9 @@ class ProxyGoogleTrends:
         self._add_delay()
         
         try:
-            # Используем нашу собственную реализацию TrendReq без параметров retries
-            pytrends = TrendReq(hl=locale, tz=360, geo='', gprop='')
+            # Создаем новый экземпляр для каждого запроса
+            pytrends = TrendReq(hl=locale, tz=360, timeout=(10, 25), 
+                              retries=2, backoff_factor=0.5)
             
             # Формируем запрос
             pytrends.build_payload([keyword], cat=0, timeframe=timeframe, geo='', gprop='')

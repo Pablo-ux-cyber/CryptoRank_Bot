@@ -47,7 +47,7 @@
                         <h5 class="mb-0">Текущий рыночный сигнал</h5>
                         <div>
                             <span class="me-2">
-                                {% if trends_data.get('timestamp') and trends_data.get('timestamp', '')[:10] == today_date %}
+                                {% if trends_data.get('timestamp') and (trends_data.get('timestamp') | string)[:10] == now().strftime('%Y-%m-%d') %}
                                 <span class="status-indicator status-realtime"></span>Обновлено сегодня
                                 {% else %}
                                 <span class="status-indicator status-cached"></span>Кешированные данные
