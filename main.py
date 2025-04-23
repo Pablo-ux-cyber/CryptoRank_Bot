@@ -8,6 +8,7 @@ from flask import Flask, render_template, jsonify, redirect, url_for, flash, req
 from logger import logger
 from scheduler import SensorTowerScheduler
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
+from history_api import HistoryAPI
 
 # Create Flask app
 app = Flask(__name__)

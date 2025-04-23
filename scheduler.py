@@ -341,6 +341,42 @@ class SensorTowerScheduler:
                             saved_value = check_file.read().strip()
                             if saved_value != str(current_rank):
                                 logger.error(f"Ошибка записи: в файле {saved_value}, должно быть {current_rank}")
+                                
+                    # Дополнительно, если доступна база данных, сохраняем в историю
+                    try:
+                        # Импортируем модуль истории только если он доступен
+                        from history_manager import HistoryManager
+                        
+                        # Сохраняем рейтинг в историю с предыдущим значением для подсчета изменения
+                        HistoryManager.save_rank_history(
+                            rank=current_rank, 
+                            previous_rank=previous_rank
+                        )
+                        
+                        # Если доступны данные индекса страха и жадности, сохраняем и их
+                        if fear_greed_data and 'value' in fear_greed_data and 'classification' in fear_greed_data:
+                            HistoryManager.save_fear_greed_history(
+                                value=int(fear_greed_data['value']), 
+                                classification=fear_greed_data['classification']
+                            )
+                            
+                        # Если доступны данные Google Trends, сохраняем и их
+                        trends_data = self.google_trends_pulse.get_trends_data()
+                        if trends_data and 'signal' in trends_data and 'description' in trends_data:
+                            HistoryManager.save_google_trends_history(
+                                signal=trends_data['signal'],
+                                description=trends_data['description'],
+                                fomo_score=trends_data.get('fomo_score'),
+                                fear_score=trends_data.get('fear_score'),
+                                general_score=trends_data.get('general_score'),
+                                fomo_to_fear_ratio=trends_data.get('fomo_to_fear_ratio')
+                            )
+                    except ImportError:
+                        # Модуль истории недоступен, пропускаем сохранение в базу данных
+                        logger.debug("Модуль истории недоступен. История рейтинга сохранена только в файл.")
+                    except Exception as history_error:
+                        logger.error(f"Ошибка при сохранении истории в базу данных: {str(history_error)}")
+                        
                 except Exception as e:
                     logger.error(f"Ошибка при сохранении рейтинга в файл: {str(e)}")
                 return result
