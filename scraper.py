@@ -260,23 +260,8 @@ class SensorTowerScraper:
             
             if not messages or len(messages) == 0:
                 logger.warning("No messages retrieved from Telegram channel")
-                
-                # Исправляем: используем сохраненное значение вместо возврата None
-                if self.previous_rank:
-                    logger.info(f"Using previously saved rank ({self.previous_rank}) instead of returning None")
-                    data = {
-                        "app_name": "Coinbase",
-                        "app_id": self.app_id,
-                        "date": time.strftime("%Y-%m-%d"),
-                        "categories": [
-                            {"category": "US - iPhone - Top Free", "rank": str(self.previous_rank)}
-                        ],
-                        "is_fallback_data": True  # Добавляем флаг, что это сохраненные данные
-                    }
-                    return data
-                else:
-                    logger.error("No previous rank available - returning None")
-                    return None
+                logger.error("Cannot get reliable data - returning None")
+                return None
             else:
                 # Проверяем сначала самое свежее сообщение
                 ranking = None
@@ -302,23 +287,8 @@ class SensorTowerScraper:
                 
                 if ranking is None:
                     logger.error("Could not find ranking in any message")
-                    
-                    # Исправляем: используем сохраненное значение вместо возврата None
-                    if self.previous_rank:
-                        logger.info(f"Using previously saved rank ({self.previous_rank}) instead of returning None")
-                        data = {
-                            "app_name": "Coinbase",
-                            "app_id": self.app_id,
-                            "date": time.strftime("%Y-%m-%d"),
-                            "categories": [
-                                {"category": "US - iPhone - Top Free", "rank": str(self.previous_rank)}
-                            ],
-                            "is_fallback_data": True  # Добавляем флаг, что это сохраненные данные
-                        }
-                        return data
-                    else:
-                        logger.error("No previous rank available - returning None")
-                        return None
+                    logger.error("Cannot get reliable data - returning None")
+                    return None
                 
                 # Создаем структурированный формат данных
                 data = {
@@ -365,22 +335,7 @@ class SensorTowerScraper:
                 
         except Exception as e:
             logger.error(f"Error during scraping: {str(e)}")
-            
-            # Исправляем: используем сохраненное значение вместо возврата None
-            if self.previous_rank:
-                logger.info(f"Using previously saved rank ({self.previous_rank}) instead of returning None")
-                data = {
-                    "app_name": "Coinbase",
-                    "app_id": self.app_id,
-                    "date": time.strftime("%Y-%m-%d"),
-                    "categories": [
-                        {"category": "US - iPhone - Top Free", "rank": str(self.previous_rank)}
-                    ],
-                    "is_fallback_data": True  # Добавляем флаг, что это сохраненные данные
-                }
-                return data
-            else:
-                return None
+            return None
     
     def format_rankings_message(self, rankings_data):
         """
