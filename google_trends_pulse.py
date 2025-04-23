@@ -353,10 +353,27 @@ class GoogleTrendsPulse:
                 import traceback
                 trends_logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
                 
-                # В случае ошибки возвращаем нейтральные значения
-                fomo_score = 50
-                fear_score = 50
-                general_score = 50
+                # Проверяем, если это ошибка слишком большого количества запросов,
+                # пробуем получить данные через резервный метод
+                is_rate_limit = "429" in str(e) or "TooManyRequestsError" in str(e)
+                if is_rate_limit:
+                    trends_logger.warning("Обнаружено превышение лимита запросов (429). Использую резервный метод...")
+                    try:
+                        # Используем резервный метод получения данных
+                        fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
+                        trends_logger.info(f"Успешно получены данные через резервный метод: FOMO={fomo_score}, Fear={fear_score}")
+                    except Exception as fallback_e:
+                        trends_logger.error(f"Ошибка в резервном методе: {str(fallback_e)}")
+                        # В случае ошибки резервного метода используем нейтральные значения
+                        fomo_score = 50
+                        fear_score = 50
+                        general_score = 50
+                else:
+                    # Для других ошибок (не связанных с лимитами) используем нейтральные значения
+                    trends_logger.warning("Неизвестная ошибка, использую нейтральные значения")
+                    fomo_score = 50
+                    fear_score = 50
+                    general_score = 50
             
             # Расчет соотношения FOMO к страху
             fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Избегаем деления на ноль
