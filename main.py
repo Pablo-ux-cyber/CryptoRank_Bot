@@ -248,35 +248,102 @@ def preview_message():
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Collect all the necessary data
-        # Get app rankings data (either existing or new)
+        # Используем только кешированные данные, не делаем новых запросов к API
+        # Для App Rankings
         if last_scrape_data:
-            # Use existing rankings data
             rankings_data = last_scrape_data
         else:
-            # Or fetch new rankings data
-            rankings_data = scheduler.scraper.scrape_category_rankings()
-            if rankings_data:
-                last_scrape_data = rankings_data
-                last_scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Если нет кешированных данных, получаем из истории
+            try:
+                history_api = HistoryAPI()
+                rank_history = history_api.get_rank_history(limit=1)
+                if rank_history and len(rank_history) > 0:
+                    last_rank = rank_history[0]
+                    rankings_data = {
+                        "app_name": "Coinbase",
+                        "current_rank": last_rank.get("rank", 0),
+                        "previous_rank": None,
+                        "change_direction": last_rank.get("change_direction", "none"),
+                        "change_value": last_rank.get("change_value", 0),
+                        "category": last_rank.get("category", "Finance")
+                    }
+                else:
+                    rankings_data = {
+                        "app_name": "Coinbase",
+                        "current_rank": 0,
+                        "previous_rank": None,
+                        "change_direction": "none",
+                        "change_value": 0,
+                        "category": "Finance"
+                    }
+            except Exception as e:
+                logger.error(f"Error loading rank history: {str(e)}")
+                rankings_data = {
+                    "app_name": "Coinbase",
+                    "current_rank": 0,
+                    "previous_rank": None,
+                    "change_direction": "none",
+                    "change_value": 0,
+                    "category": "Finance"
+                }
         
-        # Get Fear & Greed Index data
+        # Для Fear & Greed Index
         if last_fear_greed_data:
             fear_greed_data = last_fear_greed_data
         else:
-            fear_greed_data = scheduler.get_current_fear_greed_index()
-            if fear_greed_data:
-                last_fear_greed_data = fear_greed_data
-                last_fear_greed_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Если нет кешированных данных, получаем из истории
+            try:
+                history_api = HistoryAPI()
+                fear_greed_history = history_api.get_fear_greed_history(limit=1)
+                if fear_greed_history and len(fear_greed_history) > 0:
+                    last_fg = fear_greed_history[0]
+                    fear_greed_data = {
+                        "value": last_fg.get("value", 50),
+                        "classification": last_fg.get("classification", "Neutral")
+                    }
+                else:
+                    fear_greed_data = {"value": 50, "classification": "Neutral"}
+            except Exception as e:
+                logger.error(f"Error loading fear greed history: {str(e)}")
+                fear_greed_data = {"value": 50, "classification": "Neutral"}
         
-        # Get Google Trends data
+        # Для Google Trends
         if last_trends_data:
             trends_data = last_trends_data
         else:
-            trends_data = scheduler.google_trends_pulse.get_trends_data(force_refresh=True)
-            if trends_data:
-                last_trends_data = trends_data
-                last_trends_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            # Если нет кешированных данных, получаем из истории
+            try:
+                history_api = HistoryAPI()
+                trends_history = history_api.get_google_trends_history(limit=1)
+                if trends_history and len(trends_history) > 0:
+                    last_trend = trends_history[0]
+                    trends_data = {
+                        "signal": last_trend.get("signal", "⚪"),
+                        "description": last_trend.get("description", "Neutral interest in cryptocurrencies"),
+                        "fomo_score": last_trend.get("fomo_score", 50),
+                        "fear_score": last_trend.get("fear_score", 50),
+                        "general_score": last_trend.get("general_score", 50),
+                        "fomo_to_fear_ratio": last_trend.get("fomo_to_fear_ratio", 1.0)
+                    }
+                else:
+                    trends_data = {
+                        "signal": "⚪",
+                        "description": "Neutral interest in cryptocurrencies",
+                        "fomo_score": 50,
+                        "fear_score": 50,
+                        "general_score": 50,
+                        "fomo_to_fear_ratio": 1.0
+                    }
+            except Exception as e:
+                logger.error(f"Error loading trends history: {str(e)}")
+                trends_data = {
+                    "signal": "⚪",
+                    "description": "Neutral interest in cryptocurrencies",
+                    "fomo_score": 50,
+                    "fear_score": 50,
+                    "general_score": 50,
+                    "fomo_to_fear_ratio": 1.0
+                }
         
         # Compose the message that would be sent to Telegram
         message_preview = ""
