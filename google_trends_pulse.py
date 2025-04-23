@@ -299,30 +299,121 @@ class GoogleTrendsPulse:
                 # Максимально простая реализация, точно как в тестовом примере
                 # Используем один поисковый запрос и смотрим относительный интерес
                 
-                # Создаем новый экземпляр для этого вызова
-                trends_logger.debug("Создание нового экземпляра TrendReq")
-                # Используем самые простые параметры для минимального воздействия
-                pytrends = TrendReq(hl='en-US', tz=0, timeout=(10,25))
+                # Создаем новый экземпляр для этого вызова с расширенными параметрами
+                trends_logger.debug("Создание нового экземпляра TrendReq с расширенными параметрами")
                 
-                # Используем только один ключевой термин и оптимальный период (14 дней)
-                trends_logger.info("Запрос к Google Trends API для 'bitcoin'")
-                pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 14-d')
+                # Пробуем разные заголовки для имитации браузера
+                headers = {
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36',
+                    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                    'Accept-Language': 'en-US,en;q=0.5',
+                    'Connection': 'keep-alive',
+                    'Upgrade-Insecure-Requests': '1',
+                    'Cache-Control': 'max-age=0'
+                }
                 
-                # Получаем данные об интересе с небольшим таймаутом
-                trends_logger.debug("Получение данных interest_over_time")
-                trends_data_frame = pytrends.interest_over_time()
-                
-                # Теперь делаем второй запрос для 'crypto crash' после паузы
-                time.sleep(3)  # Пауза между запросами
-                trends_logger.info("Запрос к Google Trends API для 'crypto crash'")
-                fear_data_frame = None
+                # Увеличенный таймаут
                 try:
-                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 14-d')
+                    # Пытаемся создать с обновленным API (новые версии)
+                    pytrends = TrendReq(
+                        hl='en-US', 
+                        tz=0, 
+                        timeout=(15, 30),
+                        retries=2,
+                        backoff_factor=0.5,
+                        requests_args={'headers': headers}
+                    )
+                except TypeError as type_error:
+                    # Проверяем, вызвана ли ошибка из-за метода method_whitelist
+                    if "method_whitelist" in str(type_error):
+                        trends_logger.info("Используем совместимые параметры для более старой версии библиотеки")
+                        # Используем совместимые параметры для старой версии
+                        pytrends = TrendReq(
+                            hl='en-US', 
+                            tz=0, 
+                            timeout=(15, 30),
+                            requests_args={'headers': headers}
+                        )
+                    else:
+                        # Если это другая ошибка типа, повторно вызываем исключение
+                        raise
+                
+                # Небольшая случайная задержка для имитации человеческого поведения
+                time.sleep(random.uniform(1.5, 3.0))
+                
+                # Пробуем сначала с более простым запросом
+                try:
+                    # Используем только один ключевой термин и короткий период (7 дней вместо 14)
+                    trends_logger.info("Запрос к Google Trends API для 'bitcoin'")
+                    pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 7-d')
+                    
+                    # Дополнительная задержка
+                    time.sleep(random.uniform(1.0, 2.0))
+                    
+                    # Получаем данные об интересе
+                    trends_logger.debug("Получение данных interest_over_time")
+                    trends_data_frame = pytrends.interest_over_time()
+                    
+                    # Если первый запрос успешен, делаем второй
+                    time.sleep(random.uniform(4.0, 6.0))  # Увеличенная пауза между запросами
+                    trends_logger.info("Запрос к Google Trends API для 'crypto crash'")
+                    fear_data_frame = None
+                    
+                    # Используем тот же короткий период для второго запроса
+                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 7-d')
                     fear_data_frame = pytrends.interest_over_time()
                     trends_logger.debug("Успешно получены данные для 'crypto crash'")
+                    
                 except Exception as e:
-                    trends_logger.warning(f"Не удалось получить данные для 'crypto crash': {str(e)}")
-                    # Продолжаем с данными только для 'bitcoin'
+                    trends_logger.error(f"Ошибка при работе с Google Trends API: {str(e)}")
+                    # Если основной метод не сработал, пробуем резервный метод
+                    # Используем веб-скрапинг или другой источник
+                    trends_logger.info("Попытка использовать резервный метод для получения данных...")
+                    
+                    # Пробуем метод с альтернативными параметрами
+                    try:
+                        # Создаем новый экземпляр с другими параметрами, без проблемных аргументов
+                        try:
+                            alt_pytrends = TrendReq(
+                                hl='en-GB',  # Меняем локаль
+                                tz=240,      # Другая временная зона
+                                timeout=(20, 40)
+                                # Убираем проблемные параметры, вызывающие ошибку
+                                # retries=3,
+                                # backoff_factor=1.0
+                            )
+                        except TypeError as type_error:
+                            # Если все еще возникает ошибка, используем минимальные параметры
+                            trends_logger.info("Используем минимальные параметры для альтернативного метода")
+                            alt_pytrends = TrendReq(
+                                hl='en-GB',
+                                tz=240
+                            )
+                        
+                        # Пробуем совсем короткий период
+                        time.sleep(random.uniform(2.0, 4.0))
+                        trends_logger.info("Альтернативный запрос к Google Trends API для 'bitcoin'")
+                        alt_pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 1-d')
+                        
+                        # Получаем данные
+                        time.sleep(random.uniform(1.0, 2.0))
+                        trends_data_frame = alt_pytrends.interest_over_time()
+                        
+                        # Для второго запроса
+                        fear_data_frame = None
+                        if not trends_data_frame.empty:
+                            time.sleep(random.uniform(3.0, 5.0))
+                            alt_pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 1-d')
+                            fear_data_frame = alt_pytrends.interest_over_time()
+                            trends_logger.info("Успешно получены альтернативные данные")
+                    except Exception as alt_e:
+                        trends_logger.error(f"Альтернативный метод тоже не сработал: {str(alt_e)}")
+                        # Если и альтернативный метод не сработал, используем веб-скрапинг
+                        trends_logger.info("Пробуем получить данные через веб-скрапинг...")
+                        fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
+                        # Создаем пустые DataFrame для сохранения консистентности кода
+                        trends_data_frame = pd.DataFrame()
+                        fear_data_frame = pd.DataFrame()
                 trends_logger.debug(f"Получены данные: {not trends_data_frame.empty}, размер: {len(trends_data_frame) if not trends_data_frame.empty else 0}")
                 
                 if trends_data_frame.empty:
