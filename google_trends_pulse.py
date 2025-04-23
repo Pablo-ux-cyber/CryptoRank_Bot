@@ -3,6 +3,7 @@ import json
 import random
 import requests
 from datetime import datetime, timedelta
+from pytrends.request import TrendReq
 from logger import logger
 
 class GoogleTrendsPulse:
@@ -22,13 +23,14 @@ class GoogleTrendsPulse:
         self.last_check_time = None
         self.last_data = None
         
+        # Инициализация pytrends API с английским языком и московским часовым поясом
+        # Не используем retries из-за проблем с совместимостью
+        self.pytrends = TrendReq(hl='en-US', tz=180)
+        
         # Категории ключевых слов для анализа
         self.fomo_keywords = ["bitcoin price", "crypto millionaire", "buy bitcoin now"]
         self.fear_keywords = ["crypto crash", "bitcoin scam", "crypto tax"]
         self.general_keywords = ["bitcoin", "cryptocurrency", "blockchain"]
-        
-        # API URL для Google Trends Explore API
-        self.api_url = "https://trends.google.com/trends/api/explore"
         
         # Параметры запроса для получения данных за последние 7 дней
         self.timeframe = "now 7-d"
@@ -38,6 +40,10 @@ class GoogleTrendsPulse:
             "current": "now 7-d",      # Текущая неделя
             "previous": "now 14-d",    # Предыдущая неделя для сравнения
         }
+        
+        # Задержки между запросами для избежания ограничений API
+        self.min_delay = 3  # минимальная задержка между запросами (секунды)
+        self.max_delay = 10  # максимальная задержка между запросами (секунды)
         
         # Определение маркетных сигналов
         self.market_signals = [
@@ -83,14 +89,13 @@ class GoogleTrendsPulse:
             logger.info("No Google Trends history found or invalid format, will create new")
             self.history_data = []
     
-    def _get_term_interest(self, term, timeframe, headers):
+    def _get_term_interest_with_pytrends(self, term, timeframe):
         """
-        Получает значение интереса к термину из Google Trends API напрямую
+        Получает значение интереса к термину с использованием библиотеки pytrends
         
         Args:
             term (str): Термин для поиска в Google Trends
             timeframe (str): Период времени для анализа (now 7-d, now 1-d и т.д.)
-            headers (dict): HTTP заголовки для запроса
             
         Returns:
             float: Оценка интереса к термину (0-100)
@@ -98,97 +103,24 @@ class GoogleTrendsPulse:
         logger.info(f"Получение данных для термина: {term}, период: {timeframe}")
         
         try:
-            # Параметры запроса
-            params = {
-                'hl': 'en-US',  # язык
-                'tz': '360',    # часовой пояс (GMT+6)
-                'req': '{"comparisonItem":[{"keyword":"' + term + '","geo":"","time":"' + timeframe + '"}],"category":0,"property":""}',
-                'tz': '-180'
-            }
+            # Формируем запрос к Google Trends
+            self.pytrends.build_payload([term], cat=0, timeframe=timeframe)
             
-            # URL для запроса данных через веб-интерфейс Google Trends
-            trends_url = f"https://trends.google.com/trends/explore?q={term}&date={timeframe}"
-            logger.info(f"URL для проверки в браузере: {trends_url}")
+            # Получаем временной ряд интереса
+            interest_data = self.pytrends.interest_over_time()
             
-            # Получаем данные из Google Trends Widget API
-            req_url = "https://trends.google.com/trends/api/explore"
-            response = requests.get(req_url, params=params, headers=headers, timeout=10)
+            if interest_data.empty:
+                logger.error(f"Пустой результат из Google Trends для '{term}'")
+                return 50  # нейтральное значение при пустом результате
             
-            if response.status_code != 200:
-                logger.error(f"Ошибка запроса к Google Trends: статус {response.status_code}")
-                return 50  # нейтральное значение при ошибке
-                
-            # Google Trends возвращает данные с префиксом ")]}',\n" который нужно убрать
-            json_data = response.text[5:]
-            
-            # Парсим JSON ответ
-            data = json.loads(json_data)
-            
-            # Получаем ID виджета с данными о трендах
-            widgets = data.get('widgets', [])
-            
-            if not widgets:
-                logger.error("Не удалось получить widgets из ответа Google Trends")
-                return 50
-                
-            interest_over_time_widget_id = None
-            
-            for widget in widgets:
-                if widget.get('title', '') == 'Interest over time':
-                    interest_over_time_widget_id = widget.get('id', '')
-                    break
-                    
-            if not interest_over_time_widget_id:
-                logger.error("Не удалось найти виджет 'Interest over time' в ответе Google Trends")
-                return 50
-                
-            # Получаем данные для виджета Interest over time
-            widget_params = {
-                'hl': 'en-US',
-                'tz': '360',
-                'req': json.dumps(widget.get('request', {})),
-                'token': widget.get('token', ''),
-                'tz': '360'
-            }
-            
-            widget_url = f"https://trends.google.com/trends/api/widgetdata/multiline"
-            widget_response = requests.get(widget_url, params=widget_params, headers=headers, timeout=10)
-            
-            if widget_response.status_code != 200:
-                logger.error(f"Ошибка при получении данных виджета: статус {widget_response.status_code}")
-                return 50
-                
-            # Снова убираем префикс
-            widget_json_data = widget_response.text[5:]
-            
-            # Парсим JSON ответ виджета
-            widget_data = json.loads(widget_json_data)
-            
-            # Получаем данные о трендах
-            trend_data = widget_data.get('default', {}).get('timelineData', [])
-            
-            if not trend_data:
-                logger.error("Не удалось получить данные о трендах")
-                return 50
-                
-            # Вычисляем среднее значение интереса за период
-            values = []
-            for point in trend_data:
-                if 'value' in point and len(point['value']) > 0:
-                    values.append(float(point['value'][0]))
-                    
-            if not values:
-                logger.error("Не удалось извлечь значения интереса")
-                return 50
-                
-            # Вычисляем средний интерес
-            avg_interest = sum(values) / len(values)
+            # Вычисляем среднее значение интереса
+            avg_interest = interest_data[term].mean()
             logger.info(f"Средний интерес для '{term}': {avg_interest}")
             
             return avg_interest
             
         except Exception as e:
-            logger.error(f"Ошибка при получении данных для термина '{term}': {str(e)}")
+            logger.error(f"Ошибка pytrends для термина '{term}': {str(e)}")
             import traceback
             logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
             return 50  # нейтральное значение при ошибке
@@ -300,39 +232,65 @@ class GoogleTrendsPulse:
                 logger.info(f"Используем кешированные данные Google Trends (проверка менее 24 часов назад)")
                 return self.last_data
             
-            # Получаем реальные данные из Google Trends API или веб-интерфейса
-            logger.info("Получение реальных данных из Google Trends...")
+            # Получаем реальные данные из Google Trends API
+            logger.info("Получение реальных данных из Google Trends API...")
             
             try:
-                # Настройка заголовков для имитации браузера
-                headers = {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-                    'Accept-Language': 'en-US,en;q=0.9',
-                    'Accept': 'application/json, text/plain, */*',
-                    'Content-Type': 'application/json',
-                    'Origin': 'https://trends.google.com',
-                    'Referer': 'https://trends.google.com/trends/explore',
-                    'x-client-data': 'CIS2yQEIprbJAQipncoBCMKTywEIkqHLAQiFk80BCPqYzQEI75jNAQi5mc0BCNKazQEI+JrNAQi0nM0BCO2czQEIjJ3NAQiZnc0B'
-                }
+                # Используем pytrends библиотеку для получения данных
+                fomo_keyword = "bitcoin price"
+                fear_keyword = "crypto crash"
+                general_keyword = "bitcoin"
                 
-                # Пробуем получить данные через API
-                fomo_score = self._get_term_interest("bitcoin price", self.timeframe, headers)
-                time.sleep(5)  # Увеличенная пауза между запросами
+                logger.info(f"Запрос к pytrends API для '{fomo_keyword}'")
+                self.pytrends.build_payload([fomo_keyword], cat=0, timeframe=self.timeframe)
+                fomo_data = self.pytrends.interest_over_time()
+                if not fomo_data.empty:
+                    fomo_score = fomo_data[fomo_keyword].mean()
+                    logger.info(f"Получено значение FOMO score: {fomo_score}")
+                else:
+                    fomo_score = 50
+                    logger.info("Пустой ответ для FOMO, используем нейтральное значение 50")
                 
-                fear_score = self._get_term_interest("crypto crash", self.timeframe, headers)
-                time.sleep(5)  # Увеличенная пауза между запросами
+                # Делаем паузу между запросами
+                time.sleep(self.min_delay)
                 
-                general_score = self._get_term_interest("bitcoin", self.timeframe, headers)
+                logger.info(f"Запрос к pytrends API для '{fear_keyword}'")
+                self.pytrends.build_payload([fear_keyword], cat=0, timeframe=self.timeframe)
+                fear_data = self.pytrends.interest_over_time()
+                if not fear_data.empty:
+                    fear_score = fear_data[fear_keyword].mean()
+                    logger.info(f"Получено значение Fear score: {fear_score}")
+                else:
+                    fear_score = 50
+                    logger.info("Пустой ответ для Fear, используем нейтральное значение 50")
+                    
+                # Делаем паузу между запросами
+                time.sleep(self.min_delay)
                 
-                # Если хотя бы один из запросов вернул нейтральное значение (50),
-                # это признак ошибки API, пробуем получить данные через запасной метод
+                logger.info(f"Запрос к pytrends API для '{general_keyword}'")
+                self.pytrends.build_payload([general_keyword], cat=0, timeframe=self.timeframe)
+                general_data = self.pytrends.interest_over_time()
+                if not general_data.empty:
+                    general_score = general_data[general_keyword].mean()
+                    logger.info(f"Получено значение General score: {general_score}")
+                else:
+                    general_score = 50
+                    logger.info("Пустой ответ для General, используем нейтральное значение 50")
+                
+                # Если все запросы вернули нейтральные значения (50),
+                # это может означать проблему с API
                 if fomo_score == 50 and fear_score == 50 and general_score == 50:
-                    logger.info("API Google Trends вернул нейтральные значения, переключаемся на запасной метод")
-                    fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
+                    logger.info("API вернул все нейтральные значения, возможна проблема с подключением")
                 
             except Exception as e:
-                logger.error(f"Ошибка API Google Trends: {str(e)}, переключаемся на запасной метод")
-                fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
+                logger.error(f"Ошибка при работе с pytrends API: {str(e)}")
+                import traceback
+                logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
+                
+                # В случае ошибки возвращаем нейтральные значения
+                fomo_score = 50
+                fear_score = 50
+                general_score = 50
             
             # Расчет соотношения FOMO к страху
             fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Избегаем деления на ноль
