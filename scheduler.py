@@ -134,6 +134,18 @@ class SensorTowerScheduler:
             lockfile_path = os.path.join(self.data_dir, "coinbasebot.lock")
             logger.info(f"Файл блокировки будет храниться по пути: {lockfile_path}")
             
+            # Если файл блокировки существует, но стар (> 30 минут), удаляем его
+            if os.path.exists(lockfile_path):
+                try:
+                    file_time = os.path.getmtime(lockfile_path)
+                    current_time = time.time()
+                    # Если файл старше 30 минут
+                    if current_time - file_time > 30 * 60:
+                        os.remove(lockfile_path)
+                        logger.info(f"Удален устаревший файл блокировки (возраст: {(current_time - file_time)/60:.1f} минут)")
+                except Exception as e:
+                    logger.warning(f"Ошибка при проверке старого файла блокировки: {str(e)}")
+            
             try:
                 self.lockfile = open(lockfile_path, "w")
                 fcntl.lockf(self.lockfile, fcntl.LOCK_EX | fcntl.LOCK_NB)

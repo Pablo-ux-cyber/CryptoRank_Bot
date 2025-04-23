@@ -21,6 +21,13 @@ app.secret_key = "sensortower_bot_secret"
 def template_now(_=None):
     return datetime.now()
 
+# Добавляем глобальную функцию now() для шаблонов
+@app.context_processor
+def utility_processor():
+    def now():
+        return datetime.now()
+    return dict(now=now)
+
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
 app.register_blueprint(trends_bp)
@@ -307,10 +314,16 @@ def health():
 @app.route('/api/test_format')
 def test_format():
     """Test the message formatting with sample data"""
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-        
+    from scraper import SensorTowerScraper
+    from fear_greed_index import FearGreedIndexTracker
+    from google_trends_pulse import GoogleTrendsPulse
+    
     try:
+        # Create instances for formatting even if scheduler is not running
+        scraper = scheduler.scraper if scheduler else SensorTowerScraper()
+        fear_greed_tracker = scheduler.fear_greed_tracker if scheduler else FearGreedIndexTracker()
+        google_trends_pulse = scheduler.google_trends_pulse if scheduler else GoogleTrendsPulse()
+        
         # Sample app ranking data
         rankings_data = {
             "app_name": "Coinbase",
@@ -342,15 +355,24 @@ def test_format():
         }
         
         # Format individual messages
-        rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
-        fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-        trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
+        rankings_message = scraper.format_rankings_message(rankings_data)
+        fear_greed_message = fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+        trends_message = google_trends_pulse.format_trends_message(trends_data)
         
         # Format combined message
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
         combined_message += "\n\n" + trends_message
         
+        # If this is a web request (not API)
+        if request.headers.get('Accept', '').find('application/json') == -1:
+            return render_template('format_test.html',
+                                   rankings_message=rankings_message,
+                                   fear_greed_message=fear_greed_message,
+                                   trends_message=trends_message,
+                                   combined_message=combined_message)
+        
+        # Return JSON for API requests
         return jsonify({
             "status": "success",
             "rankings_message": rankings_message,
