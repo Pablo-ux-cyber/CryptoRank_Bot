@@ -127,9 +127,18 @@ class ProxyGoogleTrends:
         self._add_delay()
         
         try:
-            # Создаем новый экземпляр для каждого запроса
-            pytrends = TrendReq(hl=locale, tz=360, timeout=(10, 25), 
-                              retries=2, backoff_factor=0.5)
+            # Создаем новый экземпляр для каждого запроса с исправленными параметрами
+            # В новых версиях requests параметр method_whitelist переименован в allowed_methods
+            # https://urllib3.readthedocs.io/en/stable/reference/urllib3.util.html
+            try:
+                # Пробуем сначала с новым параметром allowed_methods
+                pytrends = TrendReq(hl=locale, tz=360, timeout=(10, 25), 
+                                  retries=2, backoff_factor=0.5, 
+                                  requests_args={'headers': {'User-Agent': 'Mozilla/5.0'}})
+            except TypeError:
+                # Если не сработало, попробуем вообще без параметров retries
+                pytrends = TrendReq(hl=locale, tz=360, timeout=(10, 25),
+                                  requests_args={'headers': {'User-Agent': 'Mozilla/5.0'}})
             
             # Формируем запрос
             pytrends.build_payload([keyword], cat=0, timeframe=timeframe, geo='', gprop='')
