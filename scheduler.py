@@ -253,10 +253,13 @@ class SensorTowerScheduler:
                 pass
             return False
     
-    def run_scraping_job(self):
+    def run_scraping_job(self, check_google_trends=True):
         """
         Выполняет задание по скрапингу: получает данные SensorTower и отправляет в Telegram
         только если рейтинг изменился или это первый запуск
+        
+        Args:
+            check_google_trends (bool): Проверять ли данные Google Trends или использовать кеш
         """
         logger.info(f"Выполняется запланированное задание скрапинга в {datetime.now()}")
         
