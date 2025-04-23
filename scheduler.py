@@ -47,10 +47,45 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        Sleeps for 5 minutes between executions.
+        - Проверяет рейтинг приложения и Fear & Greed Index каждые 5 минут
+        - Проверяет Google Trends только раз в день, примерно в 11:00
         """
+        # Переменная для отслеживания, когда последний раз обновлялись данные Google Trends
+        self.last_trends_update_date = None
+        
+        # При старте получаем свежие данные Google Trends
+        try:
+            logger.info("Получение свежих данных Google Trends при запуске планировщика")
+            self.google_trends_pulse.refresh_trends_data()
+            self.last_trends_update_date = datetime.now().date()
+            logger.info(f"Данные Google Trends успешно обновлены: {datetime.now()}")
+        except Exception as e:
+            logger.error(f"Ошибка при получении данных Google Trends при запуске: {str(e)}")
+        
         while not self.stop_event.is_set():
             try:
+                # Проверяем, не нужно ли обновить данные Google Trends
+                # (только один раз в день, примерно в 11:00)
+                now = datetime.now()
+                today = now.date()
+                update_trends = False
+                
+                # Если сейчас примерно 11 часов (10:45 - 11:15) и мы ещё не обновляли данные сегодня
+                if (now.hour == 10 and now.minute >= 45) or (now.hour == 11 and now.minute <= 15):
+                    if self.last_trends_update_date is None or self.last_trends_update_date < today:
+                        update_trends = True
+                        logger.info(f"Запланировано обновление данных Google Trends в {now}")
+                
+                # Обновляем данные Google Trends, если нужно
+                if update_trends:
+                    try:
+                        logger.info("Получение свежих данных Google Trends (ежедневное обновление)")
+                        self.google_trends_pulse.refresh_trends_data()
+                        self.last_trends_update_date = today
+                        logger.info(f"Данные Google Trends успешно обновлены: {now}")
+                    except Exception as e:
+                        logger.error(f"Ошибка при получении данных Google Trends: {str(e)}")
+                
                 # Проверяем, не выполняется ли ручная операция скрапинга
                 manual_lock_file = os.path.join(self.data_dir, "manual_operation.lock")
                 
@@ -63,7 +98,7 @@ class SensorTowerScheduler:
                                 fcntl.lockf(manual_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
                                 # Если получили блокировку, значит никто ее не держит
                                 fcntl.lockf(manual_lock, fcntl.LOCK_UN)
-                                # Запускаем задание
+                                # Запускаем задание (используем кешированные данные Google Trends)
                                 self.run_scraping_job()
                             except IOError:
                                 # Блокировка занята - пропускаем текущий запуск
