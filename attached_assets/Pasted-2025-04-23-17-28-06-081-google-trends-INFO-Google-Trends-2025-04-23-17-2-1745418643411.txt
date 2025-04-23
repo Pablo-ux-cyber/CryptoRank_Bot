@@ -1,0 +1,40 @@
+2025-04-23 17:28:06,081 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 17:28:06.081401, последняя проверка: None
+2025-04-23 17:28:06,081 - google_trends - INFO - Получение реальных данных из Google Trends API...
+2025-04-23 17:28:06,081 - google_trends - DEBUG - Создание нового экземпляра TrendReq с расширенными параметрами
+2025-04-23 17:28:06,130 - google_trends - INFO - Использование основного метода Google Trends API
+2025-04-23 17:28:06,131 - google_trends - DEBUG - Создание TrendReq клиента с английской локалью
+2025-04-23 17:28:06,178 - google_trends - INFO - Запрос к Google Trends API для 'bitcoin' за 14 дней
+2025-04-23 17:28:06,226 - google_trends - ERROR - Ошибка при работе с Google Trends API: The request failed: Google returned a response with code 400
+2025-04-23 17:28:06,226 - google_trends - WARNING - Не удалось получить данные Google Trends. Резервные методы не используются.
+2025-04-23 17:28:06,229 - google_trends - DEBUG - Получены данные: False, размер: 0
+2025-04-23 17:28:06,229 - google_trends - WARNING - Google Trends вернул пустые данные для bitcoin
+2025-04-23 17:28:59,716 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 17:28:59.716861, последняя проверка: None
+2025-04-23 17:28:59,717 - google_trends - INFO - Получение реальных данных из Google Trends API...
+2025-04-23 17:28:59,717 - google_trends - DEBUG - Создание нового экземпляра TrendReq с расширенными параметрами
+2025-04-23 17:28:59,769 - google_trends - INFO - Использование основного метода Google Trends API
+2025-04-23 17:28:59,770 - google_trends - DEBUG - Создание TrendReq клиента с английской локалью
+2025-04-23 17:28:59,796 - google_trends - INFO - Запрос к Google Trends API для 'bitcoin' за 14 дней
+2025-04-23 17:28:59,843 - google_trends - ERROR - Ошибка при работе с Google Trends API: The request failed: Google returned a response with code 400
+2025-04-23 17:28:59,843 - google_trends - WARNING - Не удалось получить данные Google Trends. Резервные методы не используются.
+2025-04-23 17:28:59,846 - google_trends - DEBUG - Получены данные: False, размер: 0
+2025-04-23 17:28:59,846 - google_trends - WARNING - Google Trends вернул пустые данные для bitcoin
+2025-04-23 17:29:21,812 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 17:29:21.812402, последняя проверка: None
+2025-04-23 17:29:21,812 - google_trends - INFO - Получение реальных данных из Google Trends API...
+2025-04-23 17:29:21,812 - google_trends - DEBUG - Создание нового экземпляра TrendReq с расширенными параметрами
+2025-04-23 17:29:21,871 - google_trends - INFO - Использование основного метода Google Trends API
+2025-04-23 17:29:21,872 - google_trends - DEBUG - Создание TrendReq клиента с английской локалью
+2025-04-23 17:29:21,927 - google_trends - INFO - Запрос к Google Trends API для 'bitcoin' за 14 дней
+2025-04-23 17:29:21,974 - google_trends - ERROR - Ошибка при работе с Google Trends API: The request failed: Google returned a response with code 400
+2025-04-23 17:29:21,974 - google_trends - WARNING - Не удалось получить данные Google Trends. Резервные методы не используются.
+2025-04-23 17:29:21,976 - google_trends - DEBUG - Получены данные: False, размер: 0
+2025-04-23 17:29:21,976 - google_trends - WARNING - Google Trends вернул пустые данные для bitcoin
+2025-04-23 17:30:12,236 - google_trends - INFO - Запрос данных Google Trends. Время: 2025-04-23 17:30:12.236955, последняя проверка: 2025-04-22 17:30:12.236702
+2025-04-23 17:30:12,237 - google_trends - INFO - Получение реальных данных из Google Trends API...
+2025-04-23 17:30:12,237 - google_trends - DEBUG - Создание нового экземпляра TrendReq с расширенными параметрами
+2025-04-23 17:30:12,288 - google_trends - INFO - Использование основного метода Google Trends API
+2025-04-23 17:30:12,288 - google_trends - DEBUG - Создание TrendReq клиента с английской локалью
+2025-04-23 17:30:12,350 - google_trends - INFO - Запрос к Google Trends API для 'bitcoin' за 14 дней
+2025-04-23 17:30:12,371 - google_trends - ERROR - Ошибка при работе с Google Trends API: The request failed: Google returned a response with code 400
+2025-04-23 17:30:12,371 - google_trends - WARNING - Не удалось получить данные Google Trends. Резервные методы не используются.
+2025-04-23 17:30:12,373 - google_trends - DEBUG - Получены данные: False, размер: 0
+2025-04-23 17:30:12,373 - google_trends - WARNING - Google Trends вернул пустые данные для bitcoin

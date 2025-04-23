@@ -1,0 +1,78 @@
+(venv) root@imm1:~/coinbaserank_bot# python test_simple_periods.py
+2025-04-23 17:30:51,305 - INFO - ============================================================
+2025-04-23 17:30:51,305 - INFO - ТЕСТИРОВАНИЕ ПЕРИОДОВ GOOGLE TRENDS
+2025-04-23 17:30:51,305 - INFO - ============================================================
+2025-04-23 17:30:51,305 - INFO - Тестирование 5 периодов
+2025-04-23 17:30:51,305 - INFO - 
+========================================
+2025-04-23 17:30:51,305 - INFO - Тестирование периода: today 3-m
+2025-04-23 17:30:51,305 - INFO - ----------------------------------------
+2025-04-23 17:30:51,305 - INFO - Создание TrendReq клиента (en-US)...
+2025-04-23 17:30:51,331 - INFO - Формирование запроса для 'bitcoin' с периодом today 3-m...
+2025-04-23 17:30:51,382 - INFO - Запрос данных interest_over_time()...
+2025-04-23 17:30:51,452 - ERROR - ОШИБКА: The request failed: Google returned a response with code 429
+2025-04-23 17:30:51,452 - ERROR - Трассировка:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/test_simple_periods.py", line 39, in test_period
+    data_frame = pytrends.interest_over_time()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 232, in interest_over_time
+    req_json = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 159, in _get_data
+    raise exceptions.TooManyRequestsError.from_response(response)
+pytrends.exceptions.TooManyRequestsError: The request failed: Google returned a response with code 429
+
+2025-04-23 17:30:51,453 - INFO - Пауза 10 секунд перед следующим запросом...
+2025-04-23 17:31:01,457 - INFO - 
+========================================
+2025-04-23 17:31:01,457 - INFO - Тестирование периода: today 1-m
+2025-04-23 17:31:01,457 - INFO - ----------------------------------------
+2025-04-23 17:31:01,457 - INFO - Создание TrendReq клиента (en-US)...
+2025-04-23 17:31:01,513 - INFO - Формирование запроса для 'bitcoin' с периодом today 1-m...
+2025-04-23 17:31:01,567 - INFO - Запрос данных interest_over_time()...
+2025-04-23 17:31:01,655 - ERROR - ОШИБКА: The request failed: Google returned a response with code 429
+2025-04-23 17:31:01,655 - ERROR - Трассировка:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/test_simple_periods.py", line 39, in test_period
+    data_frame = pytrends.interest_over_time()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 232, in interest_over_time
+    req_json = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 159, in _get_data
+    raise exceptions.TooManyRequestsError.from_response(response)
+pytrends.exceptions.TooManyRequestsError: The request failed: Google returned a response with code 429
+
+2025-04-23 17:31:01,656 - INFO - Пауза 10 секунд перед следующим запросом...
+
+
+
+2025-04-23 17:31:11,666 - INFO - 
+========================================
+2025-04-23 17:31:11,666 - INFO - Тестирование периода: today 12-m
+2025-04-23 17:31:11,666 - INFO - ----------------------------------------
+2025-04-23 17:31:11,666 - INFO - Создание TrendReq клиента (en-US)...
+2025-04-23 17:31:11,715 - INFO - Формирование запроса для 'bitcoin' с периодом today 12-m...
+2025-04-23 17:31:11,777 - INFO - Запрос данных interest_over_time()...
+2025-04-23 17:31:11,841 - ERROR - ОШИБКА: The request failed: Google returned a response with code 429
+2025-04-23 17:31:11,841 - ERROR - Трассировка:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/test_simple_periods.py", line 39, in test_period
+    data_frame = pytrends.interest_over_time()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 232, in interest_over_time
+    req_json = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 159, in _get_data
+    raise exceptions.TooManyRequestsError.from_response(response)
+pytrends.exceptions.TooManyRequestsError: The request failed: Google returned a response with code 429
+
+2025-04-23 17:31:11,841 - INFO - Пауза 10 секунд перед следующим запросом...
+^CTraceback (most recent call last):
+  File "/root/coinbaserank_bot/test_simple_periods.py", line 140, in <module>
+    sys.exit(main())
+  File "/root/coinbaserank_bot/test_simple_periods.py", line 107, in main
+    time.sleep(delay)
+KeyboardInterrupt
+
+(venv) root@imm1:~/coinbaserank_bot# curl http://localhost:5000/trigger-scrape?force=true
+<!doctype html>
+<html lang=en>
+<title>Redirecting...</title>
+<h1>Redirecting...</h1>
+<p>You should be redirected automatically to the target URL: <a href="/">/</a>. If not, click the link.
