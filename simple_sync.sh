@@ -1,43 +1,36 @@
 #!/bin/bash
-# Простой скрипт синхронизации с обработкой конфликтов
 
-# Переходим в директорию проекта
-cd /root/coinbaserank_bot
+# Простой скрипт для синхронизации изменений с GitHub без лишних операций
+# Использует git stash для временного сохранения локальных изменений
 
-# Сохраняем важный файл конфигурации
-if [ -f "config.py" ]; then
-  cp config.py config.py.bak
+echo "=== Простая синхронизация с GitHub ==="
+echo "Дата: $(date)"
+echo ""
+
+# Проверка, что мы находимся в нужной директории
+if [ ! -d ".git" ]; then
+    echo "Ошибка: скрипт должен быть запущен из корневой директории репозитория!"
+    exit 1
 fi
 
-# Создаем временный .gitignore для защиты данных
-cat > .gitignore.tmp << EOL
-*.json
-*.log
-rank_history.txt
-coinbasebot.lock
-manual_operation.lock
-EOL
+# Получение текущего состояния
+echo "Состояние репозитория:"
+git status -s
+echo ""
 
-# Сначала отменяем все локальные изменения, кроме исключенных файлов
-git reset --hard
-git clean -f -d
+# Создание stash для временного сохранения изменений
+echo "Сохранение локальных изменений..."
+git stash -u
 
-# Перемещаем созданный .gitignore
-mv .gitignore.tmp .gitignore
+# Получение последней версии с GitHub
+echo "Получение последних изменений с GitHub..."
+git pull
 
-# Получаем обновления с GitHub
-git pull origin main
+# Применение сохраненных изменений
+echo "Восстановление локальных изменений..."
+git stash pop
 
-# Восстанавливаем конфигурацию
-if [ -f "config.py.bak" ]; then
-  cp config.py.bak config.py
-  rm config.py.bak
-fi
-
-# Устанавливаем права на исполнение скриптов
-chmod +x *.sh
-
-# Перезапускаем сервис
-sudo systemctl restart coinbasebot
-
-echo "Синхронизация успешно завершена!"
+echo ""
+echo "=== Синхронизация завершена ==="
+echo "Текущие изменения:"
+git status -s
