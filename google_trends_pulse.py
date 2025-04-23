@@ -198,8 +198,8 @@ class GoogleTrendsPulse:
             fomo_term = random.choice(markers['fomo'])
             fear_term = random.choice(markers['fear'])
             
-            # Запрашиваем популярность для FOMO с меньшим периодом (1 день)
-            fomo_html = session.get(f"{base_url}?q={fomo_term}&date=now+1-d")
+            # Запрашиваем популярность для FOMO с оптимальным периодом (14 дней)
+            fomo_html = session.get(f"{base_url}?q={fomo_term}&date=now+14-d")
             logger.info(f"Получение fallback данных для FOMO ({fomo_term}): статус {fomo_html.status_code}")
             
             # Более длительная случайная пауза между запросами (5-10 секунд)
@@ -207,12 +207,12 @@ class GoogleTrendsPulse:
             logger.debug(f"Пауза между запросами: {delay:.2f} секунд")
             time.sleep(delay)
             
-            # Запрашиваем популярность для Fear с меньшим периодом
-            fear_html = session.get(f"{base_url}?q={fear_term}&date=now+1-d")
+            # Запрашиваем популярность для Fear с оптимальным периодом (14 дней)
+            fear_html = session.get(f"{base_url}?q={fear_term}&date=now+14-d")
             logger.info(f"Получение fallback данных для Fear ({fear_term}): статус {fear_html.status_code}")
             time.sleep(5)  # Пауза между запросами
             
-            general_html = session.get(f"{base_url}?q={markers['general'][0]}&date=now+7-d")
+            general_html = session.get(f"{base_url}?q={markers['general'][0]}&date=now+14-d")
             logger.info(f"Получение fallback данных для General: статус {general_html.status_code}")
             
             # Грубая оценка популярности на основе контента
@@ -287,9 +287,9 @@ class GoogleTrendsPulse:
                 # Используем самые простые параметры для минимального воздействия
                 pytrends = TrendReq(hl='en-US', tz=0, timeout=(10,25))
                 
-                # Используем только один ключевой термин и небольшой период (7 дней)
+                # Используем только один ключевой термин и оптимальный период (14 дней)
                 trends_logger.info("Запрос к Google Trends API для 'bitcoin'")
-                pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 7-d')
+                pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 14-d')
                 
                 # Получаем данные об интересе с небольшим таймаутом
                 trends_logger.debug("Получение данных interest_over_time")
@@ -300,7 +300,7 @@ class GoogleTrendsPulse:
                 trends_logger.info("Запрос к Google Trends API для 'crypto crash'")
                 fear_data_frame = None
                 try:
-                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 7-d')
+                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 14-d')
                     fear_data_frame = pytrends.interest_over_time()
                     trends_logger.debug("Успешно получены данные для 'crypto crash'")
                 except Exception as e:
