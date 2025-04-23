@@ -70,8 +70,8 @@ class SensorTowerScheduler:
                 today = now.date()
                 update_trends = False
                 
-                # Если сейчас примерно 11 часов (10:45 - 11:15) и мы ещё не обновляли данные сегодня
-                if (now.hour == 10 and now.minute >= 45) or (now.hour == 11 and now.minute <= 15):
+                # Если сейчас примерно 10 часов (9:45 - 10:15) и мы ещё не обновляли данные сегодня
+                if (now.hour == 9 and now.minute >= 45) or (now.hour == 10 and now.minute <= 15):
                     if self.last_trends_update_date is None or self.last_trends_update_date < today:
                         update_trends = True
                         logger.info(f"Запланировано обновление данных Google Trends в {now}")
