@@ -39,6 +39,23 @@ else
     echo "Target directory exists. Updating..."
     cd "$TARGET_DIR" || { echo "Error: Could not change to target directory."; exit 1; }
     
+    # Сохраняем локальные файлы, которые могут быть перезаписаны
+    echo "Backing up important local files..."
+    
+    # Создаем временную директорию для бэкапа
+    BACKUP_DIR="$TARGET_DIR/backup_tmp"
+    mkdir -p "$BACKUP_DIR"
+    
+    # Бэкап файлов с данными
+    [ -f "$TARGET_DIR/rank_history.json" ] && cp "$TARGET_DIR/rank_history.json" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/trends_history.json" ] && cp "$TARGET_DIR/trends_history.json" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/fear_greed_history.json" ] && cp "$TARGET_DIR/fear_greed_history.json" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/rank_history.txt" ] && cp "$TARGET_DIR/rank_history.txt" "$BACKUP_DIR/"
+    
+    # Бэкап логов
+    [ -f "$TARGET_DIR/sensortower_bot.log" ] && cp "$TARGET_DIR/sensortower_bot.log" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/google_trends_debug.log" ] && cp "$TARGET_DIR/google_trends_debug.log" "$BACKUP_DIR/"
+    
     # Сохраняем локальные изменения, если они есть
     git stash
     
@@ -55,6 +72,18 @@ else
         echo "Error: Failed to pull changes from origin."
         exit 1
     fi
+    
+    # Восстанавливаем бэкапы локальных файлов
+    echo "Restoring local data files..."
+    [ -f "$BACKUP_DIR/rank_history.json" ] && cp "$BACKUP_DIR/rank_history.json" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/trends_history.json" ] && cp "$BACKUP_DIR/trends_history.json" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/fear_greed_history.json" ] && cp "$BACKUP_DIR/fear_greed_history.json" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/rank_history.txt" ] && cp "$BACKUP_DIR/rank_history.txt" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/sensortower_bot.log" ] && cp "$BACKUP_DIR/sensortower_bot.log" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/google_trends_debug.log" ] && cp "$BACKUP_DIR/google_trends_debug.log" "$TARGET_DIR/"
+    
+    # Удаляем временную директорию с бэкапами
+    rm -rf "$BACKUP_DIR"
     
     # При необходимости, применяем сохраненные локальные изменения
     git stash pop

@@ -1,83 +1,46 @@
 #!/bin/bash
-# backup.sh - Скрипт для создания резервной копии данных и настроек бота
 
-# Определяем директории и файлы
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
-BOT_DIR="$SCRIPT_DIR"
-BACKUP_DIR="$BOT_DIR/backups"
-DATE_STAMP=$(date +"%Y%m%d_%H%M%S")
-BACKUP_FILE="$BACKUP_DIR/coinbasebot_backup_$DATE_STAMP.tar.gz"
+# Создание резервной копии всех данных Coinbase Rank Bot
+# Запуск: ./backup.sh
 
-# Создаем директорию для резервных копий, если она не существует
+BACKUP_DIR="/root/coinbaserank_bot_backup/$(date +%Y%m%d_%H%M%S)"
+SOURCE_DIR="/root/coinbaserank_bot"
+
+# Создаем директорию для бэкапа с текущей датой и временем
 mkdir -p "$BACKUP_DIR"
 
-echo "🔄 Starting backup process..."
-echo "📂 Bot directory: $BOT_DIR"
-echo "💾 Backup will be saved to: $BACKUP_FILE"
+echo "Starting backup to $BACKUP_DIR..."
 
-# Создаем список файлов для бэкапа
-BACKUP_FILES=(
-    "main.py"
-    "config.py"
-    "scraper.py"
-    "telegram_bot.py"
-    "fear_greed_index.py"
-    "google_trends_pulse.py"
-    "scheduler.py"
-    "logger.py"
-    ".env"
-    "templates/"
-    "/tmp/coinbasebot_rank_history.txt"
-)
+# Копируем только исходные коды (игнорируя файлы из .gitignore)
+echo "Backing up source code..."
+rsync -av --exclude-from="$SOURCE_DIR/.gitignore" "$SOURCE_DIR"/ "$BACKUP_DIR"/
 
-# Создаем временную директорию для организации файлов
-TEMP_DIR=$(mktemp -d)
-TEMP_BOT_DIR="$TEMP_DIR/coinbasebot"
-mkdir -p "$TEMP_BOT_DIR"
-mkdir -p "$TEMP_BOT_DIR/tmp"
-
-# Копируем файлы во временную директорию
-for file in "${BACKUP_FILES[@]}"; do
-    # Обрабатываем специальные пути
-    if [[ "$file" == "/tmp/"* ]]; then
-        # Для файлов из /tmp/, копируем их в специальную tmp директорию
-        filename=$(basename "$file")
-        if [ -f "$file" ]; then
-            cp "$file" "$TEMP_BOT_DIR/tmp/$filename"
-            echo "✅ Copied $file to backup"
-        else
-            echo "⚠️ Warning: $file not found, skipping"
-        fi
+# Особое внимание к файлам с данными
+echo "Backing up data files..."
+for file in rank_history.json trends_history.json fear_greed_history.json rank_history.txt sensortower_bot.log google_trends_debug.log coinbasebot.lock; do
+    if [ -f "$SOURCE_DIR/$file" ]; then
+        cp "$SOURCE_DIR/$file" "$BACKUP_DIR/"
+        echo "  - $file copied successfully"
     else
-        # Для обычных файлов и директорий
-        if [ -f "$BOT_DIR/$file" ] || [ -d "$BOT_DIR/$file" ]; then
-            cp -r "$BOT_DIR/$file" "$TEMP_BOT_DIR/"
-            echo "✅ Copied $file to backup"
-        else
-            echo "⚠️ Warning: $BOT_DIR/$file not found, skipping"
-        fi
+        echo "  - Warning: $file not found, skipping"
     fi
 done
 
+# Копируем скрытые файлы (не включенные в rsync)
+if [ -f "$SOURCE_DIR/.env" ]; then
+    cp "$SOURCE_DIR/.env" "$BACKUP_DIR/"
+    echo "  - .env copied successfully"
+fi
+
+if [ -f "$SOURCE_DIR/.env.backup" ]; then
+    cp "$SOURCE_DIR/.env.backup" "$BACKUP_DIR/"
+    echo "  - .env.backup copied successfully"
+fi
+
 # Создаем архив
-tar -czf "$BACKUP_FILE" -C "$TEMP_DIR" coinbasebot
-echo "✅ Created backup archive: $BACKUP_FILE"
+echo "Creating archive..."
+tar -czvf "$BACKUP_DIR.tar.gz" -C "$(dirname "$BACKUP_DIR")" "$(basename "$BACKUP_DIR")"
 
-# Удаляем временную директорию
-rm -rf "$TEMP_DIR"
-echo "🧹 Cleaned up temporary files"
-
-# Выводим сообщение о успешном завершении
-echo "✅ Backup completed successfully!"
-echo "📦 Backup saved to: $BACKUP_FILE"
-
-# Выводим информацию о восстановлении
-echo
-echo "📋 To restore this backup, run:"
-echo "mkdir -p restore_temp && tar -xzf $BACKUP_FILE -C restore_temp && cp -r restore_temp/coinbasebot/* /path/to/restore/location/ && rm -rf restore_temp"
-echo
-
-# Удаляем старые резервные копии (оставляем последние 5)
-echo "🧹 Cleaning up old backups (keeping the latest 5)..."
-ls -t "$BACKUP_DIR"/coinbasebot_backup_*.tar.gz | tail -n +6 | xargs -r rm
-echo "✅ Cleanup completed"
+echo "Backup completed successfully!"
+echo "Backup location: $BACKUP_DIR"
+echo "Archive: $BACKUP_DIR.tar.gz"
