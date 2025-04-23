@@ -185,7 +185,7 @@ class SensorTowerScheduler:
     def _send_combined_message(self, rankings_data, fear_greed_data=None):
         """
         Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
-        и сигналом от Google Trends Pulse
+        и сигналом от Google Trends Pulse в упрощенном формате
         
         Args:
             rankings_data (dict): Данные о рейтинге приложения
@@ -205,71 +205,27 @@ class SensorTowerScheduler:
                 logger.error("Неверный формат данных о рейтинге")
                 return False
                 
-            rank = rankings_data["categories"][0]["rank"]
-            
-            # Создаем сообщение
-            trend_icon = ""
-            
-            # Добавляем индикатор тренда, если доступна информация о тренде
-            if "trend" in rankings_data:
-                trend_direction = rankings_data["trend"]["direction"]
-                if trend_direction == "up":
-                    # Лучший рейтинг = меньшее число, зеленая стрелка вверх
-                    trend_icon = "🔼 "
-                elif trend_direction == "down":
-                    # Худший рейтинг = большее число, красная стрелка вниз
-                    trend_icon = "🔽 "
-            
-            combined_message = f"{trend_icon}Coinbase Appstore Rank: {rank}\n\n"
+            # Используем метод scraper для форматирования сообщения о рейтинге
+            formatted_rankings = self.scraper.format_rankings_message(rankings_data)
+            combined_message = formatted_rankings
             
             # Затем добавляем данные индекса страха и жадности, если доступны
             if fear_greed_data:
-                value = fear_greed_data.get("value", "N/A")
-                label = fear_greed_data.get("classification", "Unknown")
-                
-                # Выбираем эмодзи в зависимости от классификации
-                filled_char = "⚪" # По умолчанию
-                if label == "Extreme Fear":
-                    emoji = "😱"
-                    filled_char = "🔴"
-                elif label == "Fear":
-                    emoji = "😨"
-                    filled_char = "🟠"
-                elif label == "Neutral":
-                    emoji = "😐"
-                    filled_char = "🟡"
-                elif label == "Greed":
-                    emoji = "😏"
-                    filled_char = "🟢"
-                elif label == "Extreme Greed":
-                    emoji = "🤑"
-                    filled_char = "🟢"
-                else:
-                    emoji = "❓"
-                
-                # Добавляем данные индекса страха и жадности
-                combined_message += f"{emoji} {label}: {value}/100\n"
-                
-                # Добавляем прогресс-бар
-                progress_bar = self.fear_greed_tracker._generate_progress_bar(int(value), 100, 10, filled_char)
-                combined_message += f"{progress_bar}"
+                # Используем метод fear_greed_tracker для форматирования сообщения
+                fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+                combined_message += f"\n\n{fear_greed_message}"
             
             # Добавляем данные от Google Trends Pulse
             try:
                 # Получаем данные трендов
                 trends_data = self.google_trends_pulse.get_trends_data()
                 if trends_data:
-                    # Форматируем сообщение о трендах на английском языке
+                    # Форматируем сообщение о трендах используя обновленный метод
                     trends_message = self.google_trends_pulse.format_trends_message(trends_data)
                     
                     # Проверяем, что сообщение не None (в случае отсутствия реальных данных)
                     if trends_message is not None:
-                        # Добавляем пустую строку для разделения от предыдущего блока данных
-                        if fear_greed_data:
-                            combined_message += "\n\n"
-                            
-                        # Добавляем сообщение о трендах
-                        combined_message += trends_message
+                        combined_message += f"\n\n{trends_message}"
                         logger.info(f"Added Google Trends Pulse data: {trends_data.get('signal', 'None')} - {trends_data.get('description', 'N/A')}")
                     else:
                         logger.info("Google Trends данные недоступны - не включаем в сообщение")
