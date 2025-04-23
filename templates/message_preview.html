@@ -22,7 +22,7 @@
         </div>
         <div class="card-body bg-dark">
             <div class="p-3 rounded mb-3" style="background-color: #222; border: 1px solid #333;">
-                <pre class="text-light mb-0" style="white-space: pre-wrap; word-break: break-word; font-family: 'Courier New', monospace;">{{ message|replace('\n', '<br>')|safe }}</pre>
+                <pre class="text-light mb-0" style="white-space: pre-wrap; word-break: break-word; font-family: 'Courier New', monospace;">{{ message|safe }}</pre>
             </div>
             
             <div class="d-flex gap-2">
@@ -159,7 +159,7 @@
 <script>
     document.getElementById('copy-message').addEventListener('click', function() {
         // Get the message content
-        const messageContent = `{{ message|replace('\n', '\\n')|replace('"', '\\"')|safe }}`;
+        const messageContent = `{{ message|safe }}`;
         
         // Copy to clipboard
         navigator.clipboard.writeText(messageContent)

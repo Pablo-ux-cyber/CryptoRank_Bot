@@ -347,16 +347,30 @@ def preview_message():
         
         # Compose the message that would be sent to Telegram
         message_preview = ""
-        if rankings_data:
-            message_preview += scheduler.scraper.format_rankings_message(rankings_data)
-            message_preview += "\n\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
-        
-        if fear_greed_data:
-            message_preview += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-            message_preview += "\n\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
-        
-        if trends_data:
-            message_preview += scheduler.google_trends_pulse.format_trends_message(trends_data)
+        try:
+            if rankings_data:
+                message_format = scheduler.scraper.format_rankings_message(rankings_data)
+                if message_format:
+                    message_preview += message_format
+                    message_preview += "\n\n" + "------------" + "\n\n"
+        except Exception as e:
+            logger.error(f"Error formatting rankings message: {str(e)}")
+            
+        try:
+            if fear_greed_data:
+                message_format = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+                if message_format:
+                    message_preview += message_format
+                    message_preview += "\n\n" + "------------" + "\n\n"
+        except Exception as e:
+            logger.error(f"Error formatting fear greed message: {str(e)}")
+            
+        try:
+            if trends_data:
+                message_format = f"{trends_data['signal']} Google Trends Pulse: {trends_data['description']}"
+                message_preview += message_format
+        except Exception as e:
+            logger.error(f"Error formatting trends message: {str(e)}")
         
         # Show the message preview
         return render_template('message_preview.html', 
