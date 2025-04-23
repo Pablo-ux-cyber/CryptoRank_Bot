@@ -495,30 +495,43 @@ class GoogleTrendsPulse:
         Returns:
             tuple: (emoji-сигнал, текстовое описание на английском)
         """
+        # Детальное логирование для отладки определения сигнала
+        trends_logger.info(f"Определение рыночного сигнала. Параметры:")
+        trends_logger.info(f"FOMO score: {fomo_score:.2f}")
+        trends_logger.info(f"Fear score: {fear_score:.2f}")
+        trends_logger.info(f"General interest: {general_score:.2f}")
+        trends_logger.info(f"FOMO/Fear ratio: {fomo_to_fear_ratio:.2f}")
+        
         # Правило 1: Высокий FOMO и низкий страх = возможный пик рынка
         # Согласованно с индексом страха и жадности - зеленый для потенциального пика
         if fomo_score > 70 and fomo_to_fear_ratio > 3.0:
+            trends_logger.info(f"Определен сигнал: 🟢 (Высокий FOMO > 70 и FOMO/Fear > 3.0)")
             return "🟢", "High FOMO factor - possible market peak"
             
         # Правило 2: Растущий FOMO, средний страх = разогрев рынка
         elif fomo_score > 60 and fomo_to_fear_ratio > 1.5:
+            trends_logger.info(f"Определен сигнал: 🟡 (Растущий FOMO > 60 и FOMO/Fear > 1.5)")
             return "🟡", "Growing interest in cryptocurrencies - market warming up"
             
         # Правило 3: Высокий страх, низкий FOMO = возможная точка входа
         # Согласованно с индексом страха и жадности - красный для потенциальной точки входа
         elif fear_score > 70 and fomo_to_fear_ratio < 0.7:
+            trends_logger.info(f"Определен сигнал: 🔴 (Высокий страх > 70 и FOMO/Fear < 0.7)")
             return "🔴", "High fear and low FOMO - possible buying opportunity"
             
         # Правило 4: Средний страх, снижающийся FOMO = охлаждение рынка
         elif fear_score > 50 and fomo_to_fear_ratio < 1.0:
+            trends_logger.info(f"Определен сигнал: 🟠 (Средний страх > 50 и FOMO/Fear < 1.0)")
             return "🟠", "Decreasing interest in cryptocurrencies - market cooling down"
             
         # Правило 5: Низкий общий интерес = затишье на рынке
         elif general_score < 30:
+            trends_logger.info(f"Определен сигнал: 🔵 (Низкий общий интерес < 30)")
             return "🔵", "Low interest in cryptocurrencies - market hibernation"
             
         # По умолчанию - нейтральный сигнал
         else:
+            trends_logger.info(f"Определен сигнал: ⚪ (Нейтральный - ни одно условие не выполнено)")
             return "⚪", "Neutral interest in cryptocurrencies"
     
     def format_trends_message(self, trends_data=None):
