@@ -1,104 +1,85 @@
 #!/bin/bash
-# Скрипт для восстановления критически важных конфигурационных файлов
-# Используется в случае, если файлы были удалены или повреждены
+# restore_config.sh - Скрипт для восстановления конфигурации
 
-# Директория проекта
-PROJECT_DIR="/root/coinbaserank_bot"
-SERVICE_NAME="coinbasebot"
+TARGET_DIR=$(dirname "$0")
+cd "$TARGET_DIR" || { echo "Error: Could not change to target directory."; exit 1; }
 
-echo "Starting configuration restoration for CoinbaseRank Bot..."
-cd "$PROJECT_DIR" || { echo "Error: Could not change to project directory."; exit 1; }
+echo "====== Configuration Restoration ======"
+echo "Target directory: $TARGET_DIR"
 
-# Проверяем наличие бэкапов
-BACKUP_FOUND=0
-for BACKUP_FILE in "$PROJECT_DIR/.env.backup" "$PROJECT_DIR/backup_tmp/.env" "$PROJECT_DIR/.env.old"; do
-    if [ -f "$BACKUP_FILE" ]; then
-        echo "Found backup .env file: $BACKUP_FILE"
-        cp "$BACKUP_FILE" "$PROJECT_DIR/.env"
-        echo "Restored .env from backup: $BACKUP_FILE"
-        BACKUP_FOUND=1
-        break
-    fi
-done
-
-# Если бэкап не найден, нужно создать новый файл
-if [ $BACKUP_FOUND -eq 0 ]; then
-    echo "No backup .env file found. Creating a new template."
-    echo "Please enter your Telegram bot token (from @BotFather):"
-    read -p "TELEGRAM_BOT_TOKEN=" BOT_TOKEN
-    
-    echo "Please enter your Telegram channel ID (e.g., -100xxxxxxxxx for @cryptorankbase):"
-    read -p "TELEGRAM_CHANNEL_ID=" CHANNEL_ID
-    
-    # Создаем .env файл с введенными данными
-    cat > "$PROJECT_DIR/.env" << EOF
-TELEGRAM_BOT_TOKEN=$BOT_TOKEN
-TELEGRAM_CHANNEL_ID=$CHANNEL_ID
-EOF
-    echo "Created new .env file with provided tokens."
+# Проверяем существование файла config.py
+if [ -f "$TARGET_DIR/config.py" ]; then
+    echo "config.py already exists."
+    echo "Backing up as config.py.bak..."
+    cp "$TARGET_DIR/config.py" "$TARGET_DIR/config.py.bak"
 fi
 
-# Проверяем наличие config.py
-BACKUP_FOUND=0
-for BACKUP_FILE in "$PROJECT_DIR/config.py.backup" "$PROJECT_DIR/backup_tmp/config.py" "$PROJECT_DIR/config.py.old"; do
-    if [ -f "$BACKUP_FILE" ]; then
-        echo "Found backup config.py file: $BACKUP_FILE"
-        cp "$BACKUP_FILE" "$PROJECT_DIR/config.py"
-        echo "Restored config.py from backup: $BACKUP_FILE"
-        BACKUP_FOUND=1
-        break
-    fi
-done
+# Восстанавливаем config.py
+echo "Creating config.py with direct token values..."
+cat > "$TARGET_DIR/config.py" << EOL
+import os
+from datetime import datetime, timedelta
 
-# Если бэкап не найден, нужно создать новый файл
-if [ $BACKUP_FOUND -eq 0 ]; then
-    echo "No backup config.py file found. Creating a new template."
-    
-    # Если уже создали .env, используем эти же значения
-    if [ -f "$PROJECT_DIR/.env" ]; then
-        BOT_TOKEN=$(grep "TELEGRAM_BOT_TOKEN" "$PROJECT_DIR/.env" | cut -d "=" -f2)
-        CHANNEL_ID=$(grep "TELEGRAM_CHANNEL_ID" "$PROJECT_DIR/.env" | cut -d "=" -f2)
-    else
-        echo "Please enter your Telegram bot token (from @BotFather):"
-        read -p "TELEGRAM_BOT_TOKEN=" BOT_TOKEN
-        
-        echo "Please enter your Telegram channel ID (e.g., -100xxxxxxxxx for @cryptorankbase):"
-        read -p "TELEGRAM_CHANNEL_ID=" CHANNEL_ID
-    fi
-    
-    # Создаем config.py файл с введенными данными
-    cat > "$PROJECT_DIR/config.py" << EOF
-# Telegram bot token (получается от @BotFather)
-TELEGRAM_BOT_TOKEN = "$BOT_TOKEN" # Токен вашего бота
+# SensorTower Configuration
+APP_ID = "886427730"
 
-# ID канала для отправки сообщений
-TELEGRAM_CHANNEL_ID = "$CHANNEL_ID" # ID вашего канала @cryptorankbase
+# Формируем URL с датами для последних 90 дней
+today = datetime.now()
+start_date = (today - timedelta(days=90)).strftime("%Y-%m-%d")
+end_date = today.strftime("%Y-%m-%d")
 
-# Имя и логин Telegram бота
-TELEGRAM_BOT_NAME = "CoinbaseRank Bot"
-TELEGRAM_BOT_USERNAME = "baserank_bot"
+# Новый URL для анализа категорий и рейтингов
+SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?os=ios&edit=1&granularity=daily&start_date={start_date}&end_date={end_date}&duration=P90D&country=US&breakdown_attribute=category&metricType=absolute&measure=revenue&rolling_days=0&selected_tab=0&session_count=sessionCount&time_spent=timeSpent&chart_plotting_type=line&sia={APP_ID}&ssia={APP_ID}&chart_type=free&chart_type=paid&chart_type=grossing&device=iphone&device=ipad&category=0&category=36&category=6015&time_period=day"
 
-# Настройки для Fear & Greed Index
-FEAR_GREED_INDEX_URL = "https://api.alternative.me/fng/?limit=1"
+# Telegram Configuration
+TELEGRAM_BOT_TOKEN = "7973595268:AAG_Pz_xZFnAXRHtVbTH5Juo8qtssPUof8E"
+# Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
+TELEGRAM_CHANNEL_ID = "@cryptorankbase"
+# Канал, откуда бот получает данные о рейтинге (источник данных)
+TELEGRAM_SOURCE_CHANNEL = "@coinbaseappstore"
 
-# Интервал проверки данных в секундах (по умолчанию 5 минут = 300 секунд)
-CHECK_INTERVAL = 300
+# Scheduler Configuration
+SCHEDULE_HOUR = 8  # 8 AM
+SCHEDULE_MINUTE = 0  # 00 minutes
 
-# Час для ежедневной проверки Google Trends (по умолчанию 11:00)
-GOOGLE_TRENDS_CHECK_HOUR = 11
+# Selenium Configuration
+SELENIUM_DRIVER_PATH = "/usr/bin/chromedriver"
+SELENIUM_HEADLESS = True
+SELENIUM_TIMEOUT = 30  # seconds
 
-# Время кеширования данных Google Trends в часах (по умолчанию 48 часов)
-GOOGLE_TRENDS_CACHE_HOURS = 48
-EOF
-    echo "Created new config.py file with provided tokens."
+# Logging Configuration
+LOG_LEVEL = "INFO"
+LOG_FILE = "sensortower_bot.log"
+EOL
+
+# Создаем .gitignore если его нет
+if [ ! -f "$TARGET_DIR/.gitignore" ]; then
+    echo "Creating .gitignore..."
+    cat > "$TARGET_DIR/.gitignore" << EOL
+# Ignore local configuration files
+.env
+venv/
+__pycache__/
+*.log
+coinbasebot.lock
+manual_operation.lock
+
+# Ignore data files
+*.json
+*.db
+rank_history.txt
+EOL
 fi
 
-# Перезапускаем службу
-echo "Restarting the service..."
-sudo systemctl daemon-reload
-sudo systemctl restart "$SERVICE_NAME"
-sudo systemctl status "$SERVICE_NAME"
+# Устанавливаем разрешения на выполнение для скриптов
+echo "Setting execution permission for scripts..."
+chmod +x "$TARGET_DIR/sync.sh"
+chmod +x "$TARGET_DIR/setup_venv.sh"
+chmod +x "$TARGET_DIR/restore_config.sh"
 
-echo "Configuration restoration completed!"
-echo "If the bot is still not working, try running setup_venv.sh to rebuild the virtual environment."
+echo "Done! Your configuration has been restored."
+echo "Token TELEGRAM_BOT_TOKEN and TELEGRAM_CHANNEL_ID have been set directly in config.py"
+echo ""
+echo "Now you should run setup_venv.sh to restore the virtual environment:"
+echo "./setup_venv.sh"
 exit 0

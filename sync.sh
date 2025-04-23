@@ -62,10 +62,29 @@ else
     [ -f "$TARGET_DIR/requirements.txt" ] && cp "$TARGET_DIR/requirements.txt" "$BACKUP_DIR/"
     [ -f "$TARGET_DIR/venv/bin/activate" ] && echo "Virtual environment exists, noting for re-creation later" > "$BACKUP_DIR/venv_existed"
     
-    # Сброс всех локальных изменений и неотслеживаемых файлов в Git
+    # Сохранение состояния важных файлов
+    echo "Saving state of important files..."
+    # Создаем .gitignore временно, если его нет
+    if [ ! -f "$TARGET_DIR/.gitignore" ]; then
+        cat > "$TARGET_DIR/.gitignore" << EOL
+# Ignore local configuration files
+.env
+requirements.txt
+venv/
+*.log
+manual_operation.lock
+coinbasebot.lock
+# Ignore data files
+*.json
+*.db
+rank_history.txt
+EOL
+    fi
+
+    # Сброс всех локальных изменений, сохраняя неотслеживаемые файлы, указанные в .gitignore
     echo "Resetting Git repository state..."
     git reset --hard
-    git clean -fd
+    git clean -fd -e .env -e venv/ -e requirements.txt -e "*.log" -e "*.json" -e "rank_history.txt" -e manual_operation.lock -e coinbasebot.lock
     
     # Переключаемся на нужную ветку
     git checkout "$BRANCH"
