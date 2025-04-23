@@ -106,7 +106,7 @@ class GoogleTrendsPulse:
             logger.info("No Google Trends history found or invalid format, will create new")
             self.history_data = []
     
-    def safe_interest_over_time(self, pytrends, retries=4, initial_delay=10):
+    def safe_interest_over_time(self, pytrends, retries=6, initial_delay=30):
         """
         Пытается получить данные, при TooManyRequestsError — ждёт и повторяет с удвоением задержки.
         
@@ -121,7 +121,22 @@ class GoogleTrendsPulse:
         delay = initial_delay
         for attempt in range(1, retries + 1):
             try:
-                return pytrends.interest_over_time()
+                # При каждой новой попытке создаем новую сессию
+                if attempt > 1:
+                    # Очищаем куки и заголовки для нового запроса
+                    pytrends = TrendReq(hl=pytrends.hl, tz=pytrends.tz)
+                    # Загружаем последний использованный payload
+                    pytrends.build_payload(
+                        pytrends.kw_list, 
+                        cat=pytrends.cat,
+                        timeframe=pytrends.timeframe
+                    )
+                
+                trends_logger.info(f"Попытка {attempt}/{retries} получения данных...")
+                result = pytrends.interest_over_time()
+                trends_logger.info(f"Успешно получены данные с Google Trends (попытка {attempt})")
+                return result
+                
             except TooManyRequestsError:
                 if attempt == retries:
                     # После последней неудачи — пробрасываем ошибку
@@ -154,15 +169,19 @@ class GoogleTrendsPulse:
         trends_logger.info(f"Получение данных для термина: {term}")
         
         try:
-            # Диапазон за последние 30 дней в формате "YYYY-MM-DD YYYY-MM-DD"
-            today = datetime.now().date()
-            start = today - timedelta(days=30)
-            timeframe = f"{start} {today}"  # "YYYY-MM-DD YYYY-MM-DD"
+            # Используем формат "now 14-d" для последних 14 дней, как предложил пользователь
+            # вместо формата "YYYY-MM-DD YYYY-MM-DD"
+            timeframe = 'now 14-d'
             
-            trends_logger.info(f"Сформирован диапазон дат: {timeframe}")
+            trends_logger.info(f"Используем временной диапазон: {timeframe}")
             
-            # Создаём клиента с указанной локалью
+            # Создаём клиента с указанной локалью 'en-US'
             pytrends = TrendReq(hl=locale, tz=0)
+            
+            # Добавляем случайное ожидание перед запросом для снижения вероятности блокировки
+            delay = random.uniform(1.0, 3.0)
+            trends_logger.info(f"Ожидание {delay:.2f} секунд перед запросом...")
+            time.sleep(delay)
             
             # Формируем запрос с указанным термином
             pytrends.build_payload([term], cat=0, timeframe=timeframe)
