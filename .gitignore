@@ -1,16 +1,17 @@
-# Логи
+# Только логи (не конфигурационные файлы)
 *.log
 *.log.*
 sensortower_bot.log
 google_trends_debug.log
 
-# Файлы истории и временные данные
+# Только файлы истории данных (временные данные)
 rank_history.json
 trends_history.json
 fear_greed_history.json
 rank_history.txt
 coinbasebot.lock
 
-# Оставляем критические файлы
-# .env - теперь НЕ игнорируется
-# config.py - теперь НЕ игнорируется
+# ВАЖНО: НЕ игнорируются следующие критические файлы:
+# .env - нужен для переменных окружения 
+# config.py - нужен для конфигурации бота
+# requirements.txt - нужен для зависимостей
