@@ -354,5 +354,25 @@
     "fomo_to_fear_ratio": 1.0,
     "timestamp": "2025-04-23 10:38:40",
     "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 57.15976331360947,
+    "fear_score": 13.100591715976332,
+    "general_score": 35.1301775147929,
+    "fomo_to_fear_ratio": 4.363143631436314,
+    "timestamp": "2025-04-23 10:40:07",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 57.142011834319526,
+    "fear_score": 13.763313609467456,
+    "general_score": 35.45266272189349,
+    "fomo_to_fear_ratio": 4.151762682717111,
+    "timestamp": "2025-04-23 10:41:22",
+    "real_data": true
   }
 ]
