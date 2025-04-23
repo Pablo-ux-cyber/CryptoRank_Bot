@@ -1,46 +1,65 @@
 #!/bin/bash
+# Скрипт для создания резервной копии критических файлов
 
-# Создание резервной копии всех данных Coinbase Rank Bot
-# Запуск: ./backup.sh
+# Директория скрипта
+DIR=$(dirname "$0")
+cd "$DIR" || { echo "Error: Failed to change to script directory."; exit 1; }
 
-BACKUP_DIR="/root/coinbaserank_bot_backup/$(date +%Y%m%d_%H%M%S)"
-SOURCE_DIR="/root/coinbaserank_bot"
+# Timestamp для имени бэкапа
+TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
+BACKUP_FILE="coinbaserank_bot_backup_$TIMESTAMP.tar.gz"
 
-# Создаем директорию для бэкапа с текущей датой и временем
-mkdir -p "$BACKUP_DIR"
+# Создаем список файлов для бэкапа
+echo "Creating backup of critical configuration files..."
+echo "Timestamp: $TIMESTAMP"
 
-echo "Starting backup to $BACKUP_DIR..."
+# Создаем временную директорию
+TEMP_DIR=$(mktemp -d)
+mkdir -p "$TEMP_DIR/files"
 
-# Копируем только исходные коды (игнорируя файлы из .gitignore)
-echo "Backing up source code..."
-rsync -av --exclude-from="$SOURCE_DIR/.gitignore" "$SOURCE_DIR"/ "$BACKUP_DIR"/
+# Копируем важные файлы
+echo "Copying configuration files..."
+if [ -f "config.py" ]; then cp "config.py" "$TEMP_DIR/files/"; fi
+if [ -f "rank_history.txt" ]; then cp "rank_history.txt" "$TEMP_DIR/files/"; fi
+if [ -f "rank_history.json" ]; then cp "rank_history.json" "$TEMP_DIR/files/"; fi
+if [ -f "fear_greed_history.json" ]; then cp "fear_greed_history.json" "$TEMP_DIR/files/"; fi
+if [ -f "trends_history.json" ]; then cp "trends_history.json" "$TEMP_DIR/files/"; fi
+if [ -f "sensortower_bot.log" ]; then cp "sensortower_bot.log" "$TEMP_DIR/files/"; fi
+if [ -f "google_trends_debug.log" ]; then cp "google_trends_debug.log" "$TEMP_DIR/files/"; fi
+if [ -f "requirements.txt" ]; then cp "requirements.txt" "$TEMP_DIR/files/"; fi
 
-# Особое внимание к файлам с данными
-echo "Backing up data files..."
-for file in rank_history.json trends_history.json fear_greed_history.json rank_history.txt sensortower_bot.log google_trends_debug.log coinbasebot.lock; do
-    if [ -f "$SOURCE_DIR/$file" ]; then
-        cp "$SOURCE_DIR/$file" "$BACKUP_DIR/"
-        echo "  - $file copied successfully"
-    else
-        echo "  - Warning: $file not found, skipping"
-    fi
-done
-
-# Копируем скрытые файлы (не включенные в rsync)
-if [ -f "$SOURCE_DIR/.env" ]; then
-    cp "$SOURCE_DIR/.env" "$BACKUP_DIR/"
-    echo "  - .env copied successfully"
-fi
-
-if [ -f "$SOURCE_DIR/.env.backup" ]; then
-    cp "$SOURCE_DIR/.env.backup" "$BACKUP_DIR/"
-    echo "  - .env.backup copied successfully"
-fi
+# Создаем информационный файл о системе
+echo "Collecting system information..."
+{
+  echo "=== BACKUP INFO ==="
+  echo "Date: $(date)"
+  echo "Server: $(hostname)"
+  echo ""
+  echo "=== SYSTEM INFO ==="
+  uname -a
+  echo ""
+  echo "=== SYSTEMD SERVICE STATUS ==="
+  systemctl status coinbasebot || echo "Service not found"
+  echo ""
+  echo "=== PYTHON INFO ==="
+  python3 --version || echo "Python not found"
+  echo ""
+  echo "=== BACKUP CONTENTS ==="
+  ls -la "$TEMP_DIR/files/"
+} > "$TEMP_DIR/backup_info.txt"
 
 # Создаем архив
 echo "Creating archive..."
-tar -czvf "$BACKUP_DIR.tar.gz" -C "$(dirname "$BACKUP_DIR")" "$(basename "$BACKUP_DIR")"
+tar -czf "$BACKUP_FILE" -C "$TEMP_DIR" files backup_info.txt
 
-echo "Backup completed successfully!"
-echo "Backup location: $BACKUP_DIR"
-echo "Archive: $BACKUP_DIR.tar.gz"
+# Чистим временную директорию
+rm -rf "$TEMP_DIR"
+
+echo "Backup created: $BACKUP_FILE"
+echo "Size: $(du -h "$BACKUP_FILE" | cut -f1)"
+
+# Опциональное копирование архива в безопасное место
+# cp "$BACKUP_FILE" /path/to/backup/storage/
+
+echo "Backup completed successfully."
+exit 0
