@@ -13,11 +13,11 @@ end_date = today.strftime("%Y-%m-%d")
 SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?os=ios&edit=1&granularity=daily&start_date={start_date}&end_date={end_date}&duration=P90D&country=US&breakdown_attribute=category&metricType=absolute&measure=revenue&rolling_days=0&selected_tab=0&session_count=sessionCount&time_spent=timeSpent&chart_plotting_type=line&sia={APP_ID}&ssia={APP_ID}&chart_type=free&chart_type=paid&chart_type=grossing&device=iphone&device=ipad&category=0&category=36&category=6015&time_period=day"
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_BOT_TOKEN = "7973595268:AAG_Pz_xZFnAXRHtVbTH5Juo8qtssPUof8E"
 # Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
-TELEGRAM_CHANNEL_ID = os.getenv("TELEGRAM_CHANNEL_ID", "")
+TELEGRAM_CHANNEL_ID = "@cryptorankbase"
 # Канал, откуда бот получает данные о рейтинге (источник данных)
-TELEGRAM_SOURCE_CHANNEL = os.getenv("TELEGRAM_SOURCE_CHANNEL", "@coinbaseappstore")
+TELEGRAM_SOURCE_CHANNEL = "@coinbaseappstore"
 
 # Scheduler Configuration
 SCHEDULE_HOUR = 8  # 8 AM

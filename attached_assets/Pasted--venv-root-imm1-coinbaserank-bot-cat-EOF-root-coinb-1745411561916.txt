@@ -1,0 +1,77 @@
+(venv) root@imm1:~/coinbaserank_bot# # Создайте скрипт для восстановления
+cat << 'EOF' > /root/coinbaserank_bot/fix_server.sh
+#!/bin/bash
+# fix_server.sh - Скрипт для восстановления работы бота
+echo "Останавливаем службу coinbasebot..."
+systemctl stop coinbasebot
+echo "Удаляем файлы блокировки..."
+rm -f /root/coinbaserank_bot/coinbasebot.lock
+rm -f /root/coinbaserank_bot/manual_operation.lock
+echo "Проверяем конфигурацию config.py..."
+# Прямая установка токенов в config.py
+sed -i "s/TELEGRAM_BOT_TOKEN = os.getenv(\"TELEGRAM_BOT_TOKEN\", \"\")/TELEGRAM_BOT_TOKEN = \"7973595268:AAG_Pz_xZFnAXRHtVbTH5Juo8qtssPUof8E\"/" /root/coinbaserank_bot/config.py
+sed -i "s/TELEGRAM_CHANNEL_ID = os.getenv(\"TELEGRAM_CHANNEL_ID\", \"\")/TELEGRAM_CHANNEL_ID = \"@cryptorankbase\"/" /root/coinbaserank_bot/config.py
+echo "Проверяем конфигурацию systemd..."
+cat << 'SERVICE' > /etc/systemd/system/coinbasebot.service
+[Unit]
+Description=Coinbase Rank Telegram Bot
+After=network.target
+[Service]
+User=root
+WorkingDirectory=/root/coinbaserank_bot
+ExecStart=/root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/main.py
+Restart=always
+RestartSec=10
+[Install]
+WantedBy=multi-user.target
+SERVICE
+echo "Перезагружаем конфигурацию и перезапускаем службу..."
+systemctl daemon-reload
+systemctl start coinbasebot
+echo "Проверяем статус службы..."
+systemctl status coinbasebot
+echo "Создаем скрипт проверки состояния..."
+cat << 'CHECK' > /root/coinbaserank_bot/check_server.sh
+#!/bin/bash
+# check_server.sh - Скрипт для проверки состояния сервера
+echo "=== Проверка состояния Coinbase Rank Bot ==="
+echo ""
+echo "Проверка службы systemd:"
+systemctl status coinbasebot
+echo ""
+echo "Проверка процессов Python:"
+ps aux | grep "[p]ython.*main.py"
+echo ""
+echo "Проверка файлов блокировки:"
+if [ -f "/root/coinbaserank_bot/coinbasebot.lock" ]; then
+    echo "Файл блокировки coinbasebot.lock существует"
+else
+    echo "Файл блокировки coinbasebot.lock отсутствует"
+fi
+if [ -f "/root/coinbaserank_bot/manual_operation.lock" ]; then
+    echo "Файл ручной блокировки manual_operation.lock существует"
+else
+    echo "Файл ручной блокировки manual_operation.lock отсутствует"
+fi
+./fix_server.shиптnbaserank_bot/fix_server.shкоманду ./fix_server.sh"erver.sh"ключиться к Telegram API"d 
+Останавливаем службу coinbasebot...
+Удаляем файлы блокировки...
+Проверяем конфигурацию config.py...
+Проверяем конфигурацию systemd...
+Перезагружаем конфигурацию и перезапускаем службу...
+Проверяем статус службы...
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor preset: enabled)
+     Active: active (running) since Wed 2025-04-23 15:30:39 MSK; 12ms ago
+   Main PID: 2297872 (python)
+      Tasks: 1 (limit: 4580)
+     Memory: 3.4M
+        CPU: 10ms
+     CGroup: /system.slice/coinbasebot.service
+             └─2297872 /root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/main.py
+
+Apr 23 15:30:39 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram Bot.
+Создаем скрипт проверки состояния...
+Готово! Теперь вы можете проверить состояние командой ./check_server.sh
+Для повторного исправления используйте команду ./fix_server.sh
+(venv) root@imm1:~/coinbaserank_bot# 

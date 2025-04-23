@@ -14,7 +14,7 @@ from routes.trends_routes import trends_bp
 
 # Create Flask app
 app = Flask(__name__)
-app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
+app.secret_key = "sensortower_bot_secret"
 
 # Добавляем фильтр now() для шаблонов
 @app.template_filter('now')
