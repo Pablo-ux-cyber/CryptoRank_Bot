@@ -259,14 +259,20 @@ class SensorTowerScheduler:
                 # Получаем данные трендов
                 trends_data = self.google_trends_pulse.get_trends_data()
                 if trends_data:
-                    # Добавляем пустую строку для разделения от предыдущего блока данных
-                    if fear_greed_data:
-                        combined_message += "\n\n"
-                        
-                    # Добавляем сообщение о трендах на английском языке
+                    # Форматируем сообщение о трендах на английском языке
                     trends_message = self.google_trends_pulse.format_trends_message(trends_data)
-                    combined_message += trends_message
-                    logger.info(f"Added Google Trends Pulse data: {trends_data['signal']} - {trends_data['description']}")
+                    
+                    # Проверяем, что сообщение не None (в случае отсутствия реальных данных)
+                    if trends_message is not None:
+                        # Добавляем пустую строку для разделения от предыдущего блока данных
+                        if fear_greed_data:
+                            combined_message += "\n\n"
+                            
+                        # Добавляем сообщение о трендах
+                        combined_message += trends_message
+                        logger.info(f"Added Google Trends Pulse data: {trends_data.get('signal', 'None')} - {trends_data.get('description', 'N/A')}")
+                    else:
+                        logger.info("Google Trends данные недоступны - не включаем в сообщение")
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Google Trends Pulse: {str(e)}")
                 # Продолжаем без данных трендов
@@ -403,7 +409,11 @@ class SensorTowerScheduler:
                             
                         # Если доступны данные Google Trends, сохраняем и их
                         trends_data = self.google_trends_pulse.get_trends_data()
-                        if trends_data and 'signal' in trends_data and 'description' in trends_data:
+                        # Проверяем, что данные содержат реальный сигнал (не None)
+                        if (trends_data and 
+                            'signal' in trends_data and 
+                            'description' in trends_data and 
+                            trends_data['signal'] is not None):
                             history_api.save_google_trends_history(
                                 signal=trends_data['signal'],
                                 description=trends_data['description'],
