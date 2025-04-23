@@ -65,6 +65,19 @@ class ProxyGoogleTrends:
         
         self.last_request_time = datetime.now()
     
+    def get_interest_with_retry(self, keyword, locale='en-US'):
+        """
+        Получает данные об интересе к ключевому слову с повторными попытками
+        
+        Args:
+            keyword (str): Ключевое слово для анализа
+            locale (str): Локаль для анализа (например, 'en-US', 'ru-RU')
+            
+        Returns:
+            tuple: (интерес, временной_период, статус_успеха)
+        """
+        return self.get_interest_data(keyword, locale)
+        
     def get_interest_data(self, keyword, locale='en-US'):
         """
         Получает данные об интересе к ключевому слову, пробуя разные временные периоды
