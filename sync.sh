@@ -56,6 +56,12 @@ else
     [ -f "$TARGET_DIR/sensortower_bot.log" ] && cp "$TARGET_DIR/sensortower_bot.log" "$BACKUP_DIR/"
     [ -f "$TARGET_DIR/google_trends_debug.log" ] && cp "$TARGET_DIR/google_trends_debug.log" "$BACKUP_DIR/"
     
+    # Бэкап конфигурации и переменных окружения
+    [ -f "$TARGET_DIR/config.py" ] && cp "$TARGET_DIR/config.py" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/.env" ] && cp "$TARGET_DIR/.env" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/requirements.txt" ] && cp "$TARGET_DIR/requirements.txt" "$BACKUP_DIR/"
+    [ -f "$TARGET_DIR/venv/bin/activate" ] && echo "Virtual environment exists, noting for re-creation later" > "$BACKUP_DIR/venv_existed"
+    
     # Сброс всех локальных изменений и неотслеживаемых файлов в Git
     echo "Resetting Git repository state..."
     git reset --hard
@@ -84,6 +90,12 @@ else
     [ -f "$BACKUP_DIR/sensortower_bot.log" ] && cp "$BACKUP_DIR/sensortower_bot.log" "$TARGET_DIR/"
     [ -f "$BACKUP_DIR/google_trends_debug.log" ] && cp "$BACKUP_DIR/google_trends_debug.log" "$TARGET_DIR/"
     
+    # Восстанавливаем конфигурацию и переменные окружения
+    echo "Restoring configuration files..."
+    [ -f "$BACKUP_DIR/config.py" ] && cp "$BACKUP_DIR/config.py" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/.env" ] && cp "$BACKUP_DIR/.env" "$TARGET_DIR/"
+    [ -f "$BACKUP_DIR/requirements.txt" ] && cp "$BACKUP_DIR/requirements.txt" "$TARGET_DIR/"
+    
     # Удаляем временную директорию с бэкапами
     rm -rf "$BACKUP_DIR"
     
@@ -93,11 +105,29 @@ fi
 
 # Дополнительные действия после обновления кода
 # Например, перезапуск сервисов, обновление зависимостей и т.д.
+echo "Checking virtual environment..."
+if [ ! -d "$TARGET_DIR/venv" ] || [ ! -f "$TARGET_DIR/venv/bin/activate" ]; then
+    echo "Creating new virtual environment..."
+    cd "$TARGET_DIR" && python3 -m venv venv
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to create virtual environment."
+        exit 1
+    fi
+fi
+
 echo "Updating dependencies..."
 if [ -f "$TARGET_DIR/requirements.txt" ]; then
-    cd "$TARGET_DIR" && pip install -r requirements.txt
+    echo "Installing dependencies from requirements.txt..."
+    cd "$TARGET_DIR" && source venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to install dependencies from requirements.txt."
+        exit 1
+    fi
 else
-    echo "Warning: requirements.txt not found. Skipping pip install."
+    echo "Warning: requirements.txt not found. Installing default dependencies..."
+    cd "$TARGET_DIR" && source venv/bin/activate && pip install --upgrade pip && pip install flask flask-sqlalchemy apscheduler trafilatura pytrends pandas requests pytz selenium email-validator python-telegram-bot gunicorn psycopg2-binary telegram
+    echo "Creating requirements.txt from installed packages..."
+    cd "$TARGET_DIR" && source venv/bin/activate && pip freeze > requirements.txt
 fi
 
 echo "Setting proper permissions..."
