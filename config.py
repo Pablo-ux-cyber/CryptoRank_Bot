@@ -31,3 +31,6 @@ SELENIUM_TIMEOUT = 30  # seconds
 # Logging Configuration
 LOG_LEVEL = "INFO"
 LOG_FILE = "sensortower_bot.log"
+LOG_MAX_BYTES = 10 * 1024 * 1024  # 10 MB
+LOG_BACKUP_COUNT = 7  # Keep logs for 7 days
+GOOGLE_TRENDS_LOG_FILE = "google_trends_debug.log"
