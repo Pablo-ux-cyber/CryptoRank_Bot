@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Trends Pulse - Крипто-индикатор рыночных настроений</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .signal-emoji {
+            font-size: 2rem;
+            margin-right: 10px;
+        }
+        .market-signal {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        .signal-red { background-color: rgba(220, 53, 69, 0.2); }
+        .signal-orange { background-color: rgba(253, 126, 20, 0.2); }
+        .signal-yellow { background-color: rgba(255, 193, 7, 0.2); }
+        .signal-green { background-color: rgba(40, 167, 69, 0.2); }
+        .signal-blue { background-color: rgba(13, 110, 253, 0.2); }
+        .signal-white { background-color: rgba(200, 200, 200, 0.2); }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-cached { background-color: #ffc107; }
+        .status-realtime { background-color: #28a745; }
+    </style>
+</head>
+<body>
+    <div class="container py-4">
+        <h1 class="mb-4">Google Trends Pulse</h1>
+        <p class="lead">Анализ рыночных настроений на основе данных Google Trends</p>
+        
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Текущий рыночный сигнал</h5>
+                        <div>
+                            <span class="me-2">
+                                {% if trends_data.get('timestamp') and (trends_data.get('timestamp') | string)[:10] == now().strftime('%Y-%m-%d') %}
+                                <span class="status-indicator status-realtime"></span>Обновлено сегодня
+                                {% else %}
+                                <span class="status-indicator status-cached"></span>Кешированные данные
+                                {% endif %}
+                            </span>
+                            <button class="btn btn-sm btn-primary" id="refreshButton">Обновить</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="market-signal 
+                            {% if trends_data.signal == '🔴' %}signal-red
+                            {% elif trends_data.signal == '🟠' %}signal-orange
+                            {% elif trends_data.signal == '🟡' %}signal-yellow
+                            {% elif trends_data.signal == '🟢' %}signal-green
+                            {% elif trends_data.signal == '🔵' %}signal-blue
+                            {% else %}signal-white{% endif %}">
+                            <div class="signal-emoji">{{ trends_data.signal }}</div>
+                            <div>
+                                <h4>{{ trends_data.description }}</h4>
+                                <p class="mb-0">Последнее обновление: {{ trends_data.timestamp }}</p>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mt-4">Детали анализа</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        FOMO Score (Bitcoin)
+                                        <span class="badge bg-primary rounded-pill">{{ trends_data.fomo_score | round(1) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        Fear Score (Crypto Crash)
+                                        <span class="badge bg-danger rounded-pill">{{ trends_data.fear_score | round(1) }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        General Interest
+                                        <span class="badge bg-secondary rounded-pill">{{ trends_data.general_score | round(1) }}</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        FOMO/Fear Ratio
+                                        <span class="badge bg-info rounded-pill">{{ trends_data.fomo_to_fear_ratio | round(2) }}</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Значение индикаторов</h5>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="mb-3">Рыночные сигналы:</h6>
+                        <ul class="list-group">
+                            <li class="list-group-item d-flex">
+                                <div class="me-2">🔴</div>
+                                <div>Высокий страх, низкий FOMO - возможная точка входа</div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div class="me-2">🟠</div>
+                                <div>Снижающийся интерес - рынок охлаждается</div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div class="me-2">⚪</div>
+                                <div>Нейтральный интерес без эмоциональных перекосов</div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div class="me-2">🟡</div>
+                                <div>Растущий интерес - рынок разогревается</div>
+                            </li>
+                            <li class="list-group-item d-flex">
+                                <div class="me-2">🟢</div>
+                                <div>Высокий FOMO-фактор - возможный пик рынка</div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">История индикаторов</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trendsChart" height="300"></canvas>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">История рыночных сигналов</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Дата</th>
+                                <th>Сигнал</th>
+                                <th>Описание</th>
+                                <th>FOMO</th>
+                                <th>Fear</th>
+                                <th>Ratio</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in trends_history %}
+                            <tr>
+                                <td>{{ record.timestamp }}</td>
+                                <td>{{ record.signal }}</td>
+                                <td>{{ record.description }}</td>
+                                <td>{{ record.fomo_score | round(1) }}</td>
+                                <td>{{ record.fear_score | round(1) }}</td>
+                                <td>{{ record.fomo_to_fear_ratio | round(2) }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Подготовка данных для графика
+            const historyData = {{ trends_history | tojson }};
+            const timestamps = historyData.map(item => item.timestamp);
+            const fomoScores = historyData.map(item => item.fomo_score);
+            const fearScores = historyData.map(item => item.fear_score);
+            const generalScores = historyData.map(item => item.general_score);
+            
+            // Создание графика
+            const ctx = document.getElementById('trendsChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: timestamps.reverse(),
+                    datasets: [
+                        {
+                            label: 'FOMO Score',
+                            data: fomoScores.reverse(),
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'Fear Score',
+                            data: fearScores.reverse(),
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            tension: 0.1
+                        },
+                        {
+                            label: 'General Interest',
+                            data: generalScores.reverse(),
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            tension: 0.1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+            
+            // Обработчик кнопки обновления
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                this.disabled = true;
+                this.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Обновление...';
+                
+                fetch('/api/trends/refresh', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        location.reload();
+                    } else {
+                        alert('Ошибка при обновлении данных: ' + data.message);
+                        this.disabled = false;
+                        this.innerText = 'Обновить';
+                    }
+                })
+                .catch(error => {
+                    alert('Ошибка: ' + error);
+                    this.disabled = false;
+                    this.innerText = 'Обновить';
+                });
+            });
+        });
+    </script>
+</body>
+</html>

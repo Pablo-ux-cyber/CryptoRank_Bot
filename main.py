@@ -10,13 +10,20 @@ from scheduler import SensorTowerScheduler
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
+from routes.trends_routes import trends_bp
 
 # Create Flask app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
 
-# Регистрируем Blueprint для истории
+# Добавляем фильтр now() для шаблонов
+@app.template_filter('now')
+def template_now(_=None):
+    return datetime.now()
+
+# Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
+app.register_blueprint(trends_bp)
 
 # Инициализируем глобальные переменные
 scheduler = None
