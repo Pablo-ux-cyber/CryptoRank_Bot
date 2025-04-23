@@ -16,10 +16,17 @@ from routes.trends_routes import trends_bp
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
 
-# Добавляем фильтр now() для шаблонов
+# Добавляем фильтр now для шаблонов
 @app.template_filter('now')
 def template_now(_=None):
-    return datetime.now()
+    """Return current datetime"""
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+# Установить сегодняшнюю дату для шаблонов
+@app.context_processor
+def inject_today_date():
+    """Inject current date for templates"""
+    return {'today_date': datetime.now().strftime("%Y-%m-%d")}
 
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
