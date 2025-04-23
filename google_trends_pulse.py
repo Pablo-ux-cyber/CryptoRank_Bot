@@ -446,21 +446,19 @@ class GoogleTrendsPulse:
                         # Если это другая ошибка типа, повторно вызываем исключение
                         raise
                 
-                # Начинаем работу с API Google Trends с использованием простого и надежного подхода
-                # Этот код основан на проверенном примере, который работает без ошибок
+                # Начинаем работу с API Google Trends с настройками согласно требованиям
+                trends_logger.info("Использование основного метода Google Trends API")
                 
-                trends_logger.info("Использование упрощенного способа работы с Google Trends API")
+                # Создаем простой клиент с только необходимыми параметрами - английская локаль
+                trends_logger.debug("Создание TrendReq клиента с английской локалью")
                 
-                # Создаем простой клиент без проблемных параметров (только самые необходимые)
-                trends_logger.debug("Создание простого TrendReq клиента")
-                
-                # Используем русский язык и часовой пояс Москвы для разнообразия запросов
-                pytrends = TrendReq(hl='ru-RU', tz=180)
+                # Используем английский язык и UTC часовой пояс согласно требованиям
+                pytrends = TrendReq(hl='en-US', tz=0)
                 
                 try:
-                    # Используем более длительный период (12 месяцев) для получения стабильных данных
-                    trends_logger.info("Запрос к Google Trends API для 'bitcoin' за 12 месяцев")
-                    pytrends.build_payload(['bitcoin'], cat=0, timeframe='today 12-m')
+                    # Используем период 14 дней согласно требованиям
+                    trends_logger.info("Запрос к Google Trends API для 'bitcoin' за 14 дней")
+                    pytrends.build_payload(['bitcoin'], cat=0, timeframe='now 14-d')
                     
                     # Получаем данные об интересе
                     trends_logger.debug("Получение данных interest_over_time")
@@ -471,11 +469,11 @@ class GoogleTrendsPulse:
                     time.sleep(3)  
                     
                     # Если первый запрос успешен, делаем второй
-                    trends_logger.info("Запрос к Google Trends API для 'crypto crash' за 12 месяцев")
+                    trends_logger.info("Запрос к Google Trends API для 'crypto crash' за 14 дней")
                     fear_data_frame = None
                     
                     # Используем тот же временной период
-                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='today 12-m')
+                    pytrends.build_payload(['crypto crash'], cat=0, timeframe='now 14-d')
                     fear_data_frame = pytrends.interest_over_time()
                     
                     if not fear_data_frame.empty:
@@ -486,38 +484,11 @@ class GoogleTrendsPulse:
                 except Exception as e:
                     trends_logger.error(f"Ошибка при работе с Google Trends API: {str(e)}")
                     
-                    # Если не удалось получить данные, пробуем резервный метод
-                    try:
-                        # Создаем новый экземпляр с еще более простыми параметрами
-                        trends_logger.info("Попытка использовать резервный метод с другими параметрами")
-                        alt_pytrends = TrendReq(hl='en-US', tz=0)
-                        
-                        # Пробуем более короткий период (30 дней)
-                        trends_logger.info("Альтернативный запрос для 'bitcoin' за 30 дней")
-                        alt_pytrends.build_payload(['bitcoin'], cat=0, timeframe='today 1-m')
-                        
-                        # Получаем данные
-                        trends_data_frame = alt_pytrends.interest_over_time()
-                        
-                        # Пауза между запросами
-                        time.sleep(3)
-                        
-                        # Для второго запроса
-                        fear_data_frame = None
-                        trends_logger.info("Альтернативный запрос для 'crypto crash' за 30 дней")
-                        alt_pytrends.build_payload(['crypto crash'], cat=0, timeframe='today 1-m')
-                        fear_data_frame = alt_pytrends.interest_over_time()
-                        
-                        trends_logger.info("Успешно получены альтернативные данные")
-                        
-                    except Exception as alt_e:
-                        trends_logger.error(f"Альтернативный метод тоже не сработал: {str(alt_e)}")
-                        # В случае неудачи и с альтернативным методом используем веб-скрапинг
-                        trends_logger.info("Пробуем получить данные через веб-скрапинг...")
-                        fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
-                        # Создаем пустые DataFrame для сохранения консистентности кода
-                        trends_data_frame = pd.DataFrame()
-                        fear_data_frame = pd.DataFrame()
+                    # Если не удалось получить данные, просто возвращаем пустые DataFrame
+                    # НЕ используем никакие резервные методы согласно требованиям
+                    trends_logger.warning("Не удалось получить данные Google Trends. Резервные методы не используются.")
+                    trends_data_frame = pd.DataFrame()
+                    fear_data_frame = pd.DataFrame()
                 trends_logger.debug(f"Получены данные: {not trends_data_frame.empty}, размер: {len(trends_data_frame) if not trends_data_frame.empty else 0}")
                 
                 if trends_data_frame.empty:
@@ -565,45 +536,48 @@ class GoogleTrendsPulse:
                 import traceback
                 trends_logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
                 
-                # Проверяем, если это ошибка слишком большого количества запросов,
-                # пробуем получить данные через резервный метод
-                is_rate_limit = "429" in str(e) or "TooManyRequestsError" in str(e)
-                if is_rate_limit:
-                    trends_logger.warning("Обнаружено превышение лимита запросов (429). Использую резервный метод...")
-                    try:
-                        # Используем резервный метод получения данных
-                        fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
-                        trends_logger.info(f"Успешно получены данные через резервный метод: FOMO={fomo_score}, Fear={fear_score}")
-                    except Exception as fallback_e:
-                        trends_logger.error(f"Ошибка в резервном методе: {str(fallback_e)}")
-                        # В случае ошибки резервного метода используем нейтральные значения
-                        fomo_score = 50
-                        fear_score = 50
-                        general_score = 50
-                else:
-                    # Для других ошибок (не связанных с лимитами) используем нейтральные значения
-                    trends_logger.warning("Неизвестная ошибка, использую нейтральные значения")
-                    fomo_score = 50
-                    fear_score = 50
-                    general_score = 50
+                # Согласно требованию - не используем резервные методы,
+                # не отображаем никаких данных при ошибках API
+                trends_logger.warning("Ошибка получения данных Google Trends API. Данные не будут отображаться.")
+                
+                # Используем пустые значения, которые будут интерпретированы как отсутствие данных
+                # и не будут включены в сообщение
+                fomo_score = None
+                fear_score = None
+                general_score = None
             
-            # Расчет соотношения FOMO к страху
-            fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Избегаем деления на ноль
-            
-            # Определяем сигнал на основе полученных данных
-            signal, description = self._determine_market_signal(fomo_score, fear_score, general_score, fomo_to_fear_ratio)
-            
-            # Создаем новые данные
-            trends_data = {
-                "signal": signal,
-                "description": description,
-                "fomo_score": fomo_score,
-                "fear_score": fear_score,
-                "general_score": general_score,
-                "fomo_to_fear_ratio": fomo_to_fear_ratio,
-                "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-                "real_data": True
-            }
+            # Проверяем, есть ли у нас реальные данные или получены None значения
+            if fomo_score is None or fear_score is None or general_score is None:
+                trends_logger.warning("Отсутствуют реальные данные Google Trends - пропускаем отображение")
+                # Возвращаем специальный объект, указывающий, что данные отсутствуют
+                trends_data = {
+                    "signal": None,
+                    "description": "Google Trends data unavailable",
+                    "fomo_score": None,
+                    "fear_score": None,
+                    "general_score": None,
+                    "fomo_to_fear_ratio": None,
+                    "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "real_data": False
+                }
+            else:
+                # Расчет соотношения FOMO к страху
+                fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Избегаем деления на ноль
+                
+                # Определяем сигнал на основе полученных данных
+                signal, description = self._determine_market_signal(fomo_score, fear_score, general_score, fomo_to_fear_ratio)
+                
+                # Создаем новые данные
+                trends_data = {
+                    "signal": signal,
+                    "description": description,
+                    "fomo_score": fomo_score,
+                    "fear_score": fear_score,
+                    "general_score": general_score,
+                    "fomo_to_fear_ratio": fomo_to_fear_ratio,
+                    "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                    "real_data": True
+                }
             
             # Обновляем время последней проверки и кешированные данные
             self.last_check_time = current_time
@@ -694,10 +668,17 @@ class GoogleTrendsPulse:
             trends_data (dict, optional): Данные трендов или None для получения новых данных
             
         Returns:
-            str: Форматированное сообщение
+            str: Форматированное сообщение или None, если данные недоступны
         """
         if not trends_data:
             trends_data = self.get_trends_data()
+            
+        # Проверяем, есть ли реальные данные
+        if trends_data.get("signal") is None:
+            # Если данных нет, возвращаем None, чтобы инфо о Google Trends 
+            # не включалось в сообщение Telegram вообще
+            trends_logger.warning("Данные Google Trends недоступны - не включаем в сообщение Telegram")
+            return None
             
         signal = trends_data["signal"]
         description = trends_data["description"]
