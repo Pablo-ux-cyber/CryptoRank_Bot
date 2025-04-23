@@ -5,9 +5,9 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from pytrends.request import TrendReq
+from pytrends.exceptions import TooManyRequestsError
 import logging
 from logger import logger
-from proxy_google_trends import ProxyGoogleTrends
 
 # Создаем отдельный логгер для Google Trends для более детального отслеживания
 trends_logger = logging.getLogger('google_trends')
@@ -126,40 +126,89 @@ class GoogleTrendsPulse:
             logger.info("No Google Trends history found or invalid format, will create new")
             self.history_data = []
     
-    def _get_term_interest_with_pytrends(self, term, timeframe):
+    def _safe_interest_over_time(self, pytrends, retries=4, initial_delay=10):
+        """
+        Пытается получить данные, при TooManyRequestsError — ждёт и повторяет с удвоением задержки.
+        
+        Args:
+            pytrends: Экземпляр TrendReq
+            retries (int): Количество попыток
+            initial_delay (int): Начальная задержка между попытками в секундах
+            
+        Returns:
+            DataFrame или None: Данные из Google Trends или None в случае ошибки
+        """
+        delay = initial_delay
+        for attempt in range(1, retries + 1):
+            try:
+                return pytrends.interest_over_time()
+            except TooManyRequestsError:
+                if attempt == retries:
+                    # После последней неудачи — пробрасываем ошибку
+                    trends_logger.error(f"TooManyRequestsError после {retries} попыток")
+                    raise
+                trends_logger.warning(f"429 Too Many Requests (попытка {attempt}/{retries}), ждем {delay} секунд...")
+                time.sleep(delay)
+                delay *= 2  # Экспоненциальный рост задержки
+            except Exception as e:
+                trends_logger.error(f"Неожиданная ошибка в _safe_interest_over_time: {str(e)}")
+                if attempt == retries:
+                    raise
+                trends_logger.warning(f"Повторная попытка {attempt+1}/{retries} через {delay} секунд...")
+                time.sleep(delay)
+                delay *= 1.5
+    
+    def _get_term_interest_with_pytrends(self, term, timeframe=''):
         """
         Получает значение интереса к термину с использованием библиотеки pytrends
+        Использует диапазон дат вместо timeframe для более стабильных результатов
         
         Args:
             term (str): Термин для поиска в Google Trends
-            timeframe (str): Период времени для анализа (now 7-d, now 1-d и т.д.)
+            timeframe (str): Период времени для анализа (не используется, добавлен для совместимости)
             
         Returns:
             float: Оценка интереса к термину (0-100)
         """
-        logger.info(f"Получение данных для термина: {term}, период: {timeframe}")
+        trends_logger.info(f"Получение данных для термина: {term}")
         
         try:
-            # Формируем запрос к Google Trends
-            self.pytrends.build_payload([term], cat=0, timeframe=timeframe)
+            # Используем диапазон за последние 30 дней в формате "YYYY-MM-DD YYYY-MM-DD"
+            # Этот формат работает стабильнее, чем "now 14-d"
+            today = datetime.now().date()
+            start = today - timedelta(days=30)
+            date_range = f"{start} {today}"  # "YYYY-MM-DD YYYY-MM-DD"
             
-            # Получаем временной ряд интереса
-            interest_data = self.pytrends.interest_over_time()
+            trends_logger.info(f"Используем формат диапазона дат: {date_range}")
             
+            # Создаем TrendReq клиент
+            pytrends = TrendReq(hl='en-US', tz=0)
+            
+            # Формируем запрос
+            pytrends.build_payload([term], cat=0, timeframe=date_range)
+            
+            # Используем безопасный запрос с бэкоффом
+            interest_data = self._safe_interest_over_time(pytrends)
+            
+            # Проверяем, есть ли данные
             if interest_data.empty:
-                logger.error(f"Пустой результат из Google Trends для '{term}'")
+                trends_logger.error(f"Пустой результат из Google Trends для '{term}'")
                 return 50  # нейтральное значение при пустом результате
+            
+            # Отфильтровываем строку за текущий (неполный) день
+            if 'isPartial' in interest_data.columns:
+                interest_data = interest_data[~interest_data['isPartial']]
             
             # Вычисляем среднее значение интереса
             avg_interest = interest_data[term].mean()
-            logger.info(f"Средний интерес для '{term}': {avg_interest}")
+            trends_logger.info(f"Средний интерес для '{term}': {avg_interest}")
             
             return avg_interest
             
         except Exception as e:
-            logger.error(f"Ошибка pytrends для термина '{term}': {str(e)}")
+            trends_logger.error(f"Ошибка pytrends для термина '{term}': {str(e)}")
             import traceback
-            logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
+            trends_logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
             return 50  # нейтральное значение при ошибке
     
     def refresh_trends_data(self):

@@ -790,5 +790,65 @@
     "fomo_to_fear_ratio": 1.0,
     "timestamp": "2025-04-23 14:42:30",
     "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 15:21:45",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 15:22:50",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 15:22:56",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 15:23:23",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 15:23:48",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 15:25:30",
+    "real_data": true
   }
 ]

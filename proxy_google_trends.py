@@ -13,6 +13,7 @@ import logging
 import requests
 from datetime import datetime, timedelta
 from pytrends.request import TrendReq
+from pytrends.exceptions import TooManyRequestsError
 
 # Настройка логгера
 logging.basicConfig(
@@ -78,6 +79,45 @@ class ProxyGoogleTrends:
         """
         self.retry_count = 0
         
+        # Пробуем диапазон за последние 30 дней в формате "YYYY-MM-DD YYYY-MM-DD"
+        # Этот формат работает стабильнее, чем "now 14-d"
+        try:
+            logger.info(f"Пробуем период в диапазоне за последние 30 дней")
+            
+            # Вычисляем диапазон последних 30 дней
+            today = datetime.now().date()
+            start = today - timedelta(days=30)
+            timeframe = f"{start} {today}"  # "YYYY-MM-DD YYYY-MM-DD"
+            
+            logger.info(f"Сформирован диапазон: {timeframe}")
+            
+            # Создаем TrendReq клиент
+            pytrends = TrendReq(hl=locale, tz=0)
+            
+            # Формируем запрос
+            pytrends.build_payload([keyword], cat=0, timeframe=timeframe)
+            
+            # Используем безопасный запрос с бэкоффом
+            interest_data = self._safe_interest_over_time(pytrends)
+            
+            # Обрабатываем данные
+            if interest_data is not None and not interest_data.empty:
+                # Отфильтровываем строку за текущий (неполный) день
+                if 'isPartial' in interest_data.columns:
+                    interest_data = interest_data[~interest_data['isPartial']]
+                
+                # Вычисляем среднее значение
+                avg_interest = interest_data[keyword].mean()
+                
+                logger.info(f"Успешно получены данные для диапазона {timeframe}")
+                logger.info(f"Средний интерес: {avg_interest}")
+                
+                return avg_interest, timeframe, True
+        
+        except Exception as e:
+            logger.warning(f"Ошибка при использовании диапазонного формата: {str(e)}")
+            logger.warning("Пробуем альтернативные форматы...")
+        
         # Пробуем разные временные периоды
         for timeframe in self.timeframes:
             try:
@@ -98,6 +138,38 @@ class ProxyGoogleTrends:
         
         logger.error("Не удалось получить данные ни для одного периода")
         return 0, None, False
+        
+    def _safe_interest_over_time(self, pytrends, retries=4, initial_delay=10):
+        """
+        Пытается получить данные, при TooManyRequestsError — ждёт и повторяет с удвоением задержки.
+        
+        Args:
+            pytrends: Экземпляр TrendReq
+            retries (int): Количество попыток
+            initial_delay (int): Начальная задержка между попытками в секундах
+            
+        Returns:
+            DataFrame или None: Данные из Google Trends или None в случае ошибки
+        """
+        delay = initial_delay
+        for attempt in range(1, retries + 1):
+            try:
+                return pytrends.interest_over_time()
+            except TooManyRequestsError:
+                if attempt == retries:
+                    # После последней неудачи — пробрасываем ошибку
+                    logger.error(f"TooManyRequestsError после {retries} попыток")
+                    raise
+                logger.warning(f"429 Too Many Requests (попытка {attempt}/{retries}), ждем {delay} секунд...")
+                time.sleep(delay)
+                delay *= 2  # Экспоненциальный рост задержки
+            except Exception as e:
+                logger.error(f"Неожиданная ошибка в _safe_interest_over_time: {str(e)}")
+                if attempt == retries:
+                    raise
+                logger.warning(f"Повторная попытка {attempt+1}/{retries} через {delay} секунд...")
+                time.sleep(delay)
+                delay *= 1.5
     
     def _try_get_interest(self, keyword, timeframe, locale):
         """
