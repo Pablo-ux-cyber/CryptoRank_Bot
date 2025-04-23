@@ -2,6 +2,7 @@ import time
 import json
 import random
 import requests
+import pandas as pd
 from datetime import datetime, timedelta
 from pytrends.request import TrendReq
 from logger import logger
@@ -236,54 +237,40 @@ class GoogleTrendsPulse:
             logger.info("Получение реальных данных из Google Trends API...")
             
             try:
-                # Используем pytrends библиотеку для получения данных
-                fomo_keyword = "bitcoin price"
-                fear_keyword = "crypto crash"
-                general_keyword = "bitcoin"
+                # Максимально простая реализация, точно как в тестовом примере
+                # Используем один поисковый запрос и смотрим относительный интерес
                 
-                logger.info(f"Запрос к pytrends API для '{fomo_keyword}'")
-                self.pytrends.build_payload([fomo_keyword], cat=0, timeframe=self.timeframe)
-                fomo_data = self.pytrends.interest_over_time()
-                if not fomo_data.empty:
-                    fomo_score = fomo_data[fomo_keyword].mean()
-                    logger.info(f"Получено значение FOMO score: {fomo_score}")
-                else:
+                pytrends = TrendReq(hl='ru-RU', tz=180)
+                
+                # Получаем данные для ключевых слов за последние 12 месяцев
+                logger.info("Запрос к Google Trends API для 'bitcoin', 'crypto crash'")
+                pytrends.build_payload(['bitcoin', 'crypto crash'], cat=0, timeframe='today 12-m')
+                
+                # Получаем данные об интересе со временем
+                trends_data_frame = pytrends.interest_over_time()
+                
+                if trends_data_frame.empty:
+                    logger.warning("Google Trends вернул пустые данные")
+                    # Используем значения по умолчанию
                     fomo_score = 50
-                    logger.info("Пустой ответ для FOMO, используем нейтральное значение 50")
-                
-                # Делаем паузу между запросами
-                time.sleep(self.min_delay)
-                
-                logger.info(f"Запрос к pytrends API для '{fear_keyword}'")
-                self.pytrends.build_payload([fear_keyword], cat=0, timeframe=self.timeframe)
-                fear_data = self.pytrends.interest_over_time()
-                if not fear_data.empty:
-                    fear_score = fear_data[fear_keyword].mean()
-                    logger.info(f"Получено значение Fear score: {fear_score}")
-                else:
                     fear_score = 50
-                    logger.info("Пустой ответ для Fear, используем нейтральное значение 50")
-                    
-                # Делаем паузу между запросами
-                time.sleep(self.min_delay)
-                
-                logger.info(f"Запрос к pytrends API для '{general_keyword}'")
-                self.pytrends.build_payload([general_keyword], cat=0, timeframe=self.timeframe)
-                general_data = self.pytrends.interest_over_time()
-                if not general_data.empty:
-                    general_score = general_data[general_keyword].mean()
-                    logger.info(f"Получено значение General score: {general_score}")
-                else:
                     general_score = 50
-                    logger.info("Пустой ответ для General, используем нейтральное значение 50")
-                
-                # Если все запросы вернули нейтральные значения (50),
-                # это может означать проблему с API
-                if fomo_score == 50 and fear_score == 50 and general_score == 50:
-                    logger.info("API вернул все нейтральные значения, возможна проблема с подключением")
+                else:
+                    # Получаем последние 7 дней данных
+                    recent_data = trends_data_frame.tail(7)
+                    
+                    # Средние значения для каждого термина
+                    fomo_score = recent_data['bitcoin'].mean()
+                    fear_score = recent_data['crypto crash'].mean()
+                    general_score = (fomo_score + fear_score) / 2
+                    
+                    logger.info(f"Получены данные из Google Trends:")
+                    logger.info(f"FOMO (bitcoin): {fomo_score}")
+                    logger.info(f"Fear (crypto crash): {fear_score}")
+                    logger.info(f"General interest: {general_score}")
                 
             except Exception as e:
-                logger.error(f"Ошибка при работе с pytrends API: {str(e)}")
+                logger.error(f"Ошибка при работе с Google Trends API: {str(e)}")
                 import traceback
                 logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
                 
