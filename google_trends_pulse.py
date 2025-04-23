@@ -12,8 +12,19 @@ from logger import logger
 trends_logger = logging.getLogger('google_trends')
 trends_logger.setLevel(logging.DEBUG)
 
-# Настраиваем вывод в файл
-trends_file_handler = logging.FileHandler('google_trends_debug.log')
+# Очищаем существующие обработчики, чтобы избежать дублирования
+if trends_logger.handlers:
+    trends_logger.handlers.clear()
+
+# Настраиваем вывод в файл с ротацией каждую полночь, хранящий логи за последние 7 дней
+from logging.handlers import TimedRotatingFileHandler
+trends_file_handler = TimedRotatingFileHandler(
+    'google_trends_debug.log',
+    when='midnight',      # Ротация в полночь
+    interval=1,           # Один день на файл
+    backupCount=7,        # Хранить логи за 7 дней
+    encoding='utf-8'
+)
 trends_file_handler.setLevel(logging.DEBUG)
 trends_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 trends_file_handler.setFormatter(trends_formatter)
