@@ -16,5 +16,73 @@
     "general_score": 48.79806282024269,
     "fomo_to_fear_ratio": 0.8708882499011109,
     "timestamp": "2025-04-23 09:17:52"
+  },
+  {
+    "signal": "\ud83d\udfe2",
+    "description": "High FOMO factor - possible market peak",
+    "fomo_score": 64.30891739229529,
+    "fear_score": 74.69375351278231,
+    "general_score": 51.125794925995606,
+    "fomo_to_fear_ratio": 0.8609678101300684,
+    "timestamp": "2025-04-23 09:25:11"
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 73.03085634849522,
+    "fear_score": 68.63684863896721,
+    "general_score": 55.97586984720384,
+    "fomo_to_fear_ratio": 1.0640182030011414,
+    "timestamp": "2025-04-23 09:25:41"
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 09:26:17",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 09:26:45",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 09:27:13",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 09:27:24",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 09:28:07",
+    "real_data": true
   }
 ]

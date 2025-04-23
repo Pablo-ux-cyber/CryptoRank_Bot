@@ -1,6 +1,7 @@
 import time
 import json
 import random
+import requests
 from datetime import datetime, timedelta
 from logger import logger
 
@@ -20,6 +21,23 @@ class GoogleTrendsPulse:
         # Кешированные данные и время последней проверки
         self.last_check_time = None
         self.last_data = None
+        
+        # Категории ключевых слов для анализа
+        self.fomo_keywords = ["bitcoin price", "crypto millionaire", "buy bitcoin now"]
+        self.fear_keywords = ["crypto crash", "bitcoin scam", "crypto tax"]
+        self.general_keywords = ["bitcoin", "cryptocurrency", "blockchain"]
+        
+        # API URL для Google Trends Explore API
+        self.api_url = "https://trends.google.com/trends/api/explore"
+        
+        # Параметры запроса для получения данных за последние 7 дней
+        self.timeframe = "now 7-d"
+        
+        # Периоды времени для сравнения трендов
+        self.timeframes = {
+            "current": "now 7-d",      # Текущая неделя
+            "previous": "now 14-d",    # Предыдущая неделя для сравнения
+        }
         
         # Определение маркетных сигналов
         self.market_signals = [
@@ -65,6 +83,116 @@ class GoogleTrendsPulse:
             logger.info("No Google Trends history found or invalid format, will create new")
             self.history_data = []
     
+    def _get_term_interest(self, term, timeframe, headers):
+        """
+        Получает значение интереса к термину из Google Trends API напрямую
+        
+        Args:
+            term (str): Термин для поиска в Google Trends
+            timeframe (str): Период времени для анализа (now 7-d, now 1-d и т.д.)
+            headers (dict): HTTP заголовки для запроса
+            
+        Returns:
+            float: Оценка интереса к термину (0-100)
+        """
+        logger.info(f"Получение данных для термина: {term}, период: {timeframe}")
+        
+        try:
+            # Параметры запроса
+            params = {
+                'hl': 'en-US',  # язык
+                'tz': '360',    # часовой пояс (GMT+6)
+                'req': '{"comparisonItem":[{"keyword":"' + term + '","geo":"","time":"' + timeframe + '"}],"category":0,"property":""}',
+                'tz': '-180'
+            }
+            
+            # URL для запроса данных через веб-интерфейс Google Trends
+            trends_url = f"https://trends.google.com/trends/explore?q={term}&date={timeframe}"
+            logger.info(f"URL для проверки в браузере: {trends_url}")
+            
+            # Получаем данные из Google Trends Widget API
+            req_url = "https://trends.google.com/trends/api/explore"
+            response = requests.get(req_url, params=params, headers=headers, timeout=10)
+            
+            if response.status_code != 200:
+                logger.error(f"Ошибка запроса к Google Trends: статус {response.status_code}")
+                return 50  # нейтральное значение при ошибке
+                
+            # Google Trends возвращает данные с префиксом ")]}',\n" который нужно убрать
+            json_data = response.text[5:]
+            
+            # Парсим JSON ответ
+            data = json.loads(json_data)
+            
+            # Получаем ID виджета с данными о трендах
+            widgets = data.get('widgets', [])
+            
+            if not widgets:
+                logger.error("Не удалось получить widgets из ответа Google Trends")
+                return 50
+                
+            interest_over_time_widget_id = None
+            
+            for widget in widgets:
+                if widget.get('title', '') == 'Interest over time':
+                    interest_over_time_widget_id = widget.get('id', '')
+                    break
+                    
+            if not interest_over_time_widget_id:
+                logger.error("Не удалось найти виджет 'Interest over time' в ответе Google Trends")
+                return 50
+                
+            # Получаем данные для виджета Interest over time
+            widget_params = {
+                'hl': 'en-US',
+                'tz': '360',
+                'req': json.dumps(widget.get('request', {})),
+                'token': widget.get('token', ''),
+                'tz': '360'
+            }
+            
+            widget_url = f"https://trends.google.com/trends/api/widgetdata/multiline"
+            widget_response = requests.get(widget_url, params=widget_params, headers=headers, timeout=10)
+            
+            if widget_response.status_code != 200:
+                logger.error(f"Ошибка при получении данных виджета: статус {widget_response.status_code}")
+                return 50
+                
+            # Снова убираем префикс
+            widget_json_data = widget_response.text[5:]
+            
+            # Парсим JSON ответ виджета
+            widget_data = json.loads(widget_json_data)
+            
+            # Получаем данные о трендах
+            trend_data = widget_data.get('default', {}).get('timelineData', [])
+            
+            if not trend_data:
+                logger.error("Не удалось получить данные о трендах")
+                return 50
+                
+            # Вычисляем среднее значение интереса за период
+            values = []
+            for point in trend_data:
+                if 'value' in point and len(point['value']) > 0:
+                    values.append(float(point['value'][0]))
+                    
+            if not values:
+                logger.error("Не удалось извлечь значения интереса")
+                return 50
+                
+            # Вычисляем средний интерес
+            avg_interest = sum(values) / len(values)
+            logger.info(f"Средний интерес для '{term}': {avg_interest}")
+            
+            return avg_interest
+            
+        except Exception as e:
+            logger.error(f"Ошибка при получении данных для термина '{term}': {str(e)}")
+            import traceback
+            logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
+            return 50  # нейтральное значение при ошибке
+    
     def refresh_trends_data(self):
         """
         Принудительно обновляет кеш данных Google Trends
@@ -72,66 +200,19 @@ class GoogleTrendsPulse:
         Returns:
             dict: Обновленные данные трендов
         """
-        # Генерируем новые данные с взвешенным случайным выбором сигнала
-        logger.info("Принудительное обновление данных Google Trends Pulse")
+        logger.info("Принудительное обновление данных Google Trends Pulse с использованием API")
         
-        # Создаем взвешенный список на основе весов сигналов
-        weighted_signals = []
-        for signal_data in self.market_signals:
-            weighted_signals.extend([signal_data] * signal_data["weight"])
-            
-        # Случайно выбираем один из сигналов с учетом весов
-        selected_signal = random.choice(weighted_signals)
+        # Сбрасываем кеш, чтобы получить новые данные
+        self.last_check_time = None
         
-        # Генерируем случайные показатели для FOMO и страха
-        # с небольшим отклонением от предыдущих показателей для реалистичности
-        prev_fomo = self.last_data["fomo_score"] if self.last_data else 50
-        prev_fear = self.last_data["fear_score"] if self.last_data else 50
-        prev_general = self.last_data["general_score"] if self.last_data else 50
+        # Получаем свежие данные
+        trends_data = self.get_trends_data()
         
-        fomo_score = max(0, min(100, prev_fomo + random.uniform(-10, 10)))
-        fear_score = max(0, min(100, prev_fear + random.uniform(-10, 10)))
-        general_score = max(0, min(100, prev_general + random.uniform(-5, 5)))
-        
-        # Вычисляем соотношение FOMO к страху
-        fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Предотвращаем деление на ноль
-        
-        # Создаем новые данные
-        current_time = datetime.now()
-        trends_data = {
-            "signal": selected_signal["signal"],
-            "description": selected_signal["description"],
-            "fomo_score": fomo_score,
-            "fear_score": fear_score,
-            "general_score": general_score,
-            "fomo_to_fear_ratio": fomo_to_fear_ratio,
-            "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S")
-        }
-        
-        # Обновляем время последней проверки и кешированные данные
-        self.last_check_time = current_time
-        self.last_data = trends_data
-        
-        # Сохраняем историю данных
-        self.history_data.append(trends_data)
-        # Ограничиваем размер истории
-        if len(self.history_data) > 100:
-            self.history_data = self.history_data[-100:]
-            
-        # Сохраняем историю в файл
-        try:
-            with open("trends_history.json", "w") as f:
-                json.dump(self.history_data, f, indent=2)
-            logger.info(f"Saved Google Trends history: {len(self.history_data)} records")
-        except Exception as e:
-            logger.error(f"Error saving Google Trends history: {str(e)}")
-            
-        logger.info(f"Generated new Google Trends data: {trends_data['signal']} - {trends_data['description']}")
         return trends_data
     
     def get_trends_data(self):
         """
-        Получает данные из Google Trends и анализирует их
+        Получает данные из Google Trends API и анализирует их
         Использует кешированные данные, если они доступны
         
         Returns:
@@ -147,39 +228,45 @@ class GoogleTrendsPulse:
                 logger.info(f"Используем кешированные данные Google Trends (проверка менее 24 часов назад)")
                 return self.last_data
             
-            # Иначе генерируем новые данные (вместо запроса к API Google Trends)
-            logger.info("Генерация новых данных Google Trends...")
+            # Получаем реальные данные из Google Trends API
+            logger.info("Получение реальных данных из Google Trends API...")
             
-            # Создаем взвешенный список на основе весов сигналов
-            weighted_signals = []
-            for signal_data in self.market_signals:
-                weighted_signals.extend([signal_data] * signal_data["weight"])
-                
-            # Случайно выбираем один из сигналов с учетом весов
-            selected_signal = random.choice(weighted_signals)
+            # Настройка заголовков для имитации браузера
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept': 'application/json, text/plain, */*',
+                'Content-Type': 'application/json',
+                'Origin': 'https://trends.google.com',
+                'Referer': 'https://trends.google.com/trends/explore',
+                'x-client-data': 'CIS2yQEIprbJAQipncoBCMKTywEIkqHLAQiFk80BCPqYzQEI75jNAQi5mc0BCNKazQEI+JrNAQi0nM0BCO2czQEIjJ3NAQiZnc0B'
+            }
             
-            # Генерируем случайные показатели для FOMO и страха
-            # с небольшим отклонением от предыдущих показателей для реалистичности
-            prev_fomo = self.last_data["fomo_score"] if self.last_data else 50
-            prev_fear = self.last_data["fear_score"] if self.last_data else 50
-            prev_general = self.last_data["general_score"] if self.last_data else 50
+            # Получаем данные для различных категорий ключевых слов
+            fomo_score = self._get_term_interest("bitcoin price", self.timeframe, headers)
+            time.sleep(3)  # Пауза между запросами
             
-            fomo_score = max(0, min(100, prev_fomo + random.uniform(-5, 5)))
-            fear_score = max(0, min(100, prev_fear + random.uniform(-5, 5)))
-            general_score = max(0, min(100, prev_general + random.uniform(-3, 3)))
+            fear_score = self._get_term_interest("crypto crash", self.timeframe, headers)
+            time.sleep(3)  # Пауза между запросами
             
-            # Вычисляем соотношение FOMO к страху
-            fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Предотвращаем деление на ноль
+            general_score = self._get_term_interest("bitcoin", self.timeframe, headers)
+            
+            # Расчет соотношения FOMO к страху
+            fomo_to_fear_ratio = fomo_score / max(fear_score, 1)  # Избегаем деления на ноль
+            
+            # Определяем сигнал на основе полученных данных
+            signal, description = self._determine_market_signal(fomo_score, fear_score, general_score, fomo_to_fear_ratio)
             
             # Создаем новые данные
             trends_data = {
-                "signal": selected_signal["signal"],
-                "description": selected_signal["description"],
+                "signal": signal,
+                "description": description,
                 "fomo_score": fomo_score,
                 "fear_score": fear_score,
                 "general_score": general_score,
                 "fomo_to_fear_ratio": fomo_to_fear_ratio,
-                "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S")
+                "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+                "real_data": True
             }
             
             # Обновляем время последней проверки и кешированные данные
@@ -200,7 +287,7 @@ class GoogleTrendsPulse:
             except Exception as e:
                 logger.error(f"Error saving Google Trends history: {str(e)}")
             
-            logger.info(f"Сгенерированы данные Google Trends: {trends_data['signal']} - {trends_data['description']}")
+            logger.info(f"Получены реальные данные Google Trends: {trends_data['signal']} - {trends_data['description']}")
             return trends_data
             
         except Exception as e:
@@ -224,86 +311,6 @@ class GoogleTrendsPulse:
             logger.info(f"Используем нейтральные данные Google Trends: {neutral_data['signal']} - {neutral_data['description']}")
             return neutral_data
     
-    def _get_category_score(self, keyword_groups):
-        """
-        Получает и анализирует тренды для категории ключевых слов
-        
-        Args:
-            keyword_groups (list): Список групп ключевых слов для анализа
-            
-        Returns:
-            float: Оценка интереса к категории (0-100)
-        """
-        try:
-            results = []
-            
-            # Обрабатываем каждую группу ключевых слов по отдельности
-            for i, keyword_group in enumerate(keyword_groups):
-                # Используем динамическую задержку для предотвращения ошибок 429
-                if i > 0:
-                    # Увеличиваем задержку для каждого последующего запроса
-                    delay = min(self.min_delay + (i * 0.5), self.max_delay)
-                    logger.info(f"Делаем паузу {delay:.1f} секунд между запросами Google Trends")
-                    time.sleep(delay)
-                
-                # Получаем данные трендов за текущую неделю
-                try:
-                    logger.info(f"Запрос Google Trends для ключевых слов: {keyword_group}, таймфрейм: {self.timeframes['current']}")
-                    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["current"])
-                    current_data = self.pytrends.interest_over_time()
-                    
-                    # Если данных нет, используем нейтральное значение для этой группы
-                    if current_data.empty:
-                        logger.warning(f"Google Trends вернул пустой ответ для {keyword_group}")
-                        results.append(50)
-                        continue
-                    
-                    # Вычисляем средний интерес по всем ключевым словам в группе
-                    current_avg = current_data[keyword_group].mean().mean()
-                    
-                    # Делаем паузу, чтобы не превысить лимиты API
-                    time.sleep(self.min_delay)
-                    
-                    # Получаем данные трендов за предыдущую неделю
-                    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
-                    previous_data = self.pytrends.interest_over_time()
-                    
-                    # Если данных нет, используем только текущее значение
-                    if previous_data.empty:
-                        results.append(current_avg)
-                        continue
-                    
-                    # Вычисляем средний интерес за предыдущую неделю
-                    previous_avg = previous_data[keyword_group].mean().mean()
-                    
-                    # Вычисляем прирост (в процентах)
-                    growth_pct = 0 if previous_avg == 0 else (current_avg - previous_avg) / previous_avg * 100
-                    
-                    # Модифицируем текущее среднее с учетом прироста
-                    adjusted_score = current_avg + min(growth_pct, 30)
-                    
-                    # Добавляем в результаты
-                    results.append(min(max(adjusted_score, 0), 100))
-                    
-                except Exception as e:
-                    # Добавляем подробную информацию об ошибке
-                    logger.error(f"Ошибка при получении данных для группы ключевых слов {keyword_group}: {str(e)}")
-                    # Дополнительная информация для отладки
-                    import traceback
-                    logger.error(f"Трассировка ошибки Google Trends:\n{traceback.format_exc()}")
-                    results.append(50)  # Нейтральное значение при ошибке для этой группы
-            
-            # Если не удалось получить никаких данных, возвращаем нейтральное значение
-            if not results:
-                return 50
-            
-            # Вычисляем среднее по всем группам
-            return sum(results) / len(results)
-            
-        except Exception as e:
-            logger.error(f"Ошибка при получении оценки категории: {str(e)}")
-            return 50  # Нейтральное значение в случае ошибки
-    
     def _determine_market_signal(self, fomo_score, fear_score, general_score, fomo_to_fear_ratio):
         """
         Определяет рыночный сигнал на основе оценок различных категорий
@@ -324,18 +331,22 @@ class GoogleTrendsPulse:
             
         # Правило 2: Растущий FOMO, средний страх = разогрев рынка
         elif fomo_score > 60 and fomo_to_fear_ratio > 1.5:
-            return "🟡", "Growing interest in cryptocurrencies"
+            return "🟡", "Growing interest in cryptocurrencies - market warming up"
             
         # Правило 3: Высокий страх, низкий FOMO = возможная точка входа
         # Согласованно с индексом страха и жадности - красный для потенциальной точки входа
         elif fear_score > 70 and fomo_to_fear_ratio < 0.7:
-            return "🔴", "High fear - potential entry point"
+            return "🔴", "High fear and low FOMO - possible buying opportunity"
             
-        # Правило 4: Очень низкий общий интерес = рынок в спячке
+        # Правило 4: Средний страх, снижающийся FOMO = охлаждение рынка
+        elif fear_score > 50 and fomo_to_fear_ratio < 1.0:
+            return "🟠", "Decreasing interest in cryptocurrencies - market cooling down"
+            
+        # Правило 5: Низкий общий интерес = затишье на рынке
         elif general_score < 30:
-            return "🔵", "Market hibernation - low general interest"
+            return "🔵", "Low interest in cryptocurrencies - market hibernation"
             
-        # По умолчанию: нейтральное состояние
+        # По умолчанию - нейтральный сигнал
         else:
             return "⚪", "Neutral interest in cryptocurrencies"
     
