@@ -553,5 +553,25 @@
     "fomo_to_fear_ratio": 67.34806629834254,
     "timestamp": "2025-04-23 13:56:51",
     "real_data": true
+  },
+  {
+    "signal": "\ud83d\udfe1",
+    "description": "Growing interest in cryptocurrencies - market warming up",
+    "fomo_score": 67.1878453038674,
+    "fear_score": 0.5524861878453039,
+    "general_score": 33.870165745856355,
+    "fomo_to_fear_ratio": 67.1878453038674,
+    "timestamp": "2025-04-23 13:57:43",
+    "real_data": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 50,
+    "fear_score": 50,
+    "general_score": 50,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-23 13:58:30",
+    "real_data": true
   }
 ]
