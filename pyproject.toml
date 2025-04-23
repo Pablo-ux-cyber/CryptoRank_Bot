@@ -12,7 +12,7 @@ dependencies = [
     "openai>=1.72.0",
     "pandas>=2.2.3",
     "psycopg2-binary>=2.9.10",
-    "python-telegram-bot==13.7",
+    "python-telegram-bot==20.7",
     "pytrends>=4.9.2",
     "pytz>=2025.2",
     "requests>=2.32.3",
