@@ -1,206 +1,195 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coinbase Rank History</title>
-    <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>History & Analytics - SensorTower Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <style>
-        .rank-data-table {
-            font-size: 0.9rem;
+        .history-card {
+            border-left: 4px solid var(--bs-primary);
         }
-        .chart-container {
-            position: relative;
-            height: 350px;
+        .fear-greed-card {
+            border-left: 4px solid var(--bs-warning);
         }
-        .tab-content {
-            margin-top: 20px;
+        .trends-card {
+            border-left: 4px solid var(--bs-info);
+        }
+        .rank-change-up {
+            color: var(--bs-success);
+        }
+        .rank-change-down {
+            color: var(--bs-danger);
+        }
+        .rank-change-none {
+            color: var(--bs-secondary);
         }
     </style>
 </head>
-<body data-bs-theme="dark">
-    <div class="container py-4">
-        <div class="row">
-            <div class="col-12">
-                <h1>Coinbase Rank History</h1>
-                <p class="text-muted">История рейтинга и аналитики Coinbase в AppStore</p>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="/">Home</a></li>
+                        <li class="breadcrumb-item active" aria-current="page">History & Analytics</li>
+                    </ol>
+                </nav>
                 
-                <div class="mb-3">
-                    <a href="/" class="btn btn-outline-secondary">← Назад к главной</a>
-                </div>
-
-                <ul class="nav nav-tabs" id="historyTabs" role="tablist">
+                <h1 class="mb-4">History & Analytics</h1>
+                
+                <ul class="nav nav-tabs mb-4" id="historyTab" role="tablist">
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="chart-tab" data-bs-toggle="tab" data-bs-target="#chart" type="button" role="tab" aria-controls="chart" aria-selected="true">График рейтинга</button>
+                        <button class="nav-link active" id="rank-tab" data-bs-toggle="tab" data-bs-target="#rank" type="button" role="tab" aria-controls="rank" aria-selected="true">Coinbase Rank</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="rank-tab" data-bs-toggle="tab" data-bs-target="#rank" type="button" role="tab" aria-controls="rank" aria-selected="false">Данные рейтинга</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="fear-greed-tab" data-bs-toggle="tab" data-bs-target="#fear-greed" type="button" role="tab" aria-controls="fear-greed" aria-selected="false">Fear & Greed Index</button>
+                        <button class="nav-link" id="fear-greed-tab" data-bs-toggle="tab" data-bs-target="#fear-greed" type="button" role="tab" aria-controls="fear-greed" aria-selected="false">Fear & Greed</button>
                     </li>
                     <li class="nav-item" role="presentation">
                         <button class="nav-link" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends" type="button" role="tab" aria-controls="trends" aria-selected="false">Google Trends</button>
                     </li>
                 </ul>
                 
-                <div class="tab-content" id="historyTabsContent">
-                    <!-- Chart Tab -->
-                    <div class="tab-pane fade show active" id="chart" role="tabpanel" aria-labelledby="chart-tab">
-                        <div class="card">
-                            <div class="card-body">
-                                <h5 class="card-title">Динамика рейтинга Coinbase в AppStore</h5>
-                                <div class="chart-container">
-                                    <canvas id="rankChart"></canvas>
-                                </div>
-                                {% if rank_history and rank_history|length > 0 %}
-                                <div class="alert alert-info mt-3">
-                                    Всего записей в истории: {{ rank_history|length }}
-                                </div>
-                                {% else %}
-                                <div class="alert alert-warning mt-3">
-                                    История рейтинга пуста. Данные появятся при следующих обновлениях рейтинга.
-                                </div>
-                                {% endif %}
+                <div class="tab-content" id="historyTabContent">
+                    <!-- Rank History Tab -->
+                    <div class="tab-pane fade show active" id="rank" role="tabpanel" aria-labelledby="rank-tab">
+                        <div class="card history-card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Coinbase Rank History</h5>
                             </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Rank Data Tab -->
-                    <div class="tab-pane fade" id="rank" role="tabpanel" aria-labelledby="rank-tab">
-                        <div class="card">
                             <div class="card-body">
-                                <h5 class="card-title">История рейтинга Coinbase</h5>
-                                {% if rank_history and rank_history|length > 0 %}
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover rank-data-table">
+                                    <table class="table table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Дата и время</th>
-                                                <th>Рейтинг</th>
-                                                <th>Изменение</th>
-                                                <th>Категория</th>
+                                                <th>Date</th>
+                                                <th>Rank</th>
+                                                <th>Change</th>
+                                                <th>Category</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for entry in rank_history %}
-                                            <tr>
-                                                <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                                <td>{{ entry.rank }}</td>
-                                                <td>
-                                                    {% if entry.change_direction == 'up' %}
-                                                    <span class="text-success">🔼 +{{ entry.change_value }}</span>
-                                                    {% elif entry.change_direction == 'down' %}
-                                                    <span class="text-danger">🔽 -{{ entry.change_value }}</span>
-                                                    {% else %}
-                                                    <span class="text-muted">⚪ 0</span>
-                                                    {% endif %}
-                                                </td>
-                                                <td>{{ entry.category }}</td>
-                                            </tr>
-                                            {% endfor %}
+                                            {% if rank_history %}
+                                                {% for entry in rank_history %}
+                                                <tr>
+                                                    <td>{{ entry.timestamp }}</td>
+                                                    <td>{{ entry.rank }}</td>
+                                                    <td>
+                                                        {% if entry.change_direction == 'up' %}
+                                                            <span class="rank-change-up">
+                                                                <i class="bi bi-arrow-up-circle-fill"></i> +{{ entry.change_value }}
+                                                            </span>
+                                                        {% elif entry.change_direction == 'down' %}
+                                                            <span class="rank-change-down">
+                                                                <i class="bi bi-arrow-down-circle-fill"></i> -{{ entry.change_value }}
+                                                            </span>
+                                                        {% else %}
+                                                            <span class="rank-change-none">—</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>{{ entry.category or 'Finance' }}</td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No rank history available yet</td>
+                                                </tr>
+                                            {% endif %}
                                         </tbody>
                                     </table>
                                 </div>
-                                {% else %}
-                                <div class="alert alert-warning">
-                                    История рейтинга пуста. Данные появятся при следующих обновлениях рейтинга.
-                                </div>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Fear & Greed Tab -->
+                    <!-- Fear & Greed History Tab -->
                     <div class="tab-pane fade" id="fear-greed" role="tabpanel" aria-labelledby="fear-greed-tab">
-                        <div class="card">
+                        <div class="card fear-greed-card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Fear & Greed Index History</h5>
+                            </div>
                             <div class="card-body">
-                                <h5 class="card-title">История индекса страха и жадности</h5>
-                                {% if fear_greed_history and fear_greed_history|length > 0 %}
-                                <div class="chart-container">
-                                    <canvas id="fearGreedChart"></canvas>
-                                </div>
-                                <div class="table-responsive mt-4">
-                                    <table class="table table-striped table-hover rank-data-table">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Дата и время</th>
-                                                <th>Значение</th>
-                                                <th>Интерпретация</th>
+                                                <th>Date</th>
+                                                <th>Value</th>
+                                                <th>Classification</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for entry in fear_greed_history %}
-                                            <tr>
-                                                <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                                <td>{{ entry.value }}/100</td>
-                                                <td>
-                                                    {% if entry.classification == 'Extreme Fear' %}
-                                                    <span class="text-danger">😱 {{ entry.classification }}</span>
-                                                    {% elif entry.classification == 'Fear' %}
-                                                    <span class="text-warning">😨 {{ entry.classification }}</span>
-                                                    {% elif entry.classification == 'Neutral' %}
-                                                    <span class="text-light">😐 {{ entry.classification }}</span>
-                                                    {% elif entry.classification == 'Greed' %}
-                                                    <span class="text-success">😏 {{ entry.classification }}</span>
-                                                    {% elif entry.classification == 'Extreme Greed' %}
-                                                    <span class="text-success">🤑 {{ entry.classification }}</span>
-                                                    {% else %}
-                                                    <span>{{ entry.classification }}</span>
-                                                    {% endif %}
-                                                </td>
-                                            </tr>
-                                            {% endfor %}
+                                            {% if fear_greed_history %}
+                                                {% for entry in fear_greed_history %}
+                                                <tr>
+                                                    <td>{{ entry.timestamp }}</td>
+                                                    <td>{{ entry.value }}</td>
+                                                    <td>
+                                                        <span class="badge 
+                                                            {% if entry.classification == 'Extreme Fear' %}bg-danger
+                                                            {% elif entry.classification == 'Fear' %}bg-warning
+                                                            {% elif entry.classification == 'Neutral' %}bg-info
+                                                            {% elif entry.classification == 'Greed' %}bg-primary
+                                                            {% else %}bg-success{% endif %}">
+                                                            {{ entry.classification }}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="3" class="text-center">No Fear & Greed history available yet</td>
+                                                </tr>
+                                            {% endif %}
                                         </tbody>
                                     </table>
                                 </div>
-                                {% else %}
-                                <div class="alert alert-warning">
-                                    История индекса страха и жадности пуста. Данные появятся при следующих обновлениях.
-                                </div>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
                     
-                    <!-- Google Trends Tab -->
+                    <!-- Google Trends History Tab -->
                     <div class="tab-pane fade" id="trends" role="tabpanel" aria-labelledby="trends-tab">
-                        <div class="card">
+                        <div class="card trends-card shadow-sm mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Google Trends Pulse History</h5>
+                            </div>
                             <div class="card-body">
-                                <h5 class="card-title">История сигналов Google Trends</h5>
-                                {% if trends_history and trends_history|length > 0 %}
                                 <div class="table-responsive">
-                                    <table class="table table-striped table-hover rank-data-table">
+                                    <table class="table table-striped table-hover">
                                         <thead>
                                             <tr>
-                                                <th>Дата и время</th>
-                                                <th>Сигнал</th>
-                                                <th>Описание</th>
-                                                <th>FOMO Score</th>
-                                                <th>Fear Score</th>
+                                                <th>Date</th>
+                                                <th>Signal</th>
+                                                <th>Description</th>
                                                 <th>FOMO/Fear Ratio</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% for entry in trends_history %}
-                                            <tr>
-                                                <td>{{ entry.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
-                                                <td>{{ entry.signal }}</td>
-                                                <td>{{ entry.description }}</td>
-                                                <td>{{ entry.fomo_score|round(2) if entry.fomo_score else 'N/A' }}</td>
-                                                <td>{{ entry.fear_score|round(2) if entry.fear_score else 'N/A' }}</td>
-                                                <td>{{ entry.fomo_to_fear_ratio|round(2) if entry.fomo_to_fear_ratio else 'N/A' }}</td>
-                                            </tr>
-                                            {% endfor %}
+                                            {% if trends_history %}
+                                                {% for entry in trends_history %}
+                                                <tr>
+                                                    <td>{{ entry.timestamp }}</td>
+                                                    <td>{{ entry.signal }}</td>
+                                                    <td>{{ entry.description }}</td>
+                                                    <td>
+                                                        {% if entry.fomo_to_fear_ratio %}
+                                                            {{ entry.fomo_to_fear_ratio|round(2) }}
+                                                        {% else %}
+                                                            —
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% else %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">No Google Trends history available yet</td>
+                                                </tr>
+                                            {% endif %}
                                         </tbody>
                                     </table>
                                 </div>
-                                {% else %}
-                                <div class="alert alert-warning">
-                                    История сигналов Google Trends пуста. Данные появятся при следующих обновлениях.
-                                </div>
-                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -209,153 +198,6 @@
         </div>
     </div>
     
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Rank Chart
-            {% if rank_history and rank_history|length > 0 %}
-            const rankCtx = document.getElementById('rankChart').getContext('2d');
-            const rankData = {
-                labels: [
-                    {% for entry in rank_history %}
-                    "{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') }}",
-                    {% endfor %}
-                ],
-                datasets: [{
-                    label: 'AppStore Rank',
-                    data: [
-                        {% for entry in rank_history %}
-                        {{ entry.rank }},
-                        {% endfor %}
-                    ],
-                    fill: false,
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                }]
-            };
-            
-            const rankChart = new Chart(rankCtx, {
-                type: 'line',
-                data: rankData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            reverse: true,  // Инвертируем ось Y, так как меньший рейтинг = лучше
-                            title: {
-                                display: true,
-                                text: 'Rank (меньше = лучше)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Дата и время'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return `Rank: ${context.raw}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            {% endif %}
-            
-            // Fear & Greed Chart
-            {% if fear_greed_history and fear_greed_history|length > 0 %}
-            const fearGreedCtx = document.getElementById('fearGreedChart').getContext('2d');
-            const fearGreedData = {
-                labels: [
-                    {% for entry in fear_greed_history %}
-                    "{{ entry.timestamp.strftime('%Y-%m-%d %H:%M') }}",
-                    {% endfor %}
-                ],
-                datasets: [{
-                    label: 'Fear & Greed Index',
-                    data: [
-                        {% for entry in fear_greed_history %}
-                        {{ entry.value }},
-                        {% endfor %}
-                    ],
-                    fill: false,
-                    borderColor: 'rgb(255, 159, 64)',
-                    backgroundColor: [
-                        {% for entry in fear_greed_history %}
-                        {% if entry.classification == 'Extreme Fear' %}
-                        'rgba(255, 0, 0, 0.7)',
-                        {% elif entry.classification == 'Fear' %}
-                        'rgba(255, 159, 64, 0.7)',
-                        {% elif entry.classification == 'Neutral' %}
-                        'rgba(255, 255, 255, 0.7)',
-                        {% elif entry.classification == 'Greed' %}
-                        'rgba(75, 192, 192, 0.7)',
-                        {% elif entry.classification == 'Extreme Greed' %}
-                        'rgba(0, 255, 0, 0.7)',
-                        {% else %}
-                        'rgba(200, 200, 200, 0.7)',
-                        {% endif %}
-                        {% endfor %}
-                    ],
-                    tension: 0.1
-                }]
-            };
-            
-            const fearGreedChart = new Chart(fearGreedCtx, {
-                type: 'line',
-                data: fearGreedData,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            min: 0,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Fear & Greed Index (0-100)'
-                            }
-                        },
-                        x: {
-                            title: {
-                                display: true,
-                                text: 'Дата и время'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: true,
-                            position: 'top'
-                        },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    const index = context.dataIndex;
-                                    const classification = [
-                                        {% for entry in fear_greed_history %}
-                                        "{{ entry.classification }}",
-                                        {% endfor %}
-                                    ][index];
-                                    return [`Value: ${context.raw}/100`, `Classification: ${classification}`];
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            {% endif %}
-        });
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
