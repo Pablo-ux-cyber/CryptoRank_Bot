@@ -9,21 +9,8 @@ import logging
 from logger import logger
 
 # Создаем отдельный логгер для Google Trends для более детального отслеживания
+# (Настройка логгера уже произведена в logger.py, не нужно добавлять хендлеры)
 trends_logger = logging.getLogger('google_trends')
-trends_logger.setLevel(logging.DEBUG)
-
-# Настраиваем вывод в файл
-trends_file_handler = logging.FileHandler('google_trends_debug.log')
-trends_file_handler.setLevel(logging.DEBUG)
-trends_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-trends_file_handler.setFormatter(trends_formatter)
-trends_logger.addHandler(trends_file_handler)
-
-# Добавляем также обработчик для вывода в консоль
-trends_stream_handler = logging.StreamHandler()
-trends_stream_handler.setLevel(logging.INFO)
-trends_stream_handler.setFormatter(trends_formatter)
-trends_logger.addHandler(trends_stream_handler)
 
 class GoogleTrendsPulse:
     def __init__(self):
