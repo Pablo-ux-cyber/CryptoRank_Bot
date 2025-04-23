@@ -850,5 +850,15 @@
     "fomo_to_fear_ratio": 1.0,
     "timestamp": "2025-04-23 15:25:30",
     "real_data": true
+  },
+  {
+    "signal": "\ud83d\udfe0",
+    "description": "Decreasing interest in cryptocurrencies - market cooling down",
+    "fomo_score": 49.2,
+    "fear_score": 50,
+    "general_score": 52.86666666666667,
+    "fomo_to_fear_ratio": 0.9840000000000001,
+    "timestamp": "2025-04-23 15:28:23",
+    "api_available": true
   }
 ]
