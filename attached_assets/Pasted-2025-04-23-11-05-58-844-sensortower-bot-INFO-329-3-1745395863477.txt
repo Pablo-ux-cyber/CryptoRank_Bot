@@ -1,0 +1,60 @@
+2025-04-23 11:05:58,844 - sensortower_bot - INFO - Обнаружено изменение рейтинга: 329 (предыдущий: 379)
+2025-04-23 11:05:58,844 - sensortower_bot - INFO - Улучшение рейтинга: 379 → 329
+2025-04-23 11:05:58,848 - sensortower_bot - INFO - Connected to Telegram as baserank_bot
+2025-04-23 11:05:58,848 - sensortower_bot - INFO - Запрос реальных данных из Google Trends API...
+2025-04-23 11:06:01,852 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['bitcoin price'], таймфрейм: now 7-d
+2025-04-23 11:06:04,258 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin price']: The request failed: Google returned a response with code 400
+2025-04-23 11:06:04,258 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 191, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-23 11:06:07,262 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['crypto crash'], таймфрейм: now 7-d
+2025-04-23 11:06:09,565 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['crypto crash']: The request failed: Google returned a response with code 400
+2025-04-23 11:06:09,565 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 191, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-23 11:06:12,569 - sensortower_bot - INFO - Запрос Google Trends для ключевых слов: ['bitcoin'], таймфрейм: now 7-d
+2025-04-23 11:06:14,998 - sensortower_bot - ERROR - Ошибка при получении данных для группы ключевых слов ['bitcoin']: The request failed: Google returned a response with code 400
+2025-04-23 11:06:14,998 - sensortower_bot - ERROR - Трассировка ошибки Google Trends:
+Traceback (most recent call last):
+  File "/root/coinbaserank_bot/google_trends_pulse.py", line 191, in _get_category_score
+    self.pytrends.build_payload(keyword_group, cat=0, timeframe=self.timeframes["previous"])
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 189, in build_payload
+    self._tokens()
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 195, in _tokens
+    widget_dicts = self._get_data(
+  File "/root/coinbaserank_bot/venv/lib/python3.10/site-packages/pytrends/request.py", line 160, in _get_data
+    raise exceptions.ResponseError.from_response(response)
+pytrends.exceptions.ResponseError: The request failed: Google returned a response with code 400
+
+2025-04-23 11:06:14,999 - sensortower_bot - INFO - Получены реальные данные Google Trends: ⚪ - Neutral interest in cryptocurrencies
+2025-04-23 11:06:14,999 - sensortower_bot - INFO - Added Google Trends Pulse data: ⚪ - Neutral interest in cryptocurrencies
+2025-04-23 11:06:14,999 - sensortower_bot - INFO - Message content to send: 🔼 Coinbase Appstore Rank: 329
+
+😏 Greed: 72/100
+🟢🟢🟢🟢🟢🟢🟢░░░
+
+⚪ Google Trends: Neutral interest in cryp...
+2025-04-23 11:06:14,999 - sensortower_bot - INFO - Attempting to send message to Telegram channel: @cryptorankbase
+2025-04-23 11:06:15,116 - sensortower_bot - INFO - Message sent to Telegram channel successfully with MarkdownV2
+2025-04-23 11:06:15,116 - sensortower_bot - INFO - Комбинированное сообщение успешно отправлено
+2025-04-23 11:06:15,117 - sensortower_bot - INFO - Обновлен последний отправленный рейтинг: 379 → 329
+2025-04-23 11:06:15,117 - sensortower_bot - INFO - Рейтинг 329 сохранен в файл /root/coinbaserank_bot/rank_history.txt
+2025-04-23 11:06:15,117 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)

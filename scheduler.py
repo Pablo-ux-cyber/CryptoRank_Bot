@@ -51,8 +51,30 @@ class SensorTowerScheduler:
         """
         while not self.stop_event.is_set():
             try:
-                # Run the job
-                self.run_scraping_job()
+                # Проверяем, не выполняется ли ручная операция скрапинга
+                manual_lock_file = os.path.join(self.data_dir, "manual_operation.lock")
+                
+                if os.path.exists(manual_lock_file):
+                    try:
+                        import fcntl
+                        with open(manual_lock_file, "r") as manual_lock:
+                            try:
+                                # Пытаемся получить блокировку без ожидания
+                                fcntl.lockf(manual_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                                # Если получили блокировку, значит никто ее не держит
+                                fcntl.lockf(manual_lock, fcntl.LOCK_UN)
+                                # Запускаем задание
+                                self.run_scraping_job()
+                            except IOError:
+                                # Блокировка занята - пропускаем текущий запуск
+                                logger.info("Пропуск планового запуска из-за выполнения ручной операции")
+                    except Exception as e:
+                        logger.error(f"Ошибка при проверке блокировки ручной операции: {str(e)}")
+                        # В случае ошибки работы с блокировкой все равно выполняем задание
+                        self.run_scraping_job()
+                else:
+                    # Файла блокировки нет, запускаем задание как обычно
+                    self.run_scraping_job()
             except Exception as e:
                 logger.error(f"Error in scheduler loop: {str(e)}")
             
@@ -359,26 +381,57 @@ class SensorTowerScheduler:
         """
         logger.info("Manual scraping job triggered")
         
-        if force_send:
-            # Temporarily save the old value
-            old_last_sent_rank = self.last_sent_rank
-            # Reset to force sending
-            self.last_sent_rank = None
-            
-            result = self.run_scraping_job()
-            
-            # If job failed, restore the old value
-            if not result:
-                self.last_sent_rank = old_last_sent_rank
-                # Также восстановим значение в файле истории
+        # Добавляем дополнительную блокировку для предотвращения гонки состояний
+        # при одновременном запуске из веб-интерфейса и планировщика
+        manual_lock_file = os.path.join(self.data_dir, "manual_operation.lock")
+        
+        try:
+            import fcntl
+            with open(manual_lock_file, "w") as manual_lock:
                 try:
-                    with open(self.rank_history_file, "w") as f:
-                        f.write(str(old_last_sent_rank))
-                    logger.info(f"Восстановлен рейтинг в файле: {old_last_sent_rank}")
-                except Exception as e:
-                    logger.error(f"Ошибка при восстановлении рейтинга в файле: {str(e)}")
-                
-            return result
-        else:
-            # Regular run with change detection
-            return self.run_scraping_job()
+                    # Пытаемся получить блокировку без ожидания
+                    fcntl.lockf(manual_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    
+                    # Блокировка получена, выполняем операцию
+                    if force_send:
+                        # Temporarily save the old value
+                        old_last_sent_rank = self.last_sent_rank
+                        # Reset to force sending
+                        self.last_sent_rank = None
+                        
+                        result = self.run_scraping_job()
+                        
+                        # If job failed, restore the old value
+                        if not result:
+                            self.last_sent_rank = old_last_sent_rank
+                            # Также восстановим значение в файле истории
+                            try:
+                                with open(self.rank_history_file, "w") as f:
+                                    f.write(str(old_last_sent_rank))
+                                logger.info(f"Восстановлен рейтинг в файле: {old_last_sent_rank}")
+                            except Exception as e:
+                                logger.error(f"Ошибка при восстановлении рейтинга в файле: {str(e)}")
+                    else:
+                        result = self.run_scraping_job()
+                    
+                    # Освобождаем блокировку
+                    fcntl.lockf(manual_lock, fcntl.LOCK_UN)
+                    return result
+                    
+                except IOError:
+                    # Не удалось получить блокировку - другой процесс уже выполняет операцию
+                    logger.warning("Другой процесс уже выполняет операцию скрапинга. Задание пропущено.")
+                    return False
+                    
+        except Exception as e:
+            logger.error(f"Ошибка при работе с блокировкой ручной операции: {str(e)}")
+            # Продолжаем выполнение без блокировки в случае ошибки
+            if force_send:
+                old_last_sent_rank = self.last_sent_rank
+                self.last_sent_rank = None
+                result = self.run_scraping_job()
+                if not result:
+                    self.last_sent_rank = old_last_sent_rank
+                return result
+            else:
+                return self.run_scraping_job()
