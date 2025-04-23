@@ -373,8 +373,16 @@ class GoogleTrendsPulse:
                 # Проверяем, если это ошибка слишком большого количества запросов,
                 # пробуем получить данные через резервный метод
                 is_rate_limit = "429" in str(e) or "TooManyRequestsError" in str(e)
-                if is_rate_limit:
-                    trends_logger.warning("Обнаружено превышение лимита запросов (429). Использую резервный метод...")
+                is_bad_request = "400" in str(e) or "ResponseError" in str(e)
+                
+                if is_rate_limit or is_bad_request:
+                    if is_rate_limit:
+                        trends_logger.warning("Обнаружено превышение лимита запросов (429). Использую резервный метод...")
+                    elif is_bad_request:
+                        trends_logger.warning("Обнаружена ошибка Bad Request (400). Использую резервный метод...")
+                    else:
+                        trends_logger.warning("Обнаружена ошибка API. Использую резервный метод...")
+                        
                     try:
                         # Используем резервный метод получения данных
                         fomo_score, fear_score, general_score = self.get_fallback_data_from_web()
@@ -386,7 +394,7 @@ class GoogleTrendsPulse:
                         fear_score = 50
                         general_score = 50
                 else:
-                    # Для других ошибок (не связанных с лимитами) используем нейтральные значения
+                    # Для других ошибок (не связанных с API) используем нейтральные значения
                     trends_logger.warning("Неизвестная ошибка, использую нейтральные значения")
                     fomo_score = 50
                     fear_score = 50
