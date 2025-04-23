@@ -106,7 +106,7 @@ class GoogleTrendsPulse:
             logger.info("No Google Trends history found or invalid format, will create new")
             self.history_data = []
     
-    def safe_interest_over_time(self, pytrends, retries=6, initial_delay=30):
+    def safe_interest_over_time(self, pytrends, retries=5, initial_delay=10):
         """
         Пытается получить данные, при TooManyRequestsError — ждёт и повторяет с удвоением задержки.
         
@@ -121,17 +121,6 @@ class GoogleTrendsPulse:
         delay = initial_delay
         for attempt in range(1, retries + 1):
             try:
-                # При каждой новой попытке создаем новую сессию
-                if attempt > 1:
-                    # Очищаем куки и заголовки для нового запроса
-                    pytrends = TrendReq(hl=pytrends.hl, tz=pytrends.tz)
-                    # Загружаем последний использованный payload
-                    pytrends.build_payload(
-                        pytrends.kw_list, 
-                        cat=pytrends.cat,
-                        timeframe=pytrends.timeframe
-                    )
-                
                 trends_logger.info(f"Попытка {attempt}/{retries} получения данных...")
                 result = pytrends.interest_over_time()
                 trends_logger.info(f"Успешно получены данные с Google Trends (попытка {attempt})")
@@ -170,18 +159,12 @@ class GoogleTrendsPulse:
         
         try:
             # Используем формат "now 14-d" для последних 14 дней, как предложил пользователь
-            # вместо формата "YYYY-MM-DD YYYY-MM-DD"
             timeframe = 'now 14-d'
             
             trends_logger.info(f"Используем временной диапазон: {timeframe}")
             
-            # Создаём клиента с указанной локалью 'en-US'
+            # Создаём клиента с указанной локалью 'en-US' и часовым поясом UTC
             pytrends = TrendReq(hl=locale, tz=0)
-            
-            # Добавляем случайное ожидание перед запросом для снижения вероятности блокировки
-            delay = random.uniform(1.0, 3.0)
-            trends_logger.info(f"Ожидание {delay:.2f} секунд перед запросом...")
-            time.sleep(delay)
             
             # Формируем запрос с указанным термином
             pytrends.build_payload([term], cat=0, timeframe=timeframe)
@@ -278,28 +261,17 @@ class GoogleTrendsPulse:
                         # Данные недоступны - не используем резервные методы, как просил пользователь
                         trends_logger.warning("Не удалось получить данные Google Trends. Резервные методы не используются.")
                         
-                        # Если у нас есть предыдущие данные, возвращаем их
-                        if self.last_data:
-                            trends_logger.info(f"Возвращаем предыдущие данные Google Trends из-за ошибки API")
+                        # Данные недоступны, возвращаем None вместо нейтрального сигнала
+                        trends_logger.warning("Google Trends API недоступен. Не используем нейтральные данные.")
+                        
+                        # Если у нас есть предыдущие реальные данные (не фейковые), возвращаем их
+                        if self.last_data and self.last_data.get("api_available", False):
+                            trends_logger.info(f"Возвращаем предыдущие достоверные данные Google Trends из-за ошибки API")
                             return self.last_data
                         
-                        # Если нет предыдущих данных, возвращаем нейтральный сигнал
-                        neutral_data = {
-                            "signal": "⚪",
-                            "description": "Neutral interest in cryptocurrencies (API unavailable)",
-                            "fomo_score": 0,
-                            "fear_score": 0,
-                            "general_score": 0,
-                            "fomo_to_fear_ratio": 1.0,
-                            "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
-                            "api_available": False
-                        }
-                        
-                        # Обновляем кеш и последнее время проверки
-                        self.last_data = neutral_data
-                        self.last_check_time = current_time
-                        
-                        return neutral_data
+                        # Если предыдущих данных нет или они тоже фейковые, возвращаем None
+                        trends_logger.warning("Нет доступных данных Google Trends. Часть сообщения будет пропущена.")
+                        return None
                     
                     # Если успешно получили данные для cryptocurrency, используем их
                     general_score = crypto_interest
@@ -464,25 +436,29 @@ class GoogleTrendsPulse:
             trends_data (dict, optional): Данные трендов или None для получения новых данных
             
         Returns:
-            str: Форматированное сообщение в упрощенном формате или ошибка, если данные недоступны
+            str: Форматированное сообщение в упрощенном формате, 
+                 None если данные недоступны или получены из кеша при выключенной опции
         """
         if trends_data is None:
             trends_data = self.get_trends_data()
         
+        # Если данных нет вообще, возвращаем None вместо сообщения об ошибке
         if not trends_data:
-            return "Error retrieving Google Trends data"
+            trends_logger.warning("Нет данных Google Trends для форматирования сообщения")
+            return None
         
         # Получаем данные
         signal = trends_data.get("signal", "⚪")
         description = trends_data.get("description", "Neutral interest in cryptocurrencies")
-        api_available = trends_data.get("api_available", True)
+        api_available = trends_data.get("api_available", False)  # По умолчанию считаем, что API недоступен
         
-        # Форматируем сообщение в упрощенном виде
-        if api_available:
-            message = f"{signal} Google Trends: {description}"
-        else:
-            message = f"{signal} Google Trends: {description} (cached data)"
+        # Если данные не из API и мы не используем fallback, возвращаем None
+        if not api_available:
+            trends_logger.warning("Данные Google Trends не из API, не добавляем их в сообщение")
+            return None
         
+        # Форматируем сообщение только для реальных данных API
+        message = f"{signal} Google Trends: {description}"
         return message
 
 # Пример использования

@@ -227,20 +227,25 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные от Google Trends Pulse
+            # Добавляем данные от Google Trends Pulse, только если данные реальные (не кешированные)
             try:
                 # Получаем данные трендов
                 trends_data = self.google_trends_pulse.get_trends_data()
-                if trends_data:
+                
+                # Проверяем, что данные существуют и они получены от API (не фейковые)
+                if trends_data and trends_data.get("api_available", False):
                     # Форматируем сообщение о трендах используя обновленный метод
                     trends_message = self.google_trends_pulse.format_trends_message(trends_data)
                     
-                    # Проверяем, что сообщение не None (в случае отсутствия реальных данных)
+                    # Если сообщение сформировано, добавляем его
                     if trends_message is not None:
                         combined_message += f"\n\n{trends_message}"
                         logger.info(f"Added Google Trends Pulse data: {trends_data.get('signal', 'None')} - {trends_data.get('description', 'N/A')}")
                     else:
                         logger.info("Google Trends данные недоступны - не включаем в сообщение")
+                else:
+                    # Если данных нет или они не от API, не добавляем их в сообщение
+                    logger.warning("Google Trends данные недоступны или не от API - пропускаем эту часть сообщения")
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Google Trends Pulse: {str(e)}")
                 # Продолжаем без данных трендов
