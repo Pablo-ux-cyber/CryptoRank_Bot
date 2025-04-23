@@ -5,7 +5,25 @@ import requests
 import pandas as pd
 from datetime import datetime, timedelta
 from pytrends.request import TrendReq
+import logging
 from logger import logger
+
+# Создаем отдельный логгер для Google Trends для более детального отслеживания
+trends_logger = logging.getLogger('google_trends')
+trends_logger.setLevel(logging.DEBUG)
+
+# Настраиваем вывод в файл
+trends_file_handler = logging.FileHandler('google_trends_debug.log')
+trends_file_handler.setLevel(logging.DEBUG)
+trends_formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+trends_file_handler.setFormatter(trends_formatter)
+trends_logger.addHandler(trends_file_handler)
+
+# Добавляем также обработчик для вывода в консоль
+trends_stream_handler = logging.StreamHandler()
+trends_stream_handler.setLevel(logging.INFO)
+trends_stream_handler.setFormatter(trends_formatter)
+trends_logger.addHandler(trends_stream_handler)
 
 class GoogleTrendsPulse:
     def __init__(self):
@@ -215,11 +233,14 @@ class GoogleTrendsPulse:
             logger.error(f"Ошибка при получении fallback данных: {str(e)}")
             return (50, 50, 50)  # Нейтральные значения по умолчанию
     
-    def get_trends_data(self):
+    def get_trends_data(self, force_refresh=False):
         """
         Получает данные из Google Trends API и анализирует их
         Использует кешированные данные, если они доступны
         
+        Args:
+            force_refresh (bool): Принудительно получить свежие данные, игнорируя кеш
+            
         Returns:
             dict: Словарь с результатами анализа трендов
         """
@@ -227,30 +248,45 @@ class GoogleTrendsPulse:
             # Проверяем, прошло ли достаточно времени с последней проверки
             current_time = datetime.now()
             
-            # Если у нас уже есть последние данные и они не слишком старые (меньше 24 часов), 
-            # используем их
-            if self.last_check_time and (current_time - self.last_check_time).total_seconds() < 24 * 3600 and self.last_data:
-                logger.info(f"Используем кешированные данные Google Trends (проверка менее 24 часов назад)")
+            trends_logger.info(f"Запрос данных Google Trends. Время: {current_time}, последняя проверка: {self.last_check_time}")
+            
+            # Если у нас уже есть последние данные и они не слишком старые (меньше 24 часов)
+            # и мы не запрашиваем принудительное обновление, используем кешированные
+            cache_valid = (
+                self.last_check_time and 
+                (current_time - self.last_check_time).total_seconds() < 24 * 3600 and 
+                self.last_data and
+                not force_refresh
+            )
+            
+            if cache_valid:
+                trends_logger.info(f"Используем кешированные данные Google Trends (проверка менее 24 часов назад)")
                 return self.last_data
             
             # Получаем реальные данные из Google Trends API
-            logger.info("Получение реальных данных из Google Trends API...")
+            trends_logger.info("Получение реальных данных из Google Trends API...")
             
             try:
                 # Максимально простая реализация, точно как в тестовом примере
                 # Используем один поисковый запрос и смотрим относительный интерес
                 
-                pytrends = TrendReq(hl='ru-RU', tz=180)
+                # Создаем новый экземпляр для этого вызова
+                trends_logger.debug("Создание нового экземпляра TrendReq")
+                # Используем только базовые параметры без retries, так как в новых версиях библиотеки
+                # изменились параметры для Retry объекта (метод method_whitelist был заменен)
+                pytrends = TrendReq(hl='en-US', tz=0, timeout=(10,25))
                 
-                # Получаем данные для ключевых слов за последние 12 месяцев
-                logger.info("Запрос к Google Trends API для 'bitcoin', 'crypto crash'")
-                pytrends.build_payload(['bitcoin', 'crypto crash'], cat=0, timeframe='today 12-m')
+                # Получаем данные для ключевых слов за последние 3 месяца
+                trends_logger.info("Запрос к Google Trends API для 'bitcoin', 'crypto crash'")
+                pytrends.build_payload(['bitcoin', 'crypto crash'], cat=0, timeframe='today 3-m')
                 
                 # Получаем данные об интересе со временем
+                trends_logger.debug("Получение данных interest_over_time")
                 trends_data_frame = pytrends.interest_over_time()
+                trends_logger.debug(f"Получены данные: {not trends_data_frame.empty}, размер: {len(trends_data_frame) if not trends_data_frame.empty else 0}")
                 
                 if trends_data_frame.empty:
-                    logger.warning("Google Trends вернул пустые данные")
+                    trends_logger.warning("Google Trends вернул пустые данные")
                     # Используем значения по умолчанию
                     fomo_score = 50
                     fear_score = 50
@@ -260,19 +296,25 @@ class GoogleTrendsPulse:
                     recent_data = trends_data_frame.tail(7)
                     
                     # Средние значения для каждого термина
+                    trends_logger.debug(f"Расчет средних значений из {len(recent_data)} записей")
                     fomo_score = recent_data['bitcoin'].mean()
                     fear_score = recent_data['crypto crash'].mean()
                     general_score = (fomo_score + fear_score) / 2
                     
-                    logger.info(f"Получены данные из Google Trends:")
-                    logger.info(f"FOMO (bitcoin): {fomo_score}")
-                    logger.info(f"Fear (crypto crash): {fear_score}")
-                    logger.info(f"General interest: {general_score}")
+                    trends_logger.info(f"Получены данные из Google Trends:")
+                    trends_logger.info(f"FOMO (bitcoin): {fomo_score}")
+                    trends_logger.info(f"Fear (crypto crash): {fear_score}")
+                    trends_logger.info(f"General interest: {general_score}")
+                    
+                    # Подробная информация для отладки
+                    trends_logger.debug("Детальные данные по дням:")
+                    for date, row in recent_data.iterrows():
+                        trends_logger.debug(f"  {date}: bitcoin={row['bitcoin']}, crypto crash={row['crypto crash']}")
                 
             except Exception as e:
-                logger.error(f"Ошибка при работе с Google Trends API: {str(e)}")
+                trends_logger.error(f"Ошибка при работе с Google Trends API: {str(e)}")
                 import traceback
-                logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
+                trends_logger.error(f"Трассировка ошибки:\n{traceback.format_exc()}")
                 
                 # В случае ошибки возвращаем нейтральные значения
                 fomo_score = 50
