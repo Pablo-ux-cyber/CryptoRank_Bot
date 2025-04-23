@@ -83,54 +83,45 @@ class FearGreedIndexTracker:
         
     def format_fear_greed_message(self, fear_greed_data):
         """
-        Formats Fear & Greed Index data into a message for Telegram
+        Formats Fear & Greed Index data into a simplified message for Telegram
         
         Args:
             fear_greed_data (dict): Fear & Greed Index data
             
         Returns:
-            str: Formatted message for Telegram
+            str: Formatted message for Telegram in the simplified format
         """
         if not fear_greed_data:
-            return "❌ Failed to get Fear & Greed Index data\\."
-            
+            return "Error retrieving Fear & Greed Index data."
+        
         value = fear_greed_data.get("value", 0)
         classification = fear_greed_data.get("classification", "Unknown")
-        date = fear_greed_data.get("date", "Unknown Date")
         
-        # Escape special characters for Telegram MarkdownV2
-        classification = classification.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
-        
-        # Choose emoji based on index value
+        # Choose emoji based on classification
         if classification == "Extreme Fear":
             emoji = "😱"
-            progress = self._generate_progress_bar(value, 100, 10, "🔴")
+            filled_char = "🔴"
         elif classification == "Fear":
             emoji = "😨"
-            progress = self._generate_progress_bar(value, 100, 10, "🟠")
+            filled_char = "🟠"
         elif classification == "Neutral":
             emoji = "😐"
-            progress = self._generate_progress_bar(value, 100, 10, "🟡")
+            filled_char = "🟡"
         elif classification == "Greed":
             emoji = "😏"
-            progress = self._generate_progress_bar(value, 100, 10, "🟢")
+            filled_char = "🟢"
         elif classification == "Extreme Greed":
             emoji = "🤑"
-            progress = self._generate_progress_bar(value, 100, 10, "🟢")
+            filled_char = "🟢"
         else:
             emoji = "❓"
-            progress = self._generate_progress_bar(value, 100, 10, "⚪")
+            filled_char = "⚪"
         
-        # Format the message
-        message = f"📊 *Crypto Fear & Greed Index*\n"
-        message += f"📅 *Date:* {date}\n\n"
-        message += f"{emoji} *Value:* {value}/100\n"
-        message += f"*Status:* {classification}\n"
-        message += f"{progress}\n"
+        # Generate progress bar
+        progress = self._generate_progress_bar(value, 100, 10, filled_char)
         
-        # Add interpretation
-        message += "\n*What it means:*\n"
-        message += "The Fear & Greed Index analyzes emotions and sentiment in the crypto market\\. Extreme fear may indicate undervalued assets, while extreme greed may signal overvaluation\\."
+        # Format the message in simplified format
+        message = f"{emoji} {classification}: {value}/100\n{progress}"
         
         return message
         

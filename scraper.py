@@ -413,45 +413,38 @@ class SensorTowerScraper:
             rankings_data (dict): The scraped rankings data
             
         Returns:
-            str: Formatted message for Telegram
+            str: Formatted message for Telegram in the simplified format
         """
         if not rankings_data or "categories" not in rankings_data:
-            return "❌ Failed to retrieve rankings data\\."
-        
-        # Telegram MarkdownV2 requires escaping the following characters:
-        # _ * [ ] ( ) ~ ` > # + - = | { } . !
-        app_name = rankings_data.get("app_name", "Unknown App")
-        app_name = app_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
-        
-        date = rankings_data.get("date", "Unknown Date")
-        
-        # Using simple formatting for the heading
-        message = f"📊 *{app_name} Ranking in App Store*\n"
-        message += f"📅 *Date:* {date}\n\n"
+            return "Coinbase Appstore Rank: Error retrieving data"
         
         if not rankings_data["categories"]:
-            message += "Ranking data is unavailable\\."
-        else:
-            # Special formatting for US - iPhone - Top Free category
-            for category in rankings_data["categories"]:
-                cat_name = category.get("category", "Unknown Category")
-                # Escape special characters
-                cat_name = cat_name.replace("-", "\\-").replace(".", "\\.").replace("!", "\\!")
-                rank = category.get("rank", "N/A")
-                
-                # Add emoji depending on the ranking
-                if int(rank) <= 10:
-                    rank_icon = "🥇"  # Gold for top 10
-                elif int(rank) <= 50:
-                    rank_icon = "🥈"  # Silver for top 50
-                elif int(rank) <= 100:
-                    rank_icon = "🥉"  # Bronze for top 100
-                elif int(rank) <= 200:
-                    rank_icon = "📊"  # Charts for top 200
-                else:
-                    rank_icon = "📉"  # Charts down for position below 200
-                
-                message += f"{rank_icon} *{cat_name}*\n"
-                message += f"   Current position: *\\#{rank}*\n"
+            return "Coinbase Appstore Rank: N/A"
+            
+        # Get the rank from the first category (usually Finance)
+        category = rankings_data["categories"][0]
+        rank = category.get("rank", "N/A")
         
+        # Simple format header - no emojis, no special formatting, just plain text
+        message = f"Coinbase Appstore Rank: {rank}"
+        
+        # Add change indicator if previous rank data exists
+        prev_rank = category.get("previous_rank")
+        if prev_rank and prev_rank != rank:
+            try:
+                prev_rank_int = int(prev_rank)
+                rank_int = int(rank)
+                
+                if prev_rank_int > rank_int:
+                    # Improved ranking (lower number is better)
+                    change = prev_rank_int - rank_int
+                    message += f" ⬆️ +{change}"
+                elif prev_rank_int < rank_int:
+                    # Declined ranking
+                    change = rank_int - prev_rank_int
+                    message += f" ⬇️ -{change}"
+            except (ValueError, TypeError):
+                # If conversion fails, skip the trend indicator
+                pass
+                
         return message

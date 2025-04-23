@@ -439,51 +439,30 @@ class GoogleTrendsPulse:
     
     def format_trends_message(self, trends_data=None):
         """
-        Форматирует данные трендов в краткое сообщение для Telegram
+        Форматирует данные трендов в упрощенное сообщение для Telegram
         
         Args:
             trends_data (dict, optional): Данные трендов или None для получения новых данных
             
         Returns:
-            str: Форматированное сообщение или None, если данные недоступны
+            str: Форматированное сообщение в упрощенном формате или ошибка, если данные недоступны
         """
         if trends_data is None:
             trends_data = self.get_trends_data()
         
         if not trends_data:
-            return None
+            return "Error retrieving Google Trends data"
         
         # Получаем данные
         signal = trends_data.get("signal", "⚪")
         description = trends_data.get("description", "Neutral interest in cryptocurrencies")
-        fomo_score = trends_data.get("fomo_score", 0)
-        fear_score = trends_data.get("fear_score", 0)
-        general_score = trends_data.get("general_score", 0)
-        timestamp = trends_data.get("timestamp", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
         api_available = trends_data.get("api_available", True)
         
-        # Форматируем сообщение
-        message = f"**Google Trends Pulse** {signal}\n"
-        message += f"🔍 *{description}*\n\n"
-        
-        # Добавляем информацию о значениях, если API доступен
-        if api_available and general_score > 0:
-            message += f"Bitcoin Interest: {general_score:.1f}/100\n"
-            
-            # Добавляем оценки FOMO и страха, только если они доступны
-            if fomo_score > 0 and fear_score > 0:
-                message += f"FOMO Interest: {fomo_score:.1f}/100\n"
-                message += f"Fear Factor: {fear_score:.1f}/100\n"
+        # Форматируем сообщение в упрощенном виде
+        if api_available:
+            message = f"{signal} Google Trends: {description}"
         else:
-            message += "API data unavailable. Using last known signal.\n"
-        
-        # Добавляем время последнего обновления
-        try:
-            dt = datetime.strptime(timestamp, "%Y-%m-%d %H:%M:%S")
-            formatted_time = dt.strftime("%b %d, %H:%M UTC")
-            message += f"\nLast updated: {formatted_time}"
-        except:
-            message += f"\nLast updated: {timestamp}"
+            message = f"{signal} Google Trends: {description} (cached data)"
         
         return message
 
