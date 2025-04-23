@@ -1,17 +1,19 @@
 #!/bin/bash
-# Очень простой скрипт синхронизации
+# Простой скрипт синхронизации с исключением логов и JSON файлов
 
 # Переходим в директорию проекта
 cd /root/coinbaserank_bot
 
-# Сохраняем локальные изменения
-git stash
+# Создаем .gitignore если его нет
+if [ ! -f ".gitignore" ]; then
+  echo "*.json" > .gitignore
+  echo "*.log" >> .gitignore
+  echo "rank_history.txt" >> .gitignore
+  echo "coinbasebot.lock" >> .gitignore
+fi
 
 # Получаем обновления с GitHub
 git pull origin main
-
-# Восстанавливаем локальные изменения (для важных файлов конфига)
-git stash pop
 
 # Перезапускаем сервис
 sudo systemctl restart coinbasebot
