@@ -251,7 +251,7 @@
                             <div class="col-md-8">
                                 <div class="card bg-dark">
                                     <div class="card-body">
-                                        <p class="mb-2">FOMO Score: {{ last_trends_data.fomo_score|round|int }}/100</p>
+                                        <p class="mb-2">FOMO Score: {{ "%.2f"|format(last_trends_data.fomo_score) }}/100</p>
                                         <div class="progress mb-3">
                                             <div class="progress-bar bg-success" 
                                                  role="progressbar" 
@@ -260,7 +260,7 @@
                                             </div>
                                         </div>
                                         
-                                        <p class="mb-2">Fear Score: {{ last_trends_data.fear_score|round|int }}/100</p>
+                                        <p class="mb-2">Fear Score: {{ "%.2f"|format(last_trends_data.fear_score) }}/100</p>
                                         <div class="progress mb-3">
                                             <div class="progress-bar bg-danger" 
                                                  role="progressbar" 
@@ -269,7 +269,7 @@
                                             </div>
                                         </div>
                                         
-                                        <p class="mb-2">General Interest: {{ last_trends_data.general_score|round|int }}/100</p>
+                                        <p class="mb-2">General Interest: {{ "%.2f"|format(last_trends_data.general_score) }}/100</p>
                                         <div class="progress">
                                             <div class="progress-bar bg-info" 
                                                  role="progressbar" 
@@ -279,7 +279,7 @@
                                         
                                         <div class="mt-3">
                                             <p class="text-muted small mb-0">
-                                                <strong>FOMO/Fear Ratio:</strong> {{ last_trends_data.fomo_to_fear_ratio|round(2) }}
+                                                <strong>FOMO/Fear Ratio:</strong> {{ "%.2f"|format(last_trends_data.fomo_to_fear_ratio) }}
                                             </p>
                                         </div>
                                     </div>
