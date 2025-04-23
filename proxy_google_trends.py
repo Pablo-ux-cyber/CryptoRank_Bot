@@ -12,7 +12,15 @@ import random
 import logging
 import requests
 from datetime import datetime, timedelta
-from pytrends.request import TrendReq
+
+# Пробуем сначала использовать нашу исправленную версию
+try:
+    from fixed_trends import TrendReq
+    logging.getLogger('google_trends_proxy').info("Используем исправленную версию TrendReq")
+except ImportError:
+    # Если не удалось, используем оригинальную библиотеку
+    from pytrends.request import TrendReq
+    logging.getLogger('google_trends_proxy').info("Используем стандартную версию TrendReq")
 
 # Настройка логгера
 logging.basicConfig(
@@ -127,18 +135,8 @@ class ProxyGoogleTrends:
         self._add_delay()
         
         try:
-            # Создаем новый экземпляр для каждого запроса с исправленными параметрами
-            # В новых версиях requests параметр method_whitelist переименован в allowed_methods
-            # https://urllib3.readthedocs.io/en/stable/reference/urllib3.util.html
-            try:
-                # Пробуем сначала с новым параметром allowed_methods
-                pytrends = TrendReq(hl=locale, tz=360, timeout=(10, 25), 
-                                  retries=2, backoff_factor=0.5, 
-                                  requests_args={'headers': {'User-Agent': 'Mozilla/5.0'}})
-            except TypeError:
-                # Если не сработало, попробуем вообще без параметров retries
-                pytrends = TrendReq(hl=locale, tz=360, timeout=(10, 25),
-                                  requests_args={'headers': {'User-Agent': 'Mozilla/5.0'}})
+            # Используем нашу собственную реализацию TrendReq без параметров retries
+            pytrends = TrendReq(hl=locale, tz=360, geo='', gprop='')
             
             # Формируем запрос
             pytrends.build_payload([keyword], cat=0, timeframe=timeframe, geo='', gprop='')
