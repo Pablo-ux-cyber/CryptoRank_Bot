@@ -304,6 +304,64 @@ def health():
     """Health check endpoint"""
     return jsonify({"status": "ok"})
 
+@app.route('/api/test_format')
+def test_format():
+    """Test the message formatting with sample data"""
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+        
+    try:
+        # Sample app ranking data
+        rankings_data = {
+            "app_name": "Coinbase",
+            "app_id": "886427730",
+            "date": datetime.now().strftime("%Y-%m-%d"),
+            "categories": [
+                {"category": "Finance", "rank": "329", "previous_rank": "332"}
+            ],
+            "trend": {"direction": "up", "previous": 332}
+        }
+        
+        # Sample fear and greed data
+        fear_greed_data = {
+            "value": 72,
+            "classification": "Greed",
+            "date": datetime.now().strftime("%Y-%m-%d")
+        }
+        
+        # Sample Google Trends data
+        trends_data = {
+            "signal": "⚪",
+            "description": "Neutral interest in cryptocurrencies",
+            "fomo_score": 50,
+            "fear_score": 50,
+            "general_score": 50,
+            "fomo_to_fear_ratio": 1.0,
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "api_available": True
+        }
+        
+        # Format individual messages
+        rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
+        fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+        trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
+        
+        # Format combined message
+        combined_message = rankings_message
+        combined_message += "\n\n" + fear_greed_message
+        combined_message += "\n\n" + trends_message
+        
+        return jsonify({
+            "status": "success",
+            "rankings_message": rankings_message,
+            "fear_greed_message": fear_greed_message,
+            "trends_message": trends_message,
+            "combined_message": combined_message
+        })
+    except Exception as e:
+        logger.error(f"Error testing message format: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)
 

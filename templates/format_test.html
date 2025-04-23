@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Message Format Test{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Message Format Test</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Formats</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">App Ranking</div>
+                        <div class="card-body">
+                            <pre id="rankings-message" class="message-preview">{{ rankings_message }}</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">Fear & Greed</div>
+                        <div class="card-body">
+                            <pre id="fear-greed-message" class="message-preview">{{ fear_greed_message }}</pre>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">Google Trends</div>
+                        <div class="card-body">
+                            <pre id="trends-message" class="message-preview">{{ trends_message }}</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card">
+        <div class="card-header bg-success text-white">
+            <h5 class="mb-0">Combined Message</h5>
+        </div>
+        <div class="card-body">
+            <pre id="combined-message" class="message-preview">{{ combined_message }}</pre>
+        </div>
+    </div>
+    
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Testing Controls</h5>
+        </div>
+        <div class="card-body">
+            <form id="test-form" class="mb-3">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="app-rank">App Rank:</label>
+                            <input type="number" id="app-rank" class="form-control" value="329">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="previous-rank">Previous Rank:</label>
+                            <input type="number" id="previous-rank" class="form-control" value="332">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="fear-greed-value">Fear & Greed Value:</label>
+                            <input type="number" id="fear-greed-value" class="form-control" min="0" max="100" value="72">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="fear-greed-class">Fear & Greed Class:</label>
+                            <select id="fear-greed-class" class="form-control">
+                                <option value="Extreme Fear">Extreme Fear</option>
+                                <option value="Fear">Fear</option>
+                                <option value="Neutral">Neutral</option>
+                                <option value="Greed" selected>Greed</option>
+                                <option value="Extreme Greed">Extreme Greed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label for="trends-signal">Google Trends Signal:</label>
+                            <select id="trends-signal" class="form-control">
+                                <option value="🔴">🔴 Red (Fear)</option>
+                                <option value="🟡">🟡 Yellow (Growing)</option>
+                                <option value="⚪" selected>⚪ White (Neutral)</option>
+                                <option value="🟢">🟢 Green (FOMO)</option>
+                                <option value="🔵">🔵 Blue (Dormant)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="form-group">
+                            <label for="trends-description">Google Trends Description:</label>
+                            <input type="text" id="trends-description" class="form-control" value="Neutral interest in cryptocurrencies">
+                        </div>
+                    </div>
+                </div>
+                <button type="button" id="refresh-test" class="btn btn-primary mt-3">Update Preview</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.message-preview {
+    white-space: pre-wrap;
+    font-family: monospace;
+    background-color: #242424;
+    color: #fff;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 0;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const refreshButton = document.getElementById('refresh-test');
+    refreshButton.addEventListener('click', updatePreview);
+    
+    function updatePreview() {
+        const appRank = document.getElementById('app-rank').value;
+        const previousRank = document.getElementById('previous-rank').value;
+        const fearGreedValue = document.getElementById('fear-greed-value').value;
+        const fearGreedClass = document.getElementById('fear-greed-class').value;
+        const trendsSignal = document.getElementById('trends-signal').value;
+        const trendsDescription = document.getElementById('trends-description').value;
+        
+        // Calculate trend direction and change
+        let trendIcon = '';
+        let trendChange = '';
+        if (appRank < previousRank) {
+            trendIcon = '⬆️ ';
+            trendChange = `+${previousRank - appRank}`;
+        } else if (appRank > previousRank) {
+            trendIcon = '🔽 ';
+            trendChange = `-${appRank - previousRank}`;
+        }
+        
+        // Generate app ranking message
+        const rankingsMessage = `Coinbase Appstore Rank: ${appRank} ${trendIcon}${trendChange}`;
+        document.getElementById('rankings-message').textContent = rankingsMessage;
+        
+        // Choose emoji based on fear & greed classification
+        let emoji = '❓';
+        let filledChar = '⚪';
+        if (fearGreedClass === 'Extreme Fear') {
+            emoji = '😱';
+            filledChar = '🔴';
+        } else if (fearGreedClass === 'Fear') {
+            emoji = '😨';
+            filledChar = '🟠';
+        } else if (fearGreedClass === 'Neutral') {
+            emoji = '😐';
+            filledChar = '🟡';
+        } else if (fearGreedClass === 'Greed') {
+            emoji = '😏';
+            filledChar = '🟢';
+        } else if (fearGreedClass === 'Extreme Greed') {
+            emoji = '🤑';
+            filledChar = '🟢';
+        }
+        
+        // Generate progress bar
+        const barLength = 10;
+        const filledLength = Math.round((fearGreedValue / 100) * barLength);
+        const emptyLength = barLength - filledLength;
+        const progressBar = filledChar.repeat(filledLength) + '░'.repeat(emptyLength);
+        
+        // Generate fear & greed message
+        const fearGreedMessage = `${emoji} ${fearGreedClass}: ${fearGreedValue}/100\n${progressBar}`;
+        document.getElementById('fear-greed-message').textContent = fearGreedMessage;
+        
+        // Generate google trends message
+        const trendsMessage = `${trendsSignal} Google Trends: ${trendsDescription}`;
+        document.getElementById('trends-message').textContent = trendsMessage;
+        
+        // Generate combined message
+        const combinedMessage = `${rankingsMessage}\n\n${fearGreedMessage}\n\n${trendsMessage}`;
+        document.getElementById('combined-message').textContent = combinedMessage;
+    }
+});
+</script>
+{% endblock %}
