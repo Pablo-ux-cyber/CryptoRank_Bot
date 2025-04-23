@@ -53,22 +53,28 @@ class GoogleTrendsPulse:
         self.last_check_time = None
         self.last_data = None
         
-        # Инициализация pytrends API с английским языком и московским часовым поясом
-        # Не используем retries из-за проблем с совместимостью
-        self.pytrends = TrendReq(hl='en-US', tz=180)
+        # Инициализация pytrends API с английским языком и UTC часовым поясом
+        # Устанавливаем большие таймауты и задержки между запросами
+        self.pytrends = TrendReq(
+            hl='en-US',
+            tz=0,
+            timeout=(30, 30),  # 30 сек на подключение, 30 на чтение
+            retries=2,
+            backoff_factor=1.5
+        )
         
         # Категории ключевых слов для анализа
         self.fomo_keywords = ["bitcoin price", "crypto millionaire", "buy bitcoin now"]
         self.fear_keywords = ["crypto crash", "bitcoin scam", "crypto tax"]
         self.general_keywords = ["bitcoin", "cryptocurrency", "blockchain"]
         
-        # Параметры запроса для получения данных за последние 7 дней
-        self.timeframe = "now 7-d"
+        # Параметры запроса для получения данных за последние 14 дней
+        self.timeframe = "now 14-d"
         
         # Периоды времени для сравнения трендов
         self.timeframes = {
-            "current": "now 7-d",      # Текущая неделя
-            "previous": "now 14-d",    # Предыдущая неделя для сравнения
+            "current": "now 14-d",     # Текущие две недели
+            "previous": "now 30-d",    # Предыдущий месяц для сравнения
         }
         
         # Задержки между запросами для избежания ограничений API
