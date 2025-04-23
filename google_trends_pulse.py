@@ -279,17 +279,17 @@ class GoogleTrendsPulse:
             
             trends_logger.info(f"Запрос данных Google Trends. Время: {current_time}, последняя проверка: {self.last_check_time}")
             
-            # Если у нас уже есть последние данные и они не слишком старые (меньше 24 часов)
+            # Если у нас уже есть последние данные и они не слишком старые (меньше 48 часов)
             # и мы не запрашиваем принудительное обновление, используем кешированные
             cache_valid = (
                 self.last_check_time and 
-                (current_time - self.last_check_time).total_seconds() < 24 * 3600 and 
+                (current_time - self.last_check_time).total_seconds() < 48 * 3600 and 
                 self.last_data and
                 not force_refresh
             )
             
             if cache_valid:
-                trends_logger.info(f"Используем кешированные данные Google Trends (проверка менее 24 часов назад)")
+                trends_logger.info(f"Используем кешированные данные Google Trends (проверка менее 48 часов назад)")
                 return self.last_data
             
             # Получаем реальные данные из Google Trends API
