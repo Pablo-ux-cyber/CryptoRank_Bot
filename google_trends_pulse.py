@@ -455,25 +455,13 @@ class GoogleTrendsPulse:
         description = trends_data.get("description", "Neutral interest in cryptocurrencies")
         api_available = trends_data.get("api_available", False)  # По умолчанию считаем, что API недоступен
         
-        # Получаем дополнительные данные для расширенного сообщения
-        general_score = trends_data.get("general_score", 0)
-        fomo_score = trends_data.get("fomo_score", 0)
-        fear_score = trends_data.get("fear_score", 0)
-        fomo_to_fear_ratio = trends_data.get("fomo_to_fear_ratio", 0)
-        
         # Если данные не из API и мы не используем fallback, возвращаем None
         if not api_available:
             trends_logger.warning("Данные Google Trends не из API, не добавляем их в сообщение")
             return None
         
-        # Форматируем расширенное сообщение только для реальных данных API
-        message = f"{signal} Google Trends Pulse: {description}\n\n"
-        message += f"Bitcoin Interest: {general_score:.1f}/100\n"
-        message += f"FOMO Interest: {fomo_score:.1f}/100\n"
-        message += f"Fear Factor: {fear_score:.1f}/100\n\n"
-        # Добавляем соотношение FOMO/Fear
-        message += f"FOMO/Fear Ratio: {fomo_to_fear_ratio:.2f}"
-        
+        # Форматируем сообщение только для реальных данных API
+        message = f"{signal} Google Trends: {description}"
         return message
 
 # Пример использования
