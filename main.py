@@ -14,7 +14,7 @@ from routes.trends_routes import trends_bp
 
 # Create Flask app
 app = Flask(__name__)
-app.secret_key = "sensortower_bot_secret"
+app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
 
 # Добавляем фильтр now() для шаблонов
 @app.template_filter('now')
@@ -239,6 +239,70 @@ def get_fear_greed():
         logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/preview-message')
+def preview_message():
+    """Preview the message that would be sent to Telegram without actually sending it"""
+    global last_trends_data, last_trends_time, last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time
+    
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+    
+    try:
+        # Collect all the necessary data
+        # Get app rankings data (either existing or new)
+        if last_scrape_data:
+            # Use existing rankings data
+            rankings_data = last_scrape_data
+        else:
+            # Or fetch new rankings data
+            rankings_data = scheduler.scraper.scrape_category_rankings()
+            if rankings_data:
+                last_scrape_data = rankings_data
+                last_scrape_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Get Fear & Greed Index data
+        if last_fear_greed_data:
+            fear_greed_data = last_fear_greed_data
+        else:
+            fear_greed_data = scheduler.get_current_fear_greed_index()
+            if fear_greed_data:
+                last_fear_greed_data = fear_greed_data
+                last_fear_greed_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Get Google Trends data
+        if last_trends_data:
+            trends_data = last_trends_data
+        else:
+            trends_data = scheduler.google_trends_pulse.get_trends_data(force_refresh=True)
+            if trends_data:
+                last_trends_data = trends_data
+                last_trends_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # Compose the message that would be sent to Telegram
+        message_preview = ""
+        if rankings_data:
+            message_preview += scheduler.scraper.format_rankings_message(rankings_data)
+            message_preview += "\n\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
+        
+        if fear_greed_data:
+            message_preview += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+            message_preview += "\n\n" + "\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-\\-" + "\n\n"
+        
+        if trends_data:
+            message_preview += scheduler.google_trends_pulse.format_trends_message(trends_data)
+        
+        # Show the message preview
+        return render_template('message_preview.html', 
+                              message=message_preview, 
+                              rankings_data=rankings_data,
+                              fear_greed_data=fear_greed_data,
+                              trends_data=trends_data,
+                              preview_time=datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        
+    except Exception as e:
+        logger.error(f"Error creating message preview: {str(e)}")
+        return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
+
 @app.route('/get-trends-pulse')
 def get_trends_pulse():
     """Manually fetch Google Trends Pulse data and send it as a message"""
@@ -268,7 +332,7 @@ def get_trends_pulse():
         else:
             # Реальные данные из API (может быть медленным или ограниченным)
             logger.info("Запрос реальных данных из Google Trends API...")
-            trends_data = scheduler.google_trends_pulse.get_trends_data()
+            trends_data = scheduler.google_trends_pulse.refresh_trends_data()
             trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
             logger.info(f"Получены реальные данные Google Trends: {trends_data['signal']} - {trends_data['description']}")
         

@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Message Preview - SensorTower Bot{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between mb-4 align-items-center">
+        <h1 class="mb-0">Message Preview</h1>
+        <a href="/" class="btn btn-outline-primary">Back to Dashboard</a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i> This is a preview of the message that would be sent to Telegram. No messages have been actually sent.
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-secondary text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Message Preview</h5>
+                <span class="badge bg-info">Preview Time: {{ preview_time }}</span>
+            </div>
+        </div>
+        <div class="card-body bg-dark">
+            <div class="p-3 rounded mb-3" style="background-color: #222; border: 1px solid #333;">
+                <pre class="text-light mb-0" style="white-space: pre-wrap; word-break: break-word; font-family: 'Courier New', monospace;">{{ message|replace('\n', '<br>')|safe }}</pre>
+            </div>
+            
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-success" id="copy-message">
+                    <i class="fas fa-copy me-1"></i> Copy Message
+                </button>
+                <a href="/" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+                <a href="/trigger-scrape?force=true" class="btn btn-danger">
+                    <i class="fas fa-paper-plane me-1"></i> Send Now
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            {% if rankings_data %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">App Rankings Data</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>App Name</dt>
+                        <dd>{{ rankings_data.app_name }}</dd>
+                        
+                        <dt>Current Rank</dt>
+                        <dd>{{ rankings_data.current_rank }}</dd>
+                        
+                        {% if rankings_data.previous_rank %}
+                        <dt>Previous Rank</dt>
+                        <dd>{{ rankings_data.previous_rank }}</dd>
+                        
+                        <dt>Change</dt>
+                        <dd>
+                            {% if rankings_data.change_direction == 'up' %}
+                            <span class="text-success">↑ {{ rankings_data.change_value }}</span>
+                            {% elif rankings_data.change_direction == 'down' %}
+                            <span class="text-danger">↓ {{ rankings_data.change_value }}</span>
+                            {% else %}
+                            <span class="text-secondary">→ No change</span>
+                            {% endif %}
+                        </dd>
+                        {% endif %}
+                        
+                        <dt>Category</dt>
+                        <dd>{{ rankings_data.category }}</dd>
+                    </dl>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            {% if fear_greed_data %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Fear & Greed Index</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h1 class="display-4">{{ fear_greed_data.value }}</h1>
+                        <p class="lead">{{ fear_greed_data.classification }}</p>
+                    </div>
+                    
+                    <div class="progress" style="height: 25px;">
+                        <div class="progress-bar 
+                                {% if fear_greed_data.value <= 20 %}bg-danger
+                                {% elif fear_greed_data.value <= 40 %}bg-warning
+                                {% elif fear_greed_data.value <= 60 %}bg-info
+                                {% elif fear_greed_data.value <= 80 %}bg-primary
+                                {% else %}bg-success{% endif %}"
+                                role="progressbar" 
+                                style="width: {{ fear_greed_data.value }}%;"
+                                aria-valuenow="{{ fear_greed_data.value }}" 
+                                aria-valuemin="0" 
+                                aria-valuemax="100">
+                            {{ fear_greed_data.value }}/100
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-md-4">
+            {% if trends_data %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Google Trends Pulse</h5>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-3">
+                        <h1 class="display-3">{{ trends_data.signal }}</h1>
+                        <p class="lead">{{ trends_data.description }}</p>
+                    </div>
+                    
+                    <p class="mb-1">FOMO Score: {{ trends_data.fomo_score|round|int }}/100</p>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-success" 
+                                role="progressbar" 
+                                style="width: {{ trends_data.fomo_score }}%;">
+                        </div>
+                    </div>
+                    
+                    <p class="mb-1">Fear Score: {{ trends_data.fear_score|round|int }}/100</p>
+                    <div class="progress mb-2">
+                        <div class="progress-bar bg-danger" 
+                                role="progressbar" 
+                                style="width: {{ trends_data.fear_score }}%;">
+                        </div>
+                    </div>
+                    
+                    <p class="mb-1">General Interest: {{ trends_data.general_score|round|int }}/100</p>
+                    <div class="progress">
+                        <div class="progress-bar bg-info" 
+                                role="progressbar" 
+                                style="width: {{ trends_data.general_score }}%;">
+                        </div>
+                    </div>
+                    
+                    <p class="mt-2 mb-0 text-muted">
+                        <strong>FOMO/Fear Ratio:</strong> {{ trends_data.fomo_to_fear_ratio|round(2) }}
+                    </p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('copy-message').addEventListener('click', function() {
+        // Get the message content
+        const messageContent = `{{ message|replace('\n', '\\n')|replace('"', '\\"')|safe }}`;
+        
+        // Copy to clipboard
+        navigator.clipboard.writeText(messageContent)
+            .then(() => {
+                // Change button text temporarily
+                const btn = this;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-check me-1"></i> Copied!';
+                btn.classList.remove('btn-outline-success');
+                btn.classList.add('btn-success');
+                
+                // Restore button after 2 seconds
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.classList.remove('btn-success');
+                    btn.classList.add('btn-outline-success');
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('Failed to copy text: ', err);
+                alert('Failed to copy message. Please try again or copy manually.');
+            });
+    });
+</script>
+{% endblock %}
