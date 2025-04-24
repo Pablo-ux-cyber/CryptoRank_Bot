@@ -925,5 +925,15 @@
     "fomo_to_fear_ratio": 2.7919847328244276,
     "timestamp": "2025-04-23 18:26:07",
     "api_available": true
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Neutral interest in cryptocurrencies",
+    "fomo_score": 52.46666666666667,
+    "fear_score": 52.46666666666667,
+    "general_score": 52.46666666666667,
+    "fomo_to_fear_ratio": 1.0,
+    "timestamp": "2025-04-24 08:11:56",
+    "api_available": true
   }
 ]
