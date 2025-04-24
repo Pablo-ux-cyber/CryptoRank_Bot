@@ -964,5 +964,24 @@
     "fomo_to_fear_ratio": 2.697632058287796,
     "timestamp": "2025-04-24 08:47:23",
     "api_available": true
+  },
+  {
+    "signal": "\ud83d\udfe2",
+    "description": "FOMO significantly exceeds fear - market optimism",
+    "fomo_score": 48.06666666666667,
+    "fear_score": 18.333333333333332,
+    "general_score": 52.5,
+    "fomo_to_fear_ratio": 2.621818181818182,
+    "timestamp": "2025-04-24 08:54:20",
+    "api_available": true
+  },
+  {
+    "signal": "\ud83d\udfe2",
+    "description": "FOMO significantly exceeds fear - market optimism",
+    "fomo_score": 48.06666666666667,
+    "fear_score": 18.333333333333332,
+    "general_score": 52.5,
+    "fomo_to_fear_ratio": 2.621818181818182,
+    "timestamp": "2025-04-24T08:54:39.456388"
   }
 ]
