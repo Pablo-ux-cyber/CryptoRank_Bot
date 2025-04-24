@@ -944,5 +944,25 @@
     "general_score": 52.46666666666667,
     "fomo_to_fear_ratio": 1.0,
     "timestamp": "2025-04-24T08:28:54.174036"
+  },
+  {
+    "signal": "\ud83d\udfe0",
+    "description": "Decreasing interest in cryptocurrencies - market cooling down",
+    "fomo_score": 49.333333333333336,
+    "fear_score": 50,
+    "general_score": 54.36666666666667,
+    "fomo_to_fear_ratio": 0.9866666666666667,
+    "timestamp": "2025-04-24 08:29:03",
+    "api_available": true
+  },
+  {
+    "signal": "\ud83d\udfe2",
+    "description": "FOMO significantly exceeds fear - market optimism",
+    "fomo_score": 49.36666666666667,
+    "fear_score": 18.3,
+    "general_score": 54.03333333333333,
+    "fomo_to_fear_ratio": 2.697632058287796,
+    "timestamp": "2025-04-24 08:47:23",
+    "api_available": true
   }
 ]
