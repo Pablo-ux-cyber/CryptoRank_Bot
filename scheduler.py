@@ -47,56 +47,33 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения и Fear & Greed Index один раз в день в 11:10
-        - Проверяет Google Trends только раз в день, примерно в 10:00
+        - Проверяет рейтинг приложения, Fear & Greed Index и Google Trends один раз в день в 11:10
+        - Все данные собираются за один раз и отправляются одним сообщением
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
-        self.last_trends_update_date = None
         self.last_rank_update_date = None
         
-        # При старте получаем свежие данные Google Trends
-        try:
-            logger.info("Получение свежих данных Google Trends при запуске планировщика")
-            self.google_trends_pulse.refresh_trends_data()
-            self.last_trends_update_date = datetime.now().date()
-            logger.info(f"Данные Google Trends успешно обновлены: {datetime.now()}")
-        except Exception as e:
-            logger.error(f"Ошибка при получении данных Google Trends при запуске: {str(e)}")
+        # При запуске не будем загружать данные Google Trends - получим их вместе с общим обновлением
+        logger.info("Планировщик запущен, первое обновление данных произойдет в 11:10")
         
         while not self.stop_event.is_set():
             try:
                 # Текущее время и дата
                 now = datetime.now()
                 today = now.date()
-                update_trends = False
                 update_rank = False
                 
-                # Проверяем, не нужно ли обновить данные Google Trends (около 10:00)
-                if (now.hour == 9 and now.minute >= 45) or (now.hour == 10 and now.minute <= 15):
-                    if self.last_trends_update_date is None or self.last_trends_update_date < today:
-                        update_trends = True
-                        logger.info(f"Запланировано обновление данных Google Trends в {now}")
-                
-                # Проверяем, не нужно ли обновить данные о рейтинге Coinbase (в 11:10)
+                # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
+                # Fear & Greed Index и Google Trends (в 11:10)
                 if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"Запланировано обновление данных о рейтинге Coinbase в {now}")
-                
-                # Обновляем данные Google Trends, если нужно
-                if update_trends:
-                    try:
-                        logger.info("Получение свежих данных Google Trends (ежедневное обновление)")
-                        self.google_trends_pulse.refresh_trends_data()
-                        self.last_trends_update_date = today
-                        logger.info(f"Данные Google Trends успешно обновлены: {now}")
-                    except Exception as e:
-                        logger.error(f"Ошибка при получении данных Google Trends: {str(e)}")
+                        logger.info(f"Запланировано комплексное обновление данных в {now}")
                 
                 # Проверяем, не выполняется ли ручная операция скрапинга
                 manual_lock_file = os.path.join(self.data_dir, "manual_operation.lock")
                 
-                # Обновляем данные о рейтинге, если пришло время и нет ручной блокировки
+                # Обновляем все данные, если пришло время и нет ручной блокировки
                 if update_rank and not os.path.exists(manual_lock_file):
                     try:
                         logger.info("Получение данных о рейтинге Coinbase (ежедневное обновление в 11:10)")
@@ -239,25 +216,26 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные от Google Trends Pulse, только если данные реальные (не кешированные)
+            # Добавляем данные от Google Trends Pulse - использование свежих данных, т.к. они
+            # уже были запрошены в методе run_scraping_job перед вызовом этого метода
             try:
-                # Получаем данные трендов
+                # Получаем данные трендов (они уже должны быть актуальными)
                 trends_data = self.google_trends_pulse.get_trends_data()
                 
-                # Проверяем, что данные существуют и они получены от API (не фейковые)
-                if trends_data and trends_data.get("api_available", False):
-                    # Форматируем сообщение о трендах используя обновленный метод
+                # Проверка, что данные существуют и содержат реальный сигнал
+                if (trends_data and 
+                    'signal' in trends_data and trends_data['signal'] and
+                    'description' in trends_data and trends_data['description']):
+                    
+                    # Форматируем сообщение о трендах
                     trends_message = self.google_trends_pulse.format_trends_message(trends_data)
                     
                     # Если сообщение сформировано, добавляем его
-                    if trends_message is not None:
+                    if trends_message:
                         combined_message += f"\n\n{trends_message}"
-                        logger.info(f"Added Google Trends Pulse data: {trends_data.get('signal', 'None')} - {trends_data.get('description', 'N/A')}")
-                    else:
-                        logger.info("Google Trends данные недоступны - не включаем в сообщение")
+                        logger.info(f"Added Google Trends Pulse data: {trends_data['signal']} - {trends_data['description']}")
                 else:
-                    # Если данных нет или они не от API, не добавляем их в сообщение
-                    logger.warning("Google Trends данные недоступны или не от API - пропускаем эту часть сообщения")
+                    logger.info("Google Trends данные недоступны или неполные - пропускаем эту часть сообщения")
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Google Trends Pulse: {str(e)}")
                 # Продолжаем без данных трендов
@@ -279,13 +257,13 @@ class SensorTowerScheduler:
                 pass
             return False
     
-    def run_scraping_job(self, check_google_trends=True):
+    def run_scraping_job(self, force_refresh=False):
         """
-        Выполняет задание по скрапингу: получает данные SensorTower и отправляет в Telegram
-        только если рейтинг изменился или это первый запуск
+        Выполняет задание по скрапингу: получает данные SensorTower, Fear & Greed Index, 
+        Google Trends и отправляет в Telegram только если рейтинг изменился или это первый запуск
         
         Args:
-            check_google_trends (bool): Проверять ли данные Google Trends или использовать кеш
+            force_refresh (bool): Если True, отправить сообщение даже если рейтинг не изменился
         """
         logger.info(f"Выполняется запланированное задание скрапинга в {datetime.now()}")
         
@@ -324,6 +302,19 @@ class SensorTowerScheduler:
                     logger.warning("Не удалось получить данные Fear & Greed Index")
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Fear & Greed Index: {str(e)}")
+                
+            # Получаем свежие данные Google Trends
+            # Это всегда происходит при отправке сообщения, чтобы данные были актуальными
+            google_trends_data = None
+            try:
+                logger.info("Получение свежих данных Google Trends для комбинированного сообщения")
+                google_trends_data = self.google_trends_pulse.refresh_trends_data()
+                if google_trends_data:
+                    logger.info(f"Успешно получены данные Google Trends: {google_trends_data['signal']} - {google_trends_data['description']}")
+                else:
+                    logger.warning("Не удалось получить данные Google Trends")
+            except Exception as e:
+                logger.error(f"Ошибка при получении данных Google Trends: {str(e)}")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
@@ -473,7 +464,7 @@ class SensorTowerScheduler:
                         # Reset to force sending
                         self.last_sent_rank = None
                         
-                        result = self.run_scraping_job()
+                        result = self.run_scraping_job(force_refresh=True)
                         
                         # If job failed, restore the old value
                         if not result:
@@ -486,7 +477,7 @@ class SensorTowerScheduler:
                             except Exception as e:
                                 logger.error(f"Ошибка при восстановлении рейтинга в файле: {str(e)}")
                     else:
-                        result = self.run_scraping_job()
+                        result = self.run_scraping_job(force_refresh=False)
                     
                     # Освобождаем блокировку
                     fcntl.lockf(manual_lock, fcntl.LOCK_UN)
@@ -503,9 +494,9 @@ class SensorTowerScheduler:
             if force_send:
                 old_last_sent_rank = self.last_sent_rank
                 self.last_sent_rank = None
-                result = self.run_scraping_job()
+                result = self.run_scraping_job(force_refresh=True)
                 if not result:
                     self.last_sent_rank = old_last_sent_rank
                 return result
             else:
-                return self.run_scraping_job()
+                return self.run_scraping_job(force_refresh=False)
