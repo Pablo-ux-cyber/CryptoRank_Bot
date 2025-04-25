@@ -58,7 +58,7 @@ class GoogleTrendsPulse:
         self.last_data = None
         
         # Категории ключевых слов для анализа
-        self.fomo_keywords = ["bitcoin price", "crypto millionaire", "buy bitcoin"]
+        self.fomo_keywords = ["buy bitcoin", "crypto millionaire", "bitcoin price"]  # Переместил "bitcoin price" на последнее место
         self.fear_keywords = ["crypto crash", "bitcoin scam", "crypto tax"]
         self.general_keywords = ["bitcoin", "cryptocurrency", "blockchain"]
         
@@ -275,14 +275,16 @@ class GoogleTrendsPulse:
                     general_score = bitcoin_interest
                     trends_logger.info(f"Используем данные для 'bitcoin': {general_score}")
                 
-                # Добавляем паузы между запросами, чтобы не превысить лимиты
-                time.sleep(random.uniform(2.0, 5.0))
+                # Увеличиваем паузы между запросами, чтобы снизить вероятность ошибки 429
+                time.sleep(random.uniform(5.0, 10.0))
                 
                 # Получаем данные для FOMO и страха (ограничиваем количество запросов до 1)
+                # Используем теперь первый запрос (buy bitcoin) вместо проблемного bitcoin price
                 fomo_term = self.fomo_keywords[0]  # Берем только первый термин
                 fomo_score = self.get_term_interest(fomo_term)
                 
-                time.sleep(random.uniform(2.0, 5.0))
+                # Увеличиваем паузу между запросами
+                time.sleep(random.uniform(5.0, 10.0))
                 
                 fear_term = self.fear_keywords[0]  # Берем только первый термин
                 fear_score = self.get_term_interest(fear_term)
