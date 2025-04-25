@@ -283,10 +283,29 @@ class GoogleTrendsPulse:
                 fomo_term = self.fomo_keywords[0]
                 fomo_score = self.get_term_interest(fomo_term)
                 
-                # Для страха используем обратный показатель от general_score
-                # Это позволит нам избежать третьего запроса и всё равно получить соотношение
-                fear_score = max(10, 100 - general_score)  # Минимум 10, чтобы избежать экстремальных значений
-                trends_logger.info(f"Используем рассчитанное значение для страха: {fear_score} (обратный показатель от общего интереса)")
+                # Более точный метод оценки отношения FOMO к страху без третьего запроса
+                # Сравниваем показатель "buy bitcoin" с общим показателем "bitcoin"
+                # Если "buy bitcoin" составляет большой % от "bitcoin", это сигнал FOMO
+                # Если "buy bitcoin" низкий относительно "bitcoin", это сигнал страха/осторожности
+                
+                # Вычисляем отношение "buy bitcoin" к "bitcoin" как %
+                buying_interest_ratio = fomo_score / general_score if general_score > 0 else 1.0
+                
+                # Если отношение > 1, интерес к покупке выше общего интереса = FOMO
+                # Если отношение < 1, интерес к покупке ниже общего интереса = осторожность/страх
+                
+                # Корректируем страх на основе отношения
+                if buying_interest_ratio > 1.2:  # Высокий FOMO
+                    # Низкий страх, когда соотношение покупки к общему интересу высокое
+                    fear_score = max(10, int(100 - (buying_interest_ratio * 40)))
+                elif buying_interest_ratio < 0.8:  # Низкий интерес к покупке
+                    # Высокий страх, когда соотношение покупки к общему интересу низкое
+                    fear_score = min(90, int(120 - (buying_interest_ratio * 50)))
+                else:  # Нейтральное соотношение
+                    fear_score = max(10, 100 - general_score)  # Используем обратный показатель от общего интереса
+                
+                trends_logger.info(f"Отношение интереса к покупке/общему интересу: {buying_interest_ratio:.2f}")
+                trends_logger.info(f"Рассчитанное значение для страха: {fear_score}")
                 
                 # Если fomo_score равен нейтральному значению (не смогли получить данные)
                 if fomo_score == 50:
