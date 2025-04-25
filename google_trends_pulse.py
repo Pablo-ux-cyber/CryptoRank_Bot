@@ -242,87 +242,58 @@ class GoogleTrendsPulse:
             trends_logger.info("Получение реальных данных из Google Trends API...")
             
             try:
-                # Получаем данные для основного слова из списка general_keywords
-                general_term = self.general_keywords[0]  # "bitcoin"
-                bitcoin_interest = self.get_term_interest(general_term)
+                # Делаем 2 запроса - напрямую для FOMO и для страха
+                # Это даст более точную картину настроений чем общий запрос + FOMO
                 
-                # Если получили нейтральное значение (50), значит произошла ошибка
-                if bitcoin_interest == 50:
-                    trends_logger.warning("Не удалось получить данные для 'bitcoin'")
-                    
-                    # Пробуем другой термин - "cryptocurrency"
-                    trends_logger.info("Пробуем получить данные для 'cryptocurrency'...")
-                    crypto_interest = self.get_term_interest("cryptocurrency")
-                    
-                    if crypto_interest == 50:
-                        trends_logger.warning("Не удалось получить данные и для 'cryptocurrency'")
-                        
-                        # Данные недоступны - не используем резервные методы, как просил пользователь
-                        trends_logger.warning("Не удалось получить данные Google Trends. Резервные методы не используются.")
-                        
-                        # Данные недоступны, возвращаем None вместо нейтрального сигнала
-                        trends_logger.warning("Google Trends API недоступен. Не используем нейтральные данные.")
-                        
-                        # Если у нас есть предыдущие реальные данные (не фейковые), возвращаем их
-                        if self.last_data and self.last_data.get("api_available", False):
-                            trends_logger.info(f"Возвращаем предыдущие достоверные данные Google Trends из-за ошибки API")
-                            return self.last_data
-                        
-                        # Если предыдущих данных нет или они тоже фейковые, возвращаем None
-                        trends_logger.warning("Нет доступных данных Google Trends. Часть сообщения будет пропущена.")
-                        return None
-                    
-                    # Если успешно получили данные для cryptocurrency, используем их
-                    general_score = crypto_interest
-                    trends_logger.info(f"Используем данные для 'cryptocurrency': {general_score}")
-                else:
-                    # Используем данные для bitcoin
-                    general_score = bitcoin_interest
-                    trends_logger.info(f"Используем данные для 'bitcoin': {general_score}")
-                
-                # Увеличиваем паузы между запросами, чтобы снизить вероятность ошибки 429
-                time.sleep(random.uniform(5.0, 10.0))
-                
-                # Получаем данные только для FOMO запроса, который стабильно работает
-                # Используем первый запрос из списка FOMO-запросов
+                # 1. Делаем запрос для измерения FOMO (желания покупать)
                 fomo_term = self.fomo_keywords[0]  # "buy crypto"
                 trends_logger.info(f"Получение данных для FOMO-термина: {fomo_term}")
                 fomo_score = self.get_term_interest(fomo_term)
                 
+                # Если получили нейтральное значение (50), значит произошла ошибка
+                if fomo_score == 50:
+                    trends_logger.warning(f"Не удалось получить данные для '{fomo_term}'")
+                    # Данные недоступны - не используем резервные методы, как просил пользователь
+                    trends_logger.warning("Не удалось получить данные Google Trends. Резервные методы не используются.")
+                    
+                    # Если у нас есть предыдущие реальные данные (не фейковые), возвращаем их
+                    if self.last_data and self.last_data.get("api_available", False):
+                        trends_logger.info(f"Возвращаем предыдущие достоверные данные Google Trends из-за ошибки API")
+                        return self.last_data
+                    
+                    # Если предыдущих данных нет или они тоже фейковые, возвращаем None
+                    trends_logger.warning("Нет доступных данных Google Trends. Часть сообщения будет пропущена.")
+                    return None
+                
                 # Увеличиваем паузы между запросами, чтобы снизить вероятность ошибки 429
                 time.sleep(random.uniform(5.0, 10.0))
                 
-                # Делаем третий запрос для явного измерения страха
-                # Используем первый термин из fear_keywords
+                # 2. Делаем запрос для явного измерения страха
                 fear_term = self.fear_keywords[0]  # "crypto crash"
                 trends_logger.info(f"Получение данных для FEAR-термина: {fear_term}")
                 fear_score = self.get_term_interest(fear_term)
                 
-                # Если не удалось получить данные для fear_term, используем аналитический метод
-                if fear_score == 50:  # нейтральное значение при ошибке
-                    trends_logger.warning(f"Не удалось получить данные для термина '{fear_term}', используем расчетный метод")
+                # Если получили нейтральное значение (50), значит произошла ошибка
+                if fear_score == 50:
+                    trends_logger.warning(f"Не удалось получить данные для '{fear_term}'")
+                    # Данные недоступны - не используем резервные методы, как просил пользователь
+                    trends_logger.warning("Не удалось получить данные Google Trends. Резервные методы не используются.")
                     
-                    # Вычисляем отношение FOMO к общему интересу как индикатор настроения
-                    buying_interest_ratio = fomo_score / general_score if general_score > 0 else 1.0
-                    trends_logger.info(f"Отношение интереса к покупке/общему интересу: {buying_interest_ratio:.2f}")
+                    # Если у нас есть предыдущие реальные данные (не фейковые), возвращаем их
+                    if self.last_data and self.last_data.get("api_available", False):
+                        trends_logger.info(f"Возвращаем предыдущие достоверные данные Google Trends из-за ошибки API")
+                        return self.last_data
                     
-                    # Расчет страха на основе соотношения
-                    if buying_interest_ratio > 1.2:  # Высокий FOMO
-                        # Низкий страх, когда соотношение покупки к общему интересу высокое
-                        fear_score = max(10, int(100 - (buying_interest_ratio * 40)))
-                    elif buying_interest_ratio < 0.8:  # Низкий интерес к покупке
-                        # Высокий страх, когда соотношение покупки к общему интересу низкое
-                        fear_score = min(90, int(120 - (buying_interest_ratio * 50)))
-                    else:  # Нейтральное соотношение
-                        fear_score = max(10, 100 - general_score)  # Используем обратный показатель от общего интереса
-                    
-                    trends_logger.info(f"Рассчитанное значение для страха: {fear_score} (на основе соотношения buy/general)")
-                else:
-                    trends_logger.info(f"Полученное значение для страха: {fear_score} (прямой запрос '{fear_term}')")
+                    # Если предыдущих данных нет или они тоже фейковые, возвращаем None
+                    trends_logger.warning("Нет доступных данных Google Trends. Часть сообщения будет пропущена.")
+                    return None
                 
-                # Вычисляем соотношение для логирования, если оно ещё не определено
-                if not 'buying_interest_ratio' in locals():
-                    buying_interest_ratio = fomo_score / general_score if general_score > 0 else 1.0
+                # Оба запроса успешно выполнены, вычисляем общий интерес как среднее (для совместимости с кодом)
+                general_score = (fomo_score + fear_score) / 2
+                trends_logger.info(f"Рассчитываем общий интерес как среднее между FOMO и Fear: {general_score}")
+                
+                # Вычисляем соотношение FOMO к общему интересу
+                buying_interest_ratio = fomo_score / general_score if general_score > 0 else 1.0
                     
                 # Логируем итоговое соотношение
                 trends_logger.info(f"Итоговое соотношение FOMO/общему интересу: {buying_interest_ratio:.2f}")
