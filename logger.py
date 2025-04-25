@@ -1,10 +1,10 @@
 import logging
 import os
-from logging.handlers import TimedRotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from config import LOG_LEVEL, LOG_FILE
 
 def setup_logger():
-    """Set up and configure the logger with 7-day rotation"""
+    """Set up and configure the logger with size-based rotation"""
     log_level = getattr(logging, LOG_LEVEL.upper(), logging.INFO)
     
     # Create logs directory if it doesn't exist
@@ -23,12 +23,12 @@ def setup_logger():
     # Create formatter
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     
-    # Create a rotating file handler that keeps logs for 7 days
-    file_handler = TimedRotatingFileHandler(
+    # Create a size-based rotating file handler that keeps all logs in one file
+    # until it reaches maximum size (10MB), then creates a backup
+    file_handler = RotatingFileHandler(
         LOG_FILE,
-        when='midnight',  # Rotate at midnight
-        interval=1,       # One day per file
-        backupCount=7,    # Keep logs for 7 days
+        maxBytes=10*1024*1024,  # 10MB per file
+        backupCount=1,          # Keep one backup file
         encoding='utf-8'
     )
     file_handler.setFormatter(formatter)
