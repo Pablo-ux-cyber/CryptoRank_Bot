@@ -1,0 +1,26 @@
+2025-04-25 10:54:19,498 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 10:59:19,808 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 10:59:19,808 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:04:20,139 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:04:20,139 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:09:20,453 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:09:20,453 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:14:20,782 - sensortower_bot - INFO - Запланировано комплексное обновление данных в 2025-04-25 11:14:20.782408
+2025-04-25 11:14:20,783 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:14:20,783 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:19:21,104 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:19:21,105 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:24:21,433 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:24:21,433 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:29:21,742 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:29:21,742 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:34:22,065 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:34:22,066 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:39:22,387 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:39:22,387 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:44:22,714 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:44:22,714 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:49:23,037 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:49:23,037 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-04-25 11:54:23,362 - sensortower_bot - INFO - Пропуск планового запуска из-за выполнения ручной операции
+2025-04-25 11:54:23,36
