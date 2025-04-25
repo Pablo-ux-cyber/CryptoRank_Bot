@@ -58,9 +58,14 @@ class GoogleTrendsPulse:
         self.last_data = None
         
         # Категории ключевых слов для анализа
-        self.fomo_keywords = ["buy bitcoin", "crypto millionaire", "bitcoin price"]  # Переместил "bitcoin price" на последнее место
+        # Оптимизированные запросы для двух-запросного алгоритма:
+        # 1. Общий запрос должен быть стабильным и часто используемым
+        # 2. FOMO запрос должен чётко отражать намерение инвестировать/покупать
+        self.general_keywords = ["bitcoin", "crypto", "blockchain"]  # "bitcoin" используется как основной
+        self.fomo_keywords = ["buy crypto", "invest bitcoin", "crypto profit"]  # "buy crypto" используется как основной
+        
+        # Эти запросы ниже сохранены для обратной совместимости, но активно не используются в новом алгоритме
         self.fear_keywords = ["crypto crash", "bitcoin scam", "crypto tax"]
-        self.general_keywords = ["bitcoin", "cryptocurrency", "blockchain"]
         
         # Определение маркетных сигналов
         self.market_signals = [
@@ -238,8 +243,9 @@ class GoogleTrendsPulse:
             trends_logger.info("Получение реальных данных из Google Trends API...")
             
             try:
-                # Получаем данные для основного слова "bitcoin"
-                bitcoin_interest = self.get_term_interest("bitcoin")
+                # Получаем данные для основного слова из списка general_keywords
+                general_term = self.general_keywords[0]  # "bitcoin"
+                bitcoin_interest = self.get_term_interest(general_term)
                 
                 # Если получили нейтральное значение (50), значит произошла ошибка
                 if bitcoin_interest == 50:
@@ -279,16 +285,17 @@ class GoogleTrendsPulse:
                 time.sleep(random.uniform(5.0, 10.0))
                 
                 # Получаем данные только для FOMO запроса, который стабильно работает
-                # Используем первый запрос (buy bitcoin)
-                fomo_term = self.fomo_keywords[0]
+                # Используем первый запрос из списка FOMO-запросов
+                fomo_term = self.fomo_keywords[0]  # "buy crypto"
+                trends_logger.info(f"Получение данных для FOMO-термина: {fomo_term}")
                 fomo_score = self.get_term_interest(fomo_term)
                 
                 # Более точный метод оценки отношения FOMO к страху без третьего запроса
-                # Сравниваем показатель "buy bitcoin" с общим показателем "bitcoin"
-                # Если "buy bitcoin" составляет большой % от "bitcoin", это сигнал FOMO
-                # Если "buy bitcoin" низкий относительно "bitcoin", это сигнал страха/осторожности
+                # Сравниваем показатель "buy crypto" с общим показателем "bitcoin"
+                # Если "buy crypto" составляет большой % от "bitcoin", это сигнал FOMO
+                # Если "buy crypto" низкий относительно "bitcoin", это сигнал страха/осторожности
                 
-                # Вычисляем отношение "buy bitcoin" к "bitcoin" как %
+                # Вычисляем отношение "buy crypto" к "bitcoin" как %
                 buying_interest_ratio = fomo_score / general_score if general_score > 0 else 1.0
                 
                 # Если отношение > 1, интерес к покупке выше общего интереса = FOMO
@@ -419,8 +426,8 @@ class GoogleTrendsPulse:
         Определяет рыночный сигнал на основе оценок различных категорий
         
         Args:
-            fomo_score (float): Оценка FOMO-запросов (buy bitcoin)
-            fear_score (float): Оценка запросов, связанных со страхом (рассчитывается как 100 - general_score)
+            fomo_score (float): Оценка FOMO-запросов (buy crypto)
+            fear_score (float): Оценка запросов, связанных со страхом (рассчитывается на основе соотношения buy crypto/bitcoin)
             general_score (float): Оценка общих запросов о криптовалютах (bitcoin)
             fomo_to_fear_ratio (float): Соотношение FOMO к страху
             
