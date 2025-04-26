@@ -107,35 +107,32 @@ class TelegramBot:
                 chat_type = "канал" if chat_id.startswith('@') else "группа"
                 
                 try:
-                    # Попытка отправить с форматированием MarkdownV2
+                    # Всегда отправляем без форматирования, чтобы сохранить эмодзи
                     await self.bot.send_message(
                         chat_id=chat_id,
                         text=message,
-                        parse_mode="MarkdownV2"
+                        parse_mode=None
                     )
                     logger.info(f"Сообщение отправлено в Telegram {chat_type}")
                     return True
                     
-                except Exception as format_error:
-                    # Если отправка с форматированием не удалась, отправляем без форматирования
-                    logger.error(f"Ошибка отправки с MarkdownV2: {str(format_error)}")
-                    logger.info("Попытка отправить сообщение без форматирования")
+                except Exception as e:
+                    logger.error(f"Ошибка отправки сообщения: {str(e)}")
                     
                     try:
-                        # Очистить текст только от экранирующих символов и форматирования, но сохранить эмодзи
+                        # Очистить текст от любых возможных форматирующих символов, но сохранить эмодзи
                         clean_text = message.replace('\\', '')
                         clean_text = clean_text.replace('*', '')
                         clean_text = clean_text.replace('||', '')
                         clean_text = clean_text.replace('#', '')
                         clean_text = clean_text.replace('_', '')
-                        # Сохраняем эмодзи 🔼 и 🔽 при отправке без форматирования
                         
                         await self.bot.send_message(
                             chat_id=chat_id,
                             text=clean_text,
                             parse_mode=None
                         )
-                        logger.info(f"Сообщение отправлено в Telegram {chat_type} (без форматирования)")
+                        logger.info(f"Сообщение отправлено в Telegram {chat_type} (очищенный текст)")
                         return True
                         
                     except Exception as e:
