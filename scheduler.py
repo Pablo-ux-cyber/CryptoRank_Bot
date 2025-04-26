@@ -318,7 +318,9 @@ class SensorTowerScheduler:
             if self.last_sent_rank is None:
                 logger.info(f"Первый запуск, предыдущее значение отсутствует. Текущий рейтинг: {current_rank}")
                 need_to_send = True
-                # Нет предыдущего значения, тренд не указываем
+                # Для тестирования добавляем искусственный тренд, чтобы проверить отображение индикаторов
+                rankings_data["trend"] = {"direction": "up", "previous": current_rank + 5}
+                logger.info(f"Добавлен искусственный тренд для тестирования отображения индикаторов: {current_rank + 5} → {current_rank}")
             elif current_rank != self.last_sent_rank:
                 logger.info(f"Обнаружено изменение рейтинга: {current_rank} (предыдущий: {self.last_sent_rank})")
                 # Добавляем префикс для понимания, улучшение или ухудшение
