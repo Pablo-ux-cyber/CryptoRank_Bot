@@ -428,23 +428,27 @@ class SensorTowerScraper:
         # Simple format header - no emojis, no special formatting, just plain text
         message = f"Coinbase Appstore Rank: {rank}"
         
-        # Add change indicator if previous rank data exists
-        prev_rank = category.get("previous_rank")
-        if prev_rank and prev_rank != rank:
-            try:
-                prev_rank_int = int(prev_rank)
-                rank_int = int(rank)
-                
-                if prev_rank_int > rank_int:
-                    # Improved ranking (lower number is better)
-                    change = prev_rank_int - rank_int
-                    message += f" ⬆️ +{change}"
-                elif prev_rank_int < rank_int:
-                    # Declined ranking
-                    change = rank_int - prev_rank_int
-                    message += f" ⬇️ -{change}"
-            except (ValueError, TypeError):
-                # If conversion fails, skip the trend indicator
-                pass
+        # Add change indicator based on trend data
+        if "trend" in rankings_data:
+            trend = rankings_data["trend"]
+            direction = trend.get("direction")
+            prev_rank = trend.get("previous")
+            
+            if prev_rank and direction and direction != "same":
+                try:
+                    prev_rank_int = int(prev_rank)
+                    rank_int = int(rank)
+                    
+                    if direction == "up":
+                        # Improved ranking (lower number is better)
+                        change = prev_rank_int - rank_int
+                        message += f" 🔼 +{change}"
+                    elif direction == "down":
+                        # Declined ranking
+                        change = rank_int - prev_rank_int
+                        message += f" 🔽 -{change}"
+                except (ValueError, TypeError):
+                    # If conversion fails, skip the trend indicator
+                    pass
                 
         return message
