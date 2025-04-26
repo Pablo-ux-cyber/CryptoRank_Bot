@@ -425,30 +425,24 @@ class SensorTowerScraper:
         category = rankings_data["categories"][0]
         rank = category.get("rank", "N/A")
         
-        # Simple format header - no emojis, no special formatting, just plain text
-        message = f"Coinbase Appstore Rank: {rank}"
+        # Create message with trend indicator at the beginning as per user request
+        message = "Coinbase Appstore Rank: " + str(rank)
         
-        # Add change indicator based on trend data
+        # Add trend indicator at the beginning if available
         if "trend" in rankings_data:
             trend = rankings_data["trend"]
             direction = trend.get("direction")
-            prev_rank = trend.get("previous")
             
-            if prev_rank and direction and direction != "same":
+            if direction and direction != "same":
                 try:
-                    prev_rank_int = int(prev_rank)
-                    rank_int = int(rank)
-                    
                     if direction == "up":
                         # Improved ranking (lower number is better)
-                        change = prev_rank_int - rank_int
-                        message += f" 🔼 +{change}"
+                        message = f"🔼 Coinbase Appstore Rank: {rank}"
                     elif direction == "down":
                         # Declined ranking
-                        change = rank_int - prev_rank_int
-                        message += f" 🔽 -{change}"
+                        message = f"🔽 Coinbase Appstore Rank: {rank}"
                 except (ValueError, TypeError):
-                    # If conversion fails, skip the trend indicator
+                    # If any error, use default message without indicator
                     pass
-                
+        
         return message
