@@ -432,13 +432,13 @@ class GoogleTrendsPulse:
             return "🟢", "High FOMO factor - possible market peak"
         elif fomo_to_fear_ratio > 2.0:
             # Значительное превышение FOMO над страхом
-            return "🟢", "FOMO significantly exceeds fear - market optimism"
+            return "🟢", "FOMO > fear - market optimism"
         elif fear_score > 70 and fear_score > fomo_score * 1.2:
             # Высокий страх и превышение над FOMO
             return "🔴", "High fear and low FOMO - possible buying opportunity"
         elif fomo_to_fear_ratio < 0.5:
             # Значительное превышение страха над FOMO
-            return "🔴", "Fear significantly exceeds FOMO - market pessimism"
+            return "🔴", "Fear > FOMO - market pessimism"
         elif general_score > 60 and fomo_score > fear_score:
             # Рост интереса и FOMO > Fear
             return "🟡", "Growing interest in cryptocurrencies - market warming up"
@@ -447,7 +447,7 @@ class GoogleTrendsPulse:
             return "🟠", "Decreasing interest in cryptocurrencies - market cooling down"
         elif fomo_to_fear_ratio > 1.2:
             # FOMO умеренно превышает страх
-            return "🟡", "FOMO exceeds fear - market optimism growing"
+            return "🟡", "FOMO > fear - market optimism growing"
         else:
             # Нейтральный сигнал
             return "⚪", "Neutral interest in cryptocurrencies"
