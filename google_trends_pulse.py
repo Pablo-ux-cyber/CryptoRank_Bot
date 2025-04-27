@@ -426,31 +426,31 @@ class GoogleTrendsPulse:
         # или расчетного значения на основе соотношения FOMO к общему интересу
         if general_score < 20:
             # Очень низкий общий интерес
-            return "🔵", "Market in hibernation - very low overall interest"
+            return "🔵", "Dormant market - minimal interest"
         elif fomo_score > 70 and fomo_score > fear_score * 1.2:
             # Высокий FOMO и превышение над страхом
-            return "🟢", "High FOMO factor - possible market peak"
+            return "🟢", "Peak FOMO - possible top"
         elif fomo_to_fear_ratio > 2.0:
             # Значительное превышение FOMO над страхом
             return "🟢", "FOMO > fear - market optimism"
         elif fear_score > 70 and fear_score > fomo_score * 1.2:
             # Высокий страх и превышение над FOMO
-            return "🔴", "High fear and low FOMO - possible buying opportunity"
+            return "🔴", "Fear dominates - buying zone"
         elif fomo_to_fear_ratio < 0.5:
             # Значительное превышение страха над FOMO
             return "🔴", "Fear > FOMO - market pessimism"
         elif general_score > 60 and fomo_score > fear_score:
             # Рост интереса и FOMO > Fear
-            return "🟡", "Growing interest in cryptocurrencies - market warming up"
+            return "🟡", "Crypto interest ↑ - warming"
         elif general_score > 50 and fear_score > fomo_score:
             # Снижение интереса и Fear > FOMO
-            return "🟠", "Decreasing interest in cryptocurrencies - market cooling down"
+            return "🟠", "Crypto interest ↓ - cooling"
         elif fomo_to_fear_ratio > 1.2:
             # FOMO умеренно превышает страх
             return "🟡", "FOMO > fear - market optimism growing"
         else:
             # Нейтральный сигнал
-            return "⚪", "Neutral interest in cryptocurrencies"
+            return "⚪", "Neutral market"
     
     def format_trends_message(self, trends_data=None):
         """
