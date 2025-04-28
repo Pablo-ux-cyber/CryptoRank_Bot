@@ -120,8 +120,8 @@ class FearGreedIndexTracker:
         # Generate progress bar
         progress = self._generate_progress_bar(value, 100, 10, filled_char)
         
-        # Format the message in simplified format with progress bar in the same line
-        message = f"{emoji} {classification}: {value}/100 {progress}"
+        # Format the message in simplified format with progress bar on the next line
+        message = f"{emoji} {classification}: {value}/100\n{progress}"
         
         return message
         
