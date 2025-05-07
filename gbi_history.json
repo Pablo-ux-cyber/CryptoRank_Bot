@@ -33,5 +33,12 @@
     "status": "Neutral",
     "imbalance": -0.12,
     "timestamp": "2025-05-07T16:09:44.232140"
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Balanced order book",
+    "status": "Neutral",
+    "imbalance": 0.01,
+    "timestamp": "2025-05-07T16:58:41.289746"
   }
 ]

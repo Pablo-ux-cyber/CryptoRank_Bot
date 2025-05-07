@@ -403,14 +403,28 @@ class ActiveAddressesTracker:
                 continue
                 
             # Краткосрочный период для основного статуса
-            short_period = chain_data.get('periods', {}).get('short', {})
+            periods = chain_data.get('periods', '{}')
+            if isinstance(periods, str):
+                try:
+                    periods = json.loads(periods)
+                except:
+                    periods = {}
+            short_period = periods.get('short', {})
             if not short_period:
                 message += f"{symbol}: ⚠️ Недостаточно данных\n"
                 continue
                 
             # Форматируем строку с данными по периодам
             period_info = []
-            for period_name, period_data in chain_data.get('periods', {}).items():
+            periods = chain_data.get('periods', '{}')
+            # Если periods в формате JSON-строки, преобразуем обратно в словарь
+            if isinstance(periods, str):
+                try:
+                    periods = json.loads(periods)
+                except:
+                    periods = {}
+            
+            for period_name, period_data in periods.items():
                 period_label = {'short': '7d', 'medium': '30d', 'long': '90d'}.get(period_name, period_name)
                 period_info.append(f"{period_data.get('formatted_delta')} ({period_label})")
                 
