@@ -231,6 +231,16 @@ def get_fear_greed():
             # Add Fear & Greed Index data
             combined_message += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
             
+            # Добавляем существующие данные Google Trends (из истории), если они есть
+            if scheduler.google_trends_pulse:
+                # Получаем последние сохраненные данные из истории
+                trends_data = scheduler.google_trends_pulse.get_trends_data(force_refresh=False)
+                if trends_data:
+                    trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
+                    if trends_message:
+                        combined_message += "\n\n" + trends_message
+                        logger.info(f"Added Google Trends data to combined message: {trends_data['signal']}")
+            
             # Send the message
             sent = scheduler.telegram_bot.send_message(combined_message)
             
@@ -310,6 +320,63 @@ def get_trends_pulse():
 def health():
     """Health check endpoint"""
     return jsonify({"status": "ok"})
+
+@app.route('/test-message')
+def test_message():
+    """Manually send a test message with cached data to the test channel"""
+    global last_fear_greed_data, last_scrape_data, last_trends_data
+    
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+    
+    try:
+        # Get app rankings data (either existing or new)
+        if last_scrape_data:
+            # Use existing rankings data
+            rankings_data = last_scrape_data
+        else:
+            # Or fetch new rankings data
+            rankings_data = scheduler.scraper.scrape_category_rankings()
+        
+        # Get Fear & Greed Index data
+        fear_greed_data = scheduler.get_current_fear_greed_index()
+        
+        # Get Google Trends data from cache or history
+        trends_data = None
+        if scheduler.google_trends_pulse:
+            # Use available history data
+            from google_trends_pulse import GoogleTrendsPulse
+            pulse = scheduler.google_trends_pulse
+            trends_data = pulse._get_cached_trends_data()
+        
+        # Format individual messages
+        rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
+        fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+        
+        # Build combined message
+        combined_message = rankings_message
+        combined_message += "\n\n" + fear_greed_message
+        
+        if trends_data:
+            trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
+            if trends_message:
+                combined_message += "\n\n" + trends_message
+                logger.info(f"Added cached Google Trends data to test message: {trends_data['signal']}")
+        
+        # Send the message
+        sent = scheduler.telegram_bot.send_message(combined_message)
+        
+        if sent:
+            return jsonify({
+                "status": "success", 
+                "message": "Test message sent to Telegram channel",
+                "content": combined_message
+            })
+        else:
+            return jsonify({"status": "error", "message": "Failed to send message to Telegram"}), 500
+    except Exception as e:
+        logger.error(f"Error sending test message: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/test_format')
 def test_format():

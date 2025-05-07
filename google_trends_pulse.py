@@ -219,6 +219,11 @@ class GoogleTrendsPulse:
         Returns:
             dict: Словарь с результатами анализа трендов
         """
+        # Если есть запрос от веб-интерфейса, используем кешированные данные,
+        # чтобы избежать блокировки Google Trends API
+        if not force_refresh:
+            logger.info("Используем кешированные данные Google Trends (запрос от веб-интерфейса)")
+            return self._get_cached_trends_data()
         try:
             # Проверяем, прошло ли достаточно времени с последней проверки
             current_time = datetime.now()
@@ -451,6 +456,46 @@ class GoogleTrendsPulse:
         else:
             # Нейтральный сигнал
             return "⚪", "Neutral market"
+    
+    def _get_cached_trends_data(self):
+        """
+        Получает кешированные или исторические данные Google Trends,
+        используя последние доступные данные из истории
+        
+        Returns:
+            dict: Словарь с результатами анализа трендов из кеша или истории
+        """
+        # Если есть последние данные в памяти
+        if self.last_data:
+            logger.info("Используем последние данные Google Trends из кеша")
+            return self.last_data
+            
+        # Если есть данные в истории
+        if self.history_data:
+            # Сортируем записи по timestamp
+            sorted_history = sorted(
+                self.history_data,
+                key=lambda x: x.get("timestamp", ""),
+                reverse=True
+            )
+            # Берем самую последнюю запись
+            latest_record = sorted_history[0]
+            logger.info(f"Используем последние данные Google Trends из истории: {latest_record['signal']} - {latest_record['description']}")
+            return latest_record
+            
+        # Если нет ни кеша, ни истории, возвращаем нейтральный сигнал
+        current_time = datetime.now()
+        logger.warning("Нет кешированных данных Google Trends. Возвращаем нейтральный сигнал.")
+        return {
+            "signal": "⚪",
+            "description": "Neutral interest in cryptocurrencies (no data)",
+            "fomo_score": 50,
+            "fear_score": 50,
+            "general_score": 50,
+            "fomo_to_fear_ratio": 1.0,
+            "timestamp": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "api_available": False
+        }
     
     def format_trends_message(self, trends_data=None):
         """
