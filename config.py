@@ -34,8 +34,10 @@ LOG_LEVEL = "INFO"
 LOG_FILE = "sensortower_bot.log"
 
 # Order Book Imbalance Configuration
-GBI_EXCHANGE = os.getenv('GBI_EXCHANGE', 'binance')
-GBI_MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,SOL/USDT,ADA/USDT,BNB/USDT')
+# Настройка биржи: binance часто блокирует запросы из некоторых регионов
+# альтернативы: kucoin, kraken, okx, bybit
+GBI_EXCHANGE = os.getenv('GBI_EXCHANGE', 'kraken')
+GBI_MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,XRP/USDT,SOL/USDT,ADA/USDT')
 GBI_LIMIT = int(os.getenv('GBI_LIMIT', '100'))
 GBI_THRESHOLD_STRONG_BULL = float(os.getenv('GBI_THRESHOLD_STRONG_BULL', '0.50'))
 GBI_THRESHOLD_WEAK_BULL = float(os.getenv('GBI_THRESHOLD_WEAK_BULL', '0.20'))

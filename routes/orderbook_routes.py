@@ -44,20 +44,31 @@ def refresh_orderbook():
         # Принудительно получаем новые данные
         data = order_book_imbalance.get_order_book_imbalance()
         
+        # Проверяем, что данные получены успешно
+        if data is None:
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to retrieve Order Book Imbalance data. Exchange may be unavailable or restricted in your region.'
+            }), 400
+        
         # Сохраняем данные в историю
-        if data:
+        try:
             history_api.save_order_book_imbalance_history(
-                signal=data['signal'],
-                description=data['description'],
-                status=data['status'],
-                imbalance=data['imbalance']
+                signal=data.get('signal', '⚪'),
+                description=data.get('description', 'Neutral market'),
+                status=data.get('status', 'Neutral'),
+                imbalance=data.get('imbalance', 0.0)
             )
+        except Exception as history_error:
+            # Логируем ошибку сохранения в историю, но не прерываем общий ответ
+            order_book_imbalance.logger.error(f"Error saving to history: {str(history_error)}")
             
         return jsonify({
             'status': 'success', 
             'data': data
         })
     except Exception as e:
+        order_book_imbalance.logger.error(f"Error in refresh_orderbook API: {str(e)}")
         return jsonify({
             'status': 'error',
             'message': str(e)
@@ -71,6 +82,13 @@ def get_orderbook_data():
     try:
         # Получаем данные
         data = order_book_imbalance.get_order_book_imbalance()
+        
+        if data is None:
+            return jsonify({
+                'status': 'error',
+                'message': 'Unable to get order book data. The exchange may be blocking requests from this region or the trading pairs are not available.'
+            }), 404
+            
         return jsonify({
             'status': 'success', 
             'data': data

@@ -127,7 +127,8 @@ class OrderBookImbalance:
                 'timestamp': int(time.time()),
                 'date': datetime.now().strftime('%Y-%m-%d'),
                 'markets_processed': processed_symbols,
-                'total_markets': len(symbols)
+                'total_markets': len(symbols),
+                'exchange': exchange_id
             }
             
             self.logger.info(f"Order Book Imbalance: {imbalance:.2f} ({status}) {signal}")
