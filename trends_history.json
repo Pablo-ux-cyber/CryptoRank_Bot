@@ -1211,5 +1211,14 @@
     "general_score": 36.75,
     "fomo_to_fear_ratio": 3.603340292275574,
     "timestamp": "2025-05-01T13:29:14.635876"
+  },
+  {
+    "signal": "\ud83d\udfe2",
+    "description": "FOMO > fear - market optimism",
+    "fomo_score": 57.53333333333333,
+    "fear_score": 15.966666666666667,
+    "general_score": 36.75,
+    "fomo_to_fear_ratio": 3.603340292275574,
+    "timestamp": "2025-05-07T11:13:13.945699"
   }
 ]
