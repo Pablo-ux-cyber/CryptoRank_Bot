@@ -400,12 +400,15 @@ class HistoryAPI:
             dict: Запись истории данных активных адресов
         """
         try:
+            # Форматируем delta_pct в строку для логирования
+            formatted_delta = f"{delta_pct:+.1f}%" if isinstance(delta_pct, (int, float)) else str(delta_pct)
+            
             # Создаем запись в истории
             history_entry = {
                 "chain": chain,
                 "symbol": chain.upper()[:3] if chain else "UNK",
                 "value": value,
-                "delta_pct": delta_pct,
+                "delta_pct": delta_pct if isinstance(delta_pct, (int, float)) else 0.0, 
                 "status": status,
                 "timestamp": datetime.utcnow()
             }
@@ -418,7 +421,7 @@ class HistoryAPI:
             
             # Сохраняем обновленную историю
             if self._save_history(self.active_addresses_history_file, history):
-                logger.info(f"Saved new Active Addresses history entry: {chain} - {value} ({delta_pct:+.1f}%)")
+                logger.info(f"Saved new Active Addresses history entry: {chain} - {value} ({formatted_delta})")
                 return history_entry
             else:
                 return None
