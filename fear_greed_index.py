@@ -97,25 +97,28 @@ class FearGreedIndexTracker:
         value = fear_greed_data.get("value", 0)
         classification = fear_greed_data.get("classification", "Unknown")
         
-        # Choose emoji based on classification
-        if classification == "Extreme Fear":
+        # Choose emoji and color based on actual value ranges
+        # These ranges are based on observed API behavior:
+        # Extreme Fear: 0-25
+        # Fear: 26-45
+        # Neutral: 46-55
+        # Greed: 56-74
+        # Extreme Greed: 75-100
+        if value <= 25:  # Extreme Fear
             emoji = "😱"
             filled_char = "🔴"
-        elif classification == "Fear":
+        elif value <= 45:  # Fear
             emoji = "😨"
             filled_char = "🟠"
-        elif classification == "Neutral":
+        elif value <= 55:  # Neutral
             emoji = "😐"
             filled_char = "🟡"
-        elif classification == "Greed":
+        elif value <= 74:  # Greed
             emoji = "😏"
             filled_char = "🟢"
-        elif classification == "Extreme Greed":
+        else:  # Extreme Greed (75-100)
             emoji = "🤑"
             filled_char = "🟢"
-        else:
-            emoji = "❓"
-            filled_char = "⚪"
         
         # Generate progress bar
         progress = self._generate_progress_bar(value, 100, 10, filled_char)
