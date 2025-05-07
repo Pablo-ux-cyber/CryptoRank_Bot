@@ -239,7 +239,19 @@ class ActiveAddressesTracker:
         try:
             with open(path, newline='') as f:
                 reader = csv.reader(f)
-                return [(row[0], int(row[1])) for row in reader if len(row) >= 2]
+                # Пропускаем первую строку (заголовок)
+                next(reader, None)
+                # Читаем остальные строки
+                data = []
+                for row in reader:
+                    if len(row) >= 2:
+                        try:
+                            date = row[0]
+                            value = int(row[1])
+                            data.append((date, value))
+                        except (ValueError, TypeError):
+                            self.logger.warning(f"Invalid data in {chain} history: {row}")
+                return data
         except Exception as e:
             self.logger.error(f"Error reading {chain} history: {str(e)}")
             return []

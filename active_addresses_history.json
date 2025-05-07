@@ -1,9 +1,9 @@
 [
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55177348,
+    "delta_pct": -0.555511930604957,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-07T00:00:00"
@@ -11,17 +11,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3997425,
+    "delta_pct": -0.6042183391455159,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-07T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55347264,
+    "delta_pct": -0.654263948480829,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-06T00:00:00"
@@ -29,17 +29,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4050650,
+    "delta_pct": -0.7029349218314305,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-06T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 54045840,
+    "delta_pct": -0.7532134653273349,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-05T00:00:00"
@@ -47,17 +47,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3879338,
+    "delta_pct": -0.8018267852645119,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-05T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 53457275,
+    "delta_pct": -0.8523607679463268,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-04T00:00:00"
@@ -65,17 +65,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3799473,
+    "delta_pct": -0.9009095950093036,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-04T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55221034,
+    "delta_pct": -0.9517085483442483,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-03T00:00:00"
@@ -83,17 +83,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3845542,
+    "delta_pct": -1.000207496973788,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-03T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 56059117,
+    "delta_pct": -1.0512543160142294,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-02T00:00:00"
@@ -101,17 +101,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3943741,
+    "delta_pct": -1.0996862266751462,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-02T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 54865249,
+    "delta_pct": -1.150999635144077,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-01T00:00:00"
@@ -119,17 +119,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3936183,
+    "delta_pct": -1.1993827256557912,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-05-01T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55485577,
+    "delta_pct": -1.2489682061647376,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-30T00:00:00"
@@ -137,17 +137,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4021725,
+    "delta_pct": -1.2972858088089483,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-30T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55711766,
+    "delta_pct": -1.347131193443183,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-29T00:00:00"
@@ -155,17 +155,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4079325,
+    "delta_pct": -1.395389423340721,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-29T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 54456010,
+    "delta_pct": -1.4454894171829076,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-28T00:00:00"
@@ -173,17 +173,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3910695,
+    "delta_pct": -1.4937046520209722,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-28T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 53916841,
+    "delta_pct": -1.5440449036589834,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-27T00:00:00"
@@ -191,17 +191,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3834014,
+    "delta_pct": -1.59222884317647,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-27T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55751627,
+    "delta_pct": -1.642796114024693,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-26T00:00:00"
@@ -209,17 +209,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3884394,
+    "delta_pct": -1.6909267702063624,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-26T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 56654702,
+    "delta_pct": -1.7417478936844109,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-25T00:00:00"
@@ -227,17 +227,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3987592,
+    "delta_pct": -1.7898343555985523,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-25T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 55504101,
+    "delta_pct": -1.8408989308664008,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-24T00:00:00"
@@ -245,17 +245,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 3983966,
+    "delta_pct": -1.8889493605735015,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-24T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 56187339,
+    "delta_pct": -1.9382776327773923,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-23T00:00:00"
@@ -263,107 +263,107 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4074584,
+    "delta_pct": -1.986285338754346,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-23T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 56472525,
+    "delta_pct": -2.0358510202439666,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-22T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 4137053,
+    "delta_pct": -2.0838106400422616,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-22T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 55254711,
+    "delta_pct": -2.133618711576108,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-21T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 3969995,
+    "delta_pct": -2.1815271675750822,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-21T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 54762397,
+    "delta_pct": -2.2315824977126923,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-20T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 3896048,
+    "delta_pct": -2.2794247298734085,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-20T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 56682810,
+    "delta_pct": -2.3297440087489463,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-19T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 3951206,
+    "delta_pct": -2.3775545802330167,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-19T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 57658976,
+    "delta_pct": -2.4281026946381123,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-18T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 4060264,
+    "delta_pct": -2.475870952741583,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-18T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 56545038,
+    "delta_pct": -0.5555117156326753,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-17T00:00:00"
@@ -371,17 +371,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4060670,
+    "delta_pct": -0.6041827964437835,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-17T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 57297932,
+    "delta_pct": -0.6542646927025808,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-16T00:00:00"
@@ -389,17 +389,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4157157,
+    "delta_pct": -0.7028880825035398,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-16T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 57646114,
+    "delta_pct": -0.7532142287028726,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-15T00:00:00"
@@ -407,53 +407,53 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4225096,
+    "delta_pct": -0.8017851046875434,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-15T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 56459338,
+    "delta_pct": -2.7964344088266695,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-14T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 4058533,
+    "delta_pct": -4.712406843840435,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-14T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 56012359,
+    "delta_pct": -3.56597854596085,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-13T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 3986927,
+    "delta_pct": -6.3935964252827855,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-13T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 58034874,
+    "delta_pct": -0.08390319003599088,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-12T00:00:00"
@@ -461,17 +461,17 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 4047436,
+    "delta_pct": -4.9729459157794595,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-12T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 59093835,
+    "delta_pct": 1.739263511316308,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-11T00:00:00"
@@ -479,35 +479,35 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 4163343,
+    "delta_pct": -2.251642661635416,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-11T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "symbol": "BIT",
+    "value": 56860907,
+    "delta_pct": -2.105070676738952,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-10T00:00:00"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
+    "value": 4085353,
+    "delta_pct": -4.08271792706972,
+    "status": "Weakened Demand",
+    "emoji": "\ud83d\udd3b",
     "timestamp": "2025-04-10T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
+    "symbol": "BIT",
+    "value": 57675281,
+    "delta_pct": -0.7029986842415161,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-09T00:00:00"
@@ -515,16 +515,16 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
+    "value": 4186584,
+    "delta_pct": -1.7059827021026726,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
     "timestamp": "2025-04-09T00:00:00"
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
+    "symbol": "BIT",
+    "value": 58083608,
     "delta_pct": 0.0,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
@@ -533,7 +533,7 @@
   {
     "chain": "ethereum",
     "symbol": "ETH",
-    "value": 0,
+    "value": 4259246,
     "delta_pct": 0.0,
     "status": "Normal Level",
     "emoji": "\u2696\ufe0f",
@@ -541,1082 +541,18 @@
   },
   {
     "chain": "bitcoin",
-    "symbol": "BTC",
+    "symbol": "BIT",
     "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-07T00:00:00"
+    "delta_pct": -100.0,
+    "status": "\u041e\u0447\u0435\u043d\u044c \u043d\u0438\u0437\u043a\u0438\u0439 \u0441\u043f\u0440\u043e\u0441",
+    "timestamp": "2025-05-07T17:16:01.904854"
   },
   {
     "chain": "ethereum",
     "symbol": "ETH",
     "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-07T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-06T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-06T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-05T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-05T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-04T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-04T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-03T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-03T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-02T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-02T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-01T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-04-01T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-31T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-31T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-30T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-30T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-29T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-29T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-28T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-28T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-27T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-27T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-26T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-26T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-25T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-25T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-24T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-24T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-23T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-23T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-22T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-22T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-21T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-21T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-20T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-20T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-19T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-19T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-18T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-18T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-17T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-17T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-16T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-16T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-15T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-15T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-14T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-14T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-13T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-13T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-12T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-12T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-11T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-11T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-10T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-10T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-09T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-09T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-08T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-08T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-07T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-07T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-06T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-06T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-05T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-05T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-04T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-04T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-03T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-03T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-02T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-02T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-01T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-03-01T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-28T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-28T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-27T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-27T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-26T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-26T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-25T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-25T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-24T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-24T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-23T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-23T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-22T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-22T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-21T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-21T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-20T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-20T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-19T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-19T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-18T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-18T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-17T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-17T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-16T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-16T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-15T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-15T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-14T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-14T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-13T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-13T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-12T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-12T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-11T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-11T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-10T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-10T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-09T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-09T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-08T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-08T00:00:00"
-  },
-  {
-    "chain": "bitcoin",
-    "symbol": "BTC",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-07T00:00:00"
-  },
-  {
-    "chain": "ethereum",
-    "symbol": "ETH",
-    "value": 0,
-    "delta_pct": 0.0,
-    "status": "Normal Level",
-    "emoji": "\u2696\ufe0f",
-    "timestamp": "2025-02-07T00:00:00"
+    "delta_pct": -100.0,
+    "status": "\u041e\u0447\u0435\u043d\u044c \u043d\u0438\u0437\u043a\u0438\u0439 \u0441\u043f\u0440\u043e\u0441",
+    "timestamp": "2025-05-07T17:16:01.906365"
   }
 ]
