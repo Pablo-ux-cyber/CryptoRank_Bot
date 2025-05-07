@@ -47,7 +47,7 @@
                         <button class="nav-link" id="fear-greed-tab" data-bs-toggle="tab" data-bs-target="#fear-greed" type="button" role="tab" aria-controls="fear-greed" aria-selected="false">Fear & Greed</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="orderbook-tab" data-bs-toggle="tab" data-bs-target="#orderbook" type="button" role="tab" aria-controls="orderbook" aria-selected="false">Order Book Imbalance</button>
+                        <button class="nav-link" id="altseason-tab" data-bs-toggle="tab" data-bs-target="#altseason" type="button" role="tab" aria-controls="altseason" aria-selected="false">Altcoin Season Index</button>
                     </li>
                 </ul>
                 
@@ -149,11 +149,11 @@
                         </div>
                     </div>
                     
-                    <!-- Order Book Imbalance History Tab -->
-                    <div class="tab-pane fade" id="orderbook" role="tabpanel" aria-labelledby="orderbook-tab">
+                    <!-- Altcoin Season Index History Tab -->
+                    <div class="tab-pane fade" id="altseason" role="tabpanel" aria-labelledby="altseason-tab">
                         <div class="card trends-card shadow-sm mb-4">
                             <div class="card-header">
-                                <h5 class="mb-0">Order Book Imbalance History</h5>
+                                <h5 class="mb-0">Altcoin Season Index History</h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -163,24 +163,26 @@
                                                 <th>Date</th>
                                                 <th>Signal</th>
                                                 <th>Status</th>
-                                                <th>Imbalance</th>
+                                                <th>Index</th>
+                                                <th>BTC Performance</th>
                                                 <th>Description</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% if orderbook_history %}
-                                                {% for entry in orderbook_history %}
+                                            {% if altseason_history %}
+                                                {% for entry in altseason_history %}
                                                 <tr>
                                                     <td>{{ entry.timestamp | timestampToDate }}</td>
                                                     <td>{{ entry.signal }}</td>
                                                     <td>{{ entry.status }}</td>
-                                                    <td>{{ entry.imbalance | round(2) }}</td>
+                                                    <td>{{ (entry.index * 100) | round(0) }}%</td>
+                                                    <td>{{ entry.btc_performance | round(2) }}%</td>
                                                     <td>{{ entry.description }}</td>
                                                 </tr>
                                                 {% endfor %}
                                             {% else %}
                                                 <tr>
-                                                    <td colspan="5" class="text-center">No Order Book Imbalance history available yet</td>
+                                                    <td colspan="6" class="text-center">No Altcoin Season Index history available yet</td>
                                                 </tr>
                                             {% endif %}
                                         </tbody>

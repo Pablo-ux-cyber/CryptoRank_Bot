@@ -24,13 +24,13 @@ def history_page():
     # Загружаем историю из JSON-файлов
     rank_history = history_api.get_rank_history(limit=100)
     fear_greed_history = history_api.get_fear_greed_history(limit=100)
-    orderbook_history = history_api.get_order_book_imbalance_history(limit=100)
+    altseason_history = history_api.get_altseason_index_history(limit=100)
     
     return render_template(
         'history.html', 
         rank_history=rank_history,
         fear_greed_history=fear_greed_history,
-        orderbook_history=orderbook_history
+        altseason_history=altseason_history
     )
 
 @history_bp.route('/api/history/rank')
@@ -71,21 +71,21 @@ def api_fear_greed_history():
         'data': fear_greed_history
     })
 
-@history_bp.route('/api/history/orderbook')
-def api_orderbook_history():
-    """API-эндпоинт для получения истории данных Order Book Imbalance"""
+@history_bp.route('/api/history/altseason')
+def api_altseason_history():
+    """API-эндпоинт для получения истории данных Altcoin Season Index"""
     limit = int(request.args.get('limit', 100))
     offset = int(request.args.get('offset', 0))
     
-    orderbook_history = history_api.get_order_book_imbalance_history(limit=limit, offset=offset)
+    altseason_history = history_api.get_altseason_index_history(limit=limit, offset=offset)
     
     # Форматируем timestamp для API
-    for entry in orderbook_history:
+    for entry in altseason_history:
         if 'timestamp' in entry:
             entry['timestamp'] = format_timestamp(entry['timestamp'])
     
     return jsonify({
         'status': 'success',
-        'count': len(orderbook_history),
-        'data': orderbook_history
+        'count': len(altseason_history),
+        'data': altseason_history
     })
