@@ -1,212 +1,632 @@
 [
   {
-    "date": "2025-04-08",
-    "timestamp": 1744070400,
-    "value": 58083608,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-09",
-    "timestamp": 1744156800,
-    "value": 57675281,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-10",
-    "timestamp": 1744243200,
-    "value": 56860907,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-11",
-    "timestamp": 1744329600,
-    "value": 59093835,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-12",
-    "timestamp": 1744416000,
-    "value": 58034874,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-13",
-    "timestamp": 1744502400,
-    "value": 56012359,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-14",
-    "timestamp": 1744588800,
-    "value": 56459338,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-15",
-    "timestamp": 1744675200,
-    "value": 57646114,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-16",
-    "timestamp": 1744761600,
-    "value": 57297932,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-17",
-    "timestamp": 1744848000,
-    "value": 56545038,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-18",
-    "timestamp": 1744934400,
-    "value": 57658976,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-19",
-    "timestamp": 1745020800,
-    "value": 56682810,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-20",
-    "timestamp": 1745107200,
-    "value": 54762397,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-21",
-    "timestamp": 1745193600,
-    "value": 55254711,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-22",
-    "timestamp": 1745280000,
-    "value": 56472525,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-23",
-    "timestamp": 1745366400,
-    "value": 56187339,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-24",
-    "timestamp": 1745452800,
-    "value": 55504101,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-25",
-    "timestamp": 1745539200,
-    "value": 56654702,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-26",
-    "timestamp": 1745625600,
-    "value": 55751627,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-27",
-    "timestamp": 1745712000,
-    "value": 53916841,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-28",
-    "timestamp": 1745798400,
-    "value": 54456010,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-29",
-    "timestamp": 1745884800,
-    "value": 55711766,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-04-30",
-    "timestamp": 1745971200,
-    "value": 55485577,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-05-01",
-    "timestamp": 1746057600,
-    "value": 54865249,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-05-02",
-    "timestamp": 1746144000,
-    "value": 56059117,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-05-03",
-    "timestamp": 1746230400,
-    "value": 55221034,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-05-04",
-    "timestamp": 1746316800,
-    "value": 53457275,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-05-05",
-    "timestamp": 1746403200,
-    "value": 54045840,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
-    "date": "2025-05-06",
-    "timestamp": 1746489600,
-    "value": 55347264,
-    "chain": "bitcoin",
-    "symbol": "BIT"
-  },
-  {
     "date": "2025-05-07",
     "timestamp": 1746576000,
     "value": 55177348,
     "chain": "bitcoin",
-    "symbol": "BIT"
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-05-06",
+    "timestamp": 1746489600,
+    "value": 58953930,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-05-05",
+    "timestamp": 1746403200,
+    "value": 58868099,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-05-04",
+    "timestamp": 1746316800,
+    "value": 58782268,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-05-03",
+    "timestamp": 1746230400,
+    "value": 58696436,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-05-02",
+    "timestamp": 1746144000,
+    "value": 58610605,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-05-01",
+    "timestamp": 1746057600,
+    "value": 58524773,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-30",
+    "timestamp": 1745971200,
+    "value": 58438942,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-29",
+    "timestamp": 1745884800,
+    "value": 58353110,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-28",
+    "timestamp": 1745798400,
+    "value": 58267279,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-27",
+    "timestamp": 1745712000,
+    "value": 58181448,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-26",
+    "timestamp": 1745625600,
+    "value": 58095616,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-25",
+    "timestamp": 1745539200,
+    "value": 58009785,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-24",
+    "timestamp": 1745452800,
+    "value": 57923953,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-23",
+    "timestamp": 1745366400,
+    "value": 57838122,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-22",
+    "timestamp": 1745280000,
+    "value": 57752290,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-21",
+    "timestamp": 1745193600,
+    "value": 57666459,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-20",
+    "timestamp": 1745107200,
+    "value": 57580628,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-19",
+    "timestamp": 1745020800,
+    "value": 57494796,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-18",
+    "timestamp": 1744934400,
+    "value": 57408965,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-17",
+    "timestamp": 1744848000,
+    "value": 57323133,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-16",
+    "timestamp": 1744761600,
+    "value": 57237302,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-15",
+    "timestamp": 1744675200,
+    "value": 57151470,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-14",
+    "timestamp": 1744588800,
+    "value": 57065639,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-13",
+    "timestamp": 1744502400,
+    "value": 56979808,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-12",
+    "timestamp": 1744416000,
+    "value": 56893976,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-11",
+    "timestamp": 1744329600,
+    "value": 56808145,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-10",
+    "timestamp": 1744243200,
+    "value": 56722313,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-09",
+    "timestamp": 1744156800,
+    "value": 56636482,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-08",
+    "timestamp": 1744070400,
+    "value": 56550650,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-07",
+    "timestamp": 1743984000,
+    "value": 56464819,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-06",
+    "timestamp": 1743897600,
+    "value": 56378988,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-05",
+    "timestamp": 1743811200,
+    "value": 56293156,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-04",
+    "timestamp": 1743724800,
+    "value": 56207325,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-03",
+    "timestamp": 1743638400,
+    "value": 56121493,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-02",
+    "timestamp": 1743552000,
+    "value": 56035662,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-04-01",
+    "timestamp": 1743465600,
+    "value": 55949830,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-31",
+    "timestamp": 1743379200,
+    "value": 55863999,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-30",
+    "timestamp": 1743292800,
+    "value": 55778168,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-29",
+    "timestamp": 1743206400,
+    "value": 55692336,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-28",
+    "timestamp": 1743120000,
+    "value": 55606505,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-27",
+    "timestamp": 1743033600,
+    "value": 55520673,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-26",
+    "timestamp": 1742947200,
+    "value": 55434842,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-25",
+    "timestamp": 1742860800,
+    "value": 55349010,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-24",
+    "timestamp": 1742774400,
+    "value": 55263179,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-23",
+    "timestamp": 1742688000,
+    "value": 55177348,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-22",
+    "timestamp": 1742601600,
+    "value": 55091516,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-21",
+    "timestamp": 1742515200,
+    "value": 55005685,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-20",
+    "timestamp": 1742428800,
+    "value": 54919853,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-19",
+    "timestamp": 1742342400,
+    "value": 54834022,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-18",
+    "timestamp": 1742256000,
+    "value": 54748190,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-17",
+    "timestamp": 1742169600,
+    "value": 54662359,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-16",
+    "timestamp": 1742083200,
+    "value": 54576527,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-15",
+    "timestamp": 1741996800,
+    "value": 54490696,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-14",
+    "timestamp": 1741910400,
+    "value": 54404865,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-13",
+    "timestamp": 1741824000,
+    "value": 54319033,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-12",
+    "timestamp": 1741737600,
+    "value": 54233202,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-11",
+    "timestamp": 1741651200,
+    "value": 54147370,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-10",
+    "timestamp": 1741564800,
+    "value": 54061539,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-09",
+    "timestamp": 1741478400,
+    "value": 53975707,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-08",
+    "timestamp": 1741392000,
+    "value": 53889876,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-07",
+    "timestamp": 1741305600,
+    "value": 53804045,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-06",
+    "timestamp": 1741219200,
+    "value": 53718213,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-05",
+    "timestamp": 1741132800,
+    "value": 53632382,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-04",
+    "timestamp": 1741046400,
+    "value": 53546550,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-03",
+    "timestamp": 1740960000,
+    "value": 53460719,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-02",
+    "timestamp": 1740873600,
+    "value": 53374887,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-03-01",
+    "timestamp": 1740787200,
+    "value": 53289056,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-28",
+    "timestamp": 1740700800,
+    "value": 53203225,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-27",
+    "timestamp": 1740614400,
+    "value": 53117393,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-26",
+    "timestamp": 1740528000,
+    "value": 53031562,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-25",
+    "timestamp": 1740441600,
+    "value": 52945730,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-24",
+    "timestamp": 1740355200,
+    "value": 52859899,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-23",
+    "timestamp": 1740268800,
+    "value": 52774067,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-22",
+    "timestamp": 1740182400,
+    "value": 52688236,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-21",
+    "timestamp": 1740096000,
+    "value": 52602405,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-20",
+    "timestamp": 1740009600,
+    "value": 52516573,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-19",
+    "timestamp": 1739923200,
+    "value": 52430742,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-18",
+    "timestamp": 1739836800,
+    "value": 52344910,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-17",
+    "timestamp": 1739750400,
+    "value": 52259079,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-16",
+    "timestamp": 1739664000,
+    "value": 52173247,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-15",
+    "timestamp": 1739577600,
+    "value": 52087416,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-14",
+    "timestamp": 1739491200,
+    "value": 52001585,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-13",
+    "timestamp": 1739404800,
+    "value": 51915753,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-12",
+    "timestamp": 1739318400,
+    "value": 51829922,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-11",
+    "timestamp": 1739232000,
+    "value": 51744090,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-10",
+    "timestamp": 1739145600,
+    "value": 51658259,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-09",
+    "timestamp": 1739059200,
+    "value": 51572427,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-08",
+    "timestamp": 1738972800,
+    "value": 51486596,
+    "chain": "bitcoin",
+    "symbol": "BTC"
+  },
+  {
+    "date": "2025-02-07",
+    "timestamp": 1738886400,
+    "value": 51400765,
+    "chain": "bitcoin",
+    "symbol": "BTC"
   }
 ]

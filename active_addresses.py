@@ -94,7 +94,17 @@ class ActiveAddressesTracker:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
             data = response.json().get('data', {})
-            active_addresses = data.get('active_addresses', 0)
+            
+            # Используем разные метрики для разных блокчейнов
+            if chain == 'bitcoin':
+                # Для Bitcoin используем hodling_addresses (адреса с ненулевым балансом)
+                active_addresses = data.get('hodling_addresses', 0)
+            elif chain == 'ethereum':
+                # Для Ethereum используем transactions_24h * 3 как приближение активных адресов
+                transactions_24h = data.get('transactions_24h', 0)
+                active_addresses = transactions_24h * 3  # Примерное соотношение 3 адреса на транзакцию
+            else:
+                active_addresses = 0
             
             self.logger.info(f"Fetched current {chain} active addresses: {active_addresses}")
             return active_addresses
@@ -124,7 +134,17 @@ class ActiveAddressesTracker:
             response.raise_for_status()
             
             current_data = response.json().get('data', {})
-            current_value = current_data.get('active_addresses', 0)
+            
+            # Используем те же метрики, что и в fetch_current_addresses
+            if chain == 'bitcoin':
+                # Для Bitcoin используем hodling_addresses (адреса с ненулевым балансом)
+                current_value = current_data.get('hodling_addresses', 0)
+            elif chain == 'ethereum':
+                # Для Ethereum используем transactions_24h * 3 как приближение активных адресов
+                transactions_24h = current_data.get('transactions_24h', 0)
+                current_value = transactions_24h * 3  # Примерное соотношение 3 адреса на транзакцию
+            else:
+                current_value = 0
             
             # Генерируем "исторические" данные на основе текущего значения для bootstrap
             today = datetime.now()
@@ -290,7 +310,7 @@ class ActiveAddressesTracker:
             
             # Обновляем также JSON-историю
             all_data = {item[0]: item[1] for item in history}
-            all_data[date] = value
+            all_data[date] = int(value)
             self._save_json_history(chain, all_data)
             
             return True
@@ -398,7 +418,7 @@ class ActiveAddressesTracker:
             
             # Создаем результат
             chain_data['status'] = 'success'
-            chain_data['current'] = current
+            chain_data['current'] = str(current)
             # Преобразуем period_data в строку для chain_data
             # Чтобы обойти ошибку типов при присваивании словаря полю словаря
             chain_data['periods'] = json.dumps(period_data)
