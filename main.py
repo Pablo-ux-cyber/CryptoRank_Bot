@@ -54,8 +54,8 @@ last_scrape_data = None
 last_scrape_time = None
 last_fear_greed_data = None
 last_fear_greed_time = None
-last_imbalance_data = None
-last_imbalance_time = None
+last_altseason_data = None
+last_altseason_time = None
 
 def start_scheduler_thread():
     """Start the scheduler in a separate thread"""
@@ -76,7 +76,7 @@ def signal_handler(sig, frame):
 @app.route('/')
 def index():
     """Render the home page"""
-    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time, last_imbalance_data, last_imbalance_time
+    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time, last_altseason_data, last_altseason_time
     
     # Check if scheduler is running
     # Бот считаем работающим, если объект scheduler существует,
@@ -114,8 +114,8 @@ def index():
                           categories=categories,
                           last_fear_greed_data=last_fear_greed_data,
                           last_fear_greed_time=last_fear_greed_time,
-                          last_imbalance_data=last_imbalance_data,
-                          last_imbalance_time=last_imbalance_time)
+                          last_altseason_data=last_altseason_data,
+                          last_altseason_time=last_altseason_time)
 
 @app.route('/test-telegram')
 def test_telegram():
@@ -247,15 +247,15 @@ def get_fear_greed():
             # Add Fear & Greed Index data
             combined_message += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
             
-            # Добавляем данные Order Book Imbalance
-            if scheduler.order_book_imbalance:
-                # Получаем свежие данные дисбаланса ордеров
-                imbalance_data = scheduler.order_book_imbalance.get_order_book_imbalance()
-                if imbalance_data:
-                    imbalance_message = scheduler.order_book_imbalance.format_imbalance_message(imbalance_data)
-                    if imbalance_message:
-                        combined_message += "\n\n" + imbalance_message
-                        logger.info(f"Added Order Book Imbalance data to combined message: {imbalance_data['signal']}")
+            # Добавляем данные Altcoin Season Index
+            if scheduler.altcoin_season_index:
+                # Получаем свежие данные Altcoin Season Index
+                altseason_data = scheduler.altcoin_season_index.get_altseason_index()
+                if altseason_data:
+                    altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
+                    if altseason_message:
+                        combined_message += "\n\n" + altseason_message
+                        logger.info(f"Added Altcoin Season Index data to combined message: {altseason_data['signal']}")
             
             # Send the message
             sent = scheduler.telegram_bot.send_message(combined_message)
@@ -272,25 +272,25 @@ def get_fear_greed():
         logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/get-order-book-imbalance')
-def get_order_book_imbalance():
-    """Manually fetch Order Book Imbalance data and send it as a message"""
-    global last_scrape_data, last_scrape_time, last_imbalance_data, last_imbalance_time
+@app.route('/get-altseason-index')
+def get_altseason_index():
+    """Manually fetch Altcoin Season Index data and send it as a message"""
+    global last_scrape_data, last_scrape_time, last_altseason_data, last_altseason_time
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Получаем реальные данные Order Book Imbalance
-        logger.info("Запрос данных Order Book Imbalance...")
-        imbalance_data = scheduler.order_book_imbalance.get_order_book_imbalance()
-        imbalance_message = scheduler.order_book_imbalance.format_imbalance_message(imbalance_data)
-        logger.info(f"Получены данные Order Book Imbalance: {imbalance_data['signal']} - {imbalance_data['status']}")
+        # Получаем реальные данные Altcoin Season Index
+        logger.info("Запрос данных Altcoin Season Index...")
+        altseason_data = scheduler.altcoin_season_index.get_altseason_index()
+        altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
+        logger.info(f"Получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']}")
         
-        if imbalance_data:
+        if altseason_data:
             # Сохраняем данные для отображения
-            last_imbalance_data = imbalance_data
-            last_imbalance_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            last_altseason_data = altseason_data
+            last_altseason_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             
             # В ручном режиме объединяем с данными о рейтинге для отправки полного сообщения
             # Получаем последние данные о рейтинге
@@ -303,15 +303,15 @@ def get_order_book_imbalance():
             sent = scheduler.run_now(force_send=True)
             
             if sent:
-                flash(f"Complete data with Order Book Imbalance ({imbalance_data['signal']}) successfully sent to Telegram!", "success")
+                flash(f"Complete data with Altcoin Season Index ({altseason_data['signal']}) successfully sent to Telegram!", "success")
             else:
                 flash("Data fetched but failed to send to Telegram.", "warning")
                 
             return redirect(url_for('index'))
         else:
-            return jsonify({"status": "error", "message": "Failed to retrieve Order Book Imbalance data"}), 500
+            return jsonify({"status": "error", "message": "Failed to retrieve Altcoin Season Index data"}), 500
     except Exception as e:
-        logger.error(f"Error fetching Order Book Imbalance data: {str(e)}")
+        logger.error(f"Error fetching Altcoin Season Index data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/health')
@@ -322,7 +322,7 @@ def health():
 @app.route('/test-message')
 def test_message():
     """Manually send a test message with cached data to the test channel"""
-    global last_fear_greed_data, last_scrape_data
+    global last_fear_greed_data, last_scrape_data, last_altseason_data
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
@@ -339,8 +339,8 @@ def test_message():
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
-        # Get Order Book Imbalance data
-        imbalance_data = scheduler.order_book_imbalance.get_order_book_imbalance()
+        # Get Altcoin Season Index data
+        altseason_data = scheduler.altcoin_season_index.get_altseason_index()
         
         # Format individual messages
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
@@ -350,11 +350,11 @@ def test_message():
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
         
-        if imbalance_data:
-            imbalance_message = scheduler.order_book_imbalance.format_imbalance_message(imbalance_data)
-            if imbalance_message:
-                combined_message += "\n\n" + imbalance_message
-                logger.info(f"Added Order Book Imbalance data to test message: {imbalance_data['signal']}")
+        if altseason_data:
+            altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
+            if altseason_message:
+                combined_message += "\n\n" + altseason_message
+                logger.info(f"Added Altcoin Season Index data to test message: {altseason_data['signal']}")
         
         # Send the message
         sent = scheduler.telegram_bot.send_message(combined_message)
@@ -376,13 +376,13 @@ def test_format():
     """Test the message formatting with sample data"""
     from scraper import SensorTowerScraper
     from fear_greed_index import FearGreedIndexTracker
-    from order_book_imbalance import OrderBookImbalance
+    from altcoin_season_index import AltcoinSeasonIndex
     
     try:
         # Create instances for formatting even if scheduler is not running
         scraper = scheduler.scraper if scheduler else SensorTowerScraper()
         fear_greed_tracker = scheduler.fear_greed_tracker if scheduler else FearGreedIndexTracker()
-        order_book_imbalance = scheduler.order_book_imbalance if scheduler else OrderBookImbalance()
+        altcoin_season_index = scheduler.altcoin_season_index if scheduler else AltcoinSeasonIndex()
         
         # Sample app ranking data
         rankings_data = {
@@ -402,12 +402,13 @@ def test_format():
             "date": datetime.now().strftime("%Y-%m-%d")
         }
         
-        # Sample Order Book Imbalance data
-        imbalance_data = {
-            "imbalance": 0.32,
-            "status": "Bullish",
-            "signal": "🟢",
-            "description": "Moderate buy pressure",
+        # Sample Altcoin Season Index data
+        altseason_data = {
+            "index": 0.65,
+            "status": "Moderate Altseason",
+            "signal": "🟡",
+            "description": "Many altcoins outperform Bitcoin",
+            "btc_performance": 8.5,
             "timestamp": int(time.time()),
             "date": datetime.now().strftime('%Y-%m-%d')
         }
@@ -415,22 +416,22 @@ def test_format():
         # Format individual messages
         rankings_message = scraper.format_rankings_message(rankings_data)
         fear_greed_message = fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-        imbalance_message = order_book_imbalance.format_imbalance_message(imbalance_data)
+        altseason_message = altcoin_season_index.format_altseason_message(altseason_data)
         
         # Format combined message
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
         
-        # Добавляем Order Book Imbalance только если данные доступны
-        if imbalance_message:
-            combined_message += "\n\n" + imbalance_message
+        # Добавляем Altcoin Season Index только если данные доступны
+        if altseason_message:
+            combined_message += "\n\n" + altseason_message
         
         # If this is a web request (not API)
         if request.headers.get('Accept', '').find('application/json') == -1:
             return render_template('format_test.html',
                                    rankings_message=rankings_message,
                                    fear_greed_message=fear_greed_message,
-                                   imbalance_message=imbalance_message,
+                                   altseason_message=altseason_message,
                                    combined_message=combined_message)
         
         # Return JSON for API requests
@@ -438,7 +439,7 @@ def test_format():
             "status": "success",
             "rankings_message": rankings_message,
             "fear_greed_message": fear_greed_message,
-            "imbalance_message": imbalance_message,
+            "altseason_message": altseason_message,
             "combined_message": combined_message
         })
     except Exception as e:

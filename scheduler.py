@@ -47,7 +47,7 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения, Fear & Greed Index и Order Book Imbalance один раз в день в 11:10
+        - Проверяет рейтинг приложения, Fear & Greed Index и Altcoin Season Index один раз в день в 11:10
         - Все данные собираются за один раз и отправляются одним сообщением
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
@@ -64,7 +64,7 @@ class SensorTowerScheduler:
                 update_rank = False
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
-                # Fear & Greed Index и Order Book Imbalance (в 11:10)
+                # Fear & Greed Index и Altcoin Season Index (в 11:10)
                 if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
@@ -181,14 +181,15 @@ class SensorTowerScheduler:
                     logger.error(f"Ошибка при освобождении блокировки файла: {str(e)}")
             logger.info("Scheduler stopped")
     
-    def _send_combined_message(self, rankings_data, fear_greed_data=None, imbalance_data=None):
+    def _send_combined_message(self, rankings_data, fear_greed_data=None, altseason_data=None):
         """
         Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
-        и сигналом от Order Book Imbalance в упрощенном формате
+        и сигналом от Altcoin Season Index в упрощенном формате
         
         Args:
             rankings_data (dict): Данные о рейтинге приложения
             fear_greed_data (dict, optional): Данные индекса страха и жадности
+            altseason_data (dict, optional): Данные индекса сезона альткоинов
             
         Returns:
             bool: True если сообщение успешно отправлено, False в противном случае
@@ -214,23 +215,23 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные Order Book Imbalance, если они доступны
+            # Добавляем данные Altcoin Season Index, если они доступны
             # Используем переданные данные, а не делаем запрос снова
-            if (imbalance_data and 
-                'signal' in imbalance_data and imbalance_data['signal'] and
-                'description' in imbalance_data and imbalance_data['description']):
+            if (altseason_data and 
+                'signal' in altseason_data and altseason_data['signal'] and
+                'description' in altseason_data and altseason_data['description']):
                 
-                # Форматируем сообщение о дисбалансе ордеров
-                imbalance_message = self.order_book_imbalance.format_imbalance_message(imbalance_data)
+                # Форматируем сообщение индекса сезона альткоинов
+                altseason_message = self.altcoin_season_index.format_altseason_message(altseason_data)
                 
                 # Если сообщение сформировано, добавляем его
-                if imbalance_message:
-                    combined_message += f"\n\n{imbalance_message}"
-                    logger.info(f"Added Order Book Imbalance data: {imbalance_data['signal']} - {imbalance_data['status']}")
+                if altseason_message:
+                    combined_message += f"\n\n{altseason_message}"
+                    logger.info(f"Added Altcoin Season Index data: {altseason_data['signal']} - {altseason_data['status']}")
                 else:
-                    logger.info("Order Book Imbalance данные не сформированы в сообщение - пропускаем эту часть")
+                    logger.info("Altcoin Season Index данные не сформированы в сообщение - пропускаем эту часть")
             else:
-                logger.info("Order Book Imbalance данные недоступны или неполные - пропускаем эту часть сообщения")
+                logger.info("Altcoin Season Index данные недоступны или неполные - пропускаем эту часть сообщения")
             
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
@@ -252,7 +253,7 @@ class SensorTowerScheduler:
     def run_scraping_job(self, force_refresh=False):
         """
         Выполняет задание по скрапингу: получает данные SensorTower, Fear & Greed Index, 
-        Order Book Imbalance и отправляет в Telegram только если рейтинг изменился или это первый запуск
+        Altcoin Season Index и отправляет в Telegram только если рейтинг изменился или это первый запуск
         
         Args:
             force_refresh (bool): Если True, отправить сообщение даже если рейтинг не изменился
@@ -295,18 +296,18 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Fear & Greed Index: {str(e)}")
                 
-            # Получаем свежие данные Order Book Imbalance
+            # Получаем свежие данные Altcoin Season Index
             # Это всегда происходит при отправке сообщения, чтобы данные были актуальными
-            imbalance_data = None
+            altseason_data = None
             try:
-                logger.info("Получение данных Order Book Imbalance для комбинированного сообщения")
-                imbalance_data = self.order_book_imbalance.get_order_book_imbalance()
-                if imbalance_data:
-                    logger.info(f"Успешно получены данные Order Book Imbalance: {imbalance_data['signal']} - {imbalance_data['status']} ({imbalance_data['imbalance']})")
+                logger.info("Получение данных Altcoin Season Index для комбинированного сообщения")
+                altseason_data = self.altcoin_season_index.get_altseason_index()
+                if altseason_data:
+                    logger.info(f"Успешно получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']} (Индекс: {altseason_data['index']})")
                 else:
-                    logger.warning("Не удалось получить данные Order Book Imbalance")
+                    logger.warning("Не удалось получить данные Altcoin Season Index")
             except Exception as e:
-                logger.error(f"Ошибка при получении данных Order Book Imbalance: {str(e)}")
+                logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
@@ -334,7 +335,7 @@ class SensorTowerScheduler:
             # Отправляем сообщение только если нужно
             if need_to_send:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
-                result = self._send_combined_message(rankings_data, fear_greed_data, imbalance_data)
+                result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data)
                 
                 # Обновляем последний отправленный рейтинг независимо от результата отправки
                 # Это поможет избежать множественных сообщений при сбоях отправки
@@ -377,24 +378,26 @@ class SensorTowerScheduler:
                                 classification=fear_greed_data['classification']
                             )
                             
-                        # Если доступны данные Order Book Imbalance, сохраняем их
-                        if (imbalance_data and 
-                            'signal' in imbalance_data and 
-                            'description' in imbalance_data and 
-                            'status' in imbalance_data and 
-                            'imbalance' in imbalance_data and
-                            imbalance_data['signal'] is not None):
-                            # Сохраняем данные Order Book Imbalance в историю
+                        # Если доступны данные Altcoin Season Index, сохраняем их
+                        if (altseason_data and 
+                            'signal' in altseason_data and 
+                            'description' in altseason_data and 
+                            'status' in altseason_data and 
+                            'index' in altseason_data and 
+                            'btc_performance' in altseason_data and
+                            altseason_data['signal'] is not None):
+                            # Сохраняем данные Altcoin Season Index в историю
                             try:
-                                history_api.save_order_book_imbalance_history(
-                                    signal=imbalance_data['signal'],
-                                    description=imbalance_data['description'],
-                                    status=imbalance_data['status'],
-                                    imbalance=imbalance_data['imbalance']
+                                history_api.save_altseason_index_history(
+                                    signal=altseason_data['signal'],
+                                    description=altseason_data['description'],
+                                    status=altseason_data['status'],
+                                    index=altseason_data['index'],
+                                    btc_performance=altseason_data['btc_performance']
                                 )
-                                logger.info(f"Сохранены данные Order Book Imbalance в историю: {imbalance_data['signal']} - {imbalance_data['status']}")
+                                logger.info(f"Сохранены данные Altcoin Season Index в историю: {altseason_data['signal']} - {altseason_data['status']}")
                             except Exception as e:
-                                logger.warning(f"Ошибка при сохранении Order Book Imbalance в историю: {str(e)}")
+                                logger.warning(f"Ошибка при сохранении Altcoin Season Index в историю: {str(e)}")
                             
                         logger.info(f"История данных успешно сохранена в JSON-файлы")
                     except ImportError:
@@ -429,6 +432,19 @@ class SensorTowerScheduler:
             return self.fear_greed_tracker.get_fear_greed_index()
         except Exception as e:
             logger.error(f"Error getting Fear & Greed Index: {str(e)}")
+            return None
+    
+    def get_current_altseason_index(self):
+        """
+        Get current Altcoin Season Index data for testing/manual triggering
+        
+        Returns:
+            dict: Altcoin Season Index data or None in case of error
+        """
+        try:
+            return self.altcoin_season_index.get_altseason_index()
+        except Exception as e:
+            logger.error(f"Error getting Altcoin Season Index: {str(e)}")
             return None
             
     def run_now(self, force_send=False):
