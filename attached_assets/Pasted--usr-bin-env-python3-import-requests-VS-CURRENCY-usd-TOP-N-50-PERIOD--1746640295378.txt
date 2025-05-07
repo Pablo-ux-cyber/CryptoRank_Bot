@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+import requests
+
+# Настройки
+VS_CURRENCY = 'usd'
+TOP_N       = 50
+PERIOD      = '30d'      # период сравнения: 30 дней
+THRESHOLD   = 0.75       # нижняя граница альтсезона
+
+def fetch_market_data(vs='usd', per_page=TOP_N):
+    """
+    Загружает данные по топ-N монетам CoinGecko:
+     - текущую цену
+     - доходность за последние 30 дней
+    """
+    url = 'https://api.coingecko.com/api/v3/coins/markets'
+    params = {
+        'vs_currency': vs,
+        'order':       'market_cap_desc',
+        'per_page':    per_page,
+        'page':        1,
+        'price_change_percentage': '30d'
+    }
+    r = requests.get(url, params=params)
+    r.raise_for_status()
+    return r.json()
+
+def calculate_altseason_index(data):
+    """
+    Считает индекс альтсезона:
+     = доля монет с доходностью > BTC за тот же период.
+    """
+    # Находим 30d-доходность BTC
+    btc = next((c for c in data if c['symbol']=='btc'), None)
+    if not btc:
+        raise ValueError("BTC не найден в данных")
+    btc_perf = btc['price_change_percentage_30d_in_currency'] or 0
+    
+    # Считаем, сколько монет опередили BTC
+    ahead = 0
+    for coin in data:
+        perf = coin.get('price_change_percentage_30d_in_currency') or 0
+        if perf > btc_perf:
+            ahead += 1
+    index = ahead / len(data)
+    return index, btc_perf
+
+def interpret_index(idx):
+    if idx < 0.25:
+        return "Нет признаков альт-сезона"
+    if idx < 0.50:
+        return "Слабый альт-сигнал"
+    if idx < 0.75:
+        return "Умеренный альт-сезон"
+    return "Ярко выраженный альт-сезон!"
+
+def main():
+    data = fetch_market_data(VS_CURRENCY, TOP_N)
+    idx, btc_perf = calculate_altseason_index(data)
+    label = interpret_index(idx)
+
+    print(f"\n📈 Alt-Season Index (30d) для топ {TOP_N} альтов:")
+    print(f"  • BTC 30d: {btc_perf:+.1f}%")
+    print(f"  • Индекс: {idx*100:.1f}% — {label}")
+    if idx >= THRESHOLD:
+        print("  → Сейчас альт-сезон: можно рассмотреть увеличение доли альткойнов.")
+    else:
+        print("  → Альт-сезон не наступил: BTC продолжает лидировать.\n")
+
+if __name__ == '__main__':
+    main()

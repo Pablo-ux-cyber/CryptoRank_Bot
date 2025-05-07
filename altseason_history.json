@@ -1,1 +1,20 @@
-[]
+[
+  {
+    "timestamp": "2025-05-07T17:53:04.296847",
+    "date": "2025-05-07",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.18,
+    "btc_performance": 24.86
+  },
+  {
+    "timestamp": "2025-05-07T17:53:07.990860",
+    "date": "2025-05-07",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.18,
+    "btc_performance": 24.86
+  }
+]

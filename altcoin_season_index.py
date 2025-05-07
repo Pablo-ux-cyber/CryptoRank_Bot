@@ -56,7 +56,7 @@ class AltcoinSeasonIndex:
             'order': 'market_cap_desc',
             'per_page': self.top_n,
             'page': 1,
-            'price_change_percentage': self.period.replace('d', '')
+            'price_change_percentage': '30d'  # Hardcoded 30d to match expected API format
         }
         
         try:
@@ -88,8 +88,10 @@ class AltcoinSeasonIndex:
             return None, None
         
         # Get BTC performance for the period
-        period_key = f'price_change_percentage_{self.period}_in_currency'
-        btc_perf = btc.get(period_key) or 0
+        period_key = 'price_change_percentage_30d_in_currency'  # Hardcoded to match API response
+        btc_perf = btc.get(period_key, 0)
+        if btc_perf is None:
+            btc_perf = 0
         
         # Count how many coins outperformed BTC
         ahead = 0
@@ -137,8 +139,8 @@ class AltcoinSeasonIndex:
             
             # Create result object
             result = {
-                'index': round(index, 2),
-                'btc_performance': round(btc_perf, 2),
+                'index': float(round(float(index), 2)) if index is not None else 0.0,
+                'btc_performance': float(round(float(btc_perf), 2)) if btc_perf is not None else 0.0,
                 'signal': signal,
                 'status': status,
                 'description': description,
