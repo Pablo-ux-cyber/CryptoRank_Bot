@@ -15,7 +15,8 @@ SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?o
 # Telegram Configuration
 TELEGRAM_BOT_TOKEN = "7973595268:AAG_Pz_xZFnAXRHtVbTH5Juo8qtssPUof8E"
 # Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
-TELEGRAM_CHANNEL_ID = "@cryptorankbase"  # Возвращаем основной канал, для которого бот имеет права админа
+TELEGRAM_CHANNEL_ID = "@telegrm_hub"  # Тестовая группа для отправки сообщений
+# Для возврата в основной канал: "@cryptorankbase"
 # Канал, откуда бот получает данные о рейтинге (источник данных)
 TELEGRAM_SOURCE_CHANNEL = "@coinbaseappstore"
 
