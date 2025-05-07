@@ -1,0 +1,91 @@
+#!/usr/bin/env python3
+"""
+Bootstrap + ежедневный мониторинг Active Addresses через Blockchair.
+
+1) При первом запуске собирает историю за последние 30 дней.
+2) Каждый следующий запуск дополняет историю сегодняшним значением.
+3) Сравнивает текущее значение с 7-дневным средним и даёт понятный вывод.
+"""
+
+import requests, csv, os, time, statistics
+
+# --- Настройки ---
+CHAINS        = ['bitcoin', 'ethereum']
+SYMBOL_MAP    = {'bitcoin': 'BTC', 'ethereum': 'ETH'}
+HISTORY_DIR   = 'history'
+DAYS_FOR_AVG  = 7
+BOOTSTRAP_DAYS = 30  # сколько дней блумить при первом запуске
+
+os.makedirs(HISTORY_DIR, exist_ok=True)
+
+def fetch_current(chain):
+    url = f'https://api.blockchair.com/{chain}/stats'
+    r   = requests.get(url); r.raise_for_status()
+    return r.json()['data']['active_addresses']
+
+def fetch_historical(chain, days):
+    url    = f'https://api.blockchair.com/{chain}/charts/active_addresses'
+    params = {'days': days}
+    r      = requests.get(url, params=params); r.raise_for_status()
+    return r.json()['data']  # dict: {'2025-04-08': 345000, ...}
+
+def history_file(chain):
+    return os.path.join(HISTORY_DIR, f'history_{chain}.csv')
+
+def write_bootstrap(chain):
+    data = fetch_historical(chain, BOOTSTRAP_DAYS)
+    path = history_file(chain)
+    with open(path, 'w', newline='') as f:
+        w = csv.writer(f)
+        for date, val in sorted(data.items()):
+            w.writerow([date, val])
+
+def read_history(chain):
+    path = history_file(chain)
+    if not os.path.exists(path): return []
+    with open(path, newline='') as f:
+        return [int(r[1]) for r in csv.reader(f) if len(r)>=2]
+
+def append_today(chain, today):
+    path = history_file(chain)
+    date = time.strftime('%Y-%m-%d')
+    hist = read_history(chain)
+    if hist and open(path).read().splitlines()[-1].startswith(date): return
+    with open(path, 'a', newline='') as f:
+        csv.writer(f).writerow([date, today])
+
+def interpret(today, avg):
+    if avg == 0: return "Недостаточно данных"
+    delta = (today-avg)/avg*100
+    if delta <= -10: return f"↓ {delta:+.1f}% — Очень низкий спрос"
+    if delta <=  -2: return f"↓ {delta:+.1f}% — Ослабевший спрос"
+    if delta <   +2: return f"↔ {delta:+.1f}% — Нормальный уровень"
+    if delta <  +10: return f"↑ {delta:+.1f}% — Повышенный спрос"
+    return             f"↑ {delta:+.1f}% — Очень высокий спрос"
+
+def main():
+    print(f"\n📊 Active Addresses Monitor — {time.strftime('%Y-%m-%d')}\n")
+    for chain in CHAINS:
+        symbol = SYMBOL_MAP[chain]
+        path   = history_file(chain)
+        # Bootstrap, если нет файла
+        if not os.path.exists(path):
+            print(f"– Загрузка истории за {BOOTSTRAP_DAYS} дней для {symbol}…")
+            write_bootstrap(chain)
+        # Читаем историю и считаем 7-дневное среднее
+        hist = read_history(chain)
+        avg7 = statistics.mean(hist[-DAYS_FOR_AVG:]) if len(hist)>=DAYS_FOR_AVG else 0
+        # Текущее значение и append
+        today = fetch_current(chain)
+        append_today(chain, today)
+        # Вывод
+        print(f"• {symbol}: {today:,} адресов")
+        if avg7:
+            print(f"    Среднее за {DAYS_FOR_AVG} дн: {avg7:,.0f}")
+            print("   ", interpret(today, avg7))
+        else:
+            print("    Недостаточно данных для расчёта среднего.")
+    print()
+
+if __name__ == '__main__':
+    main()
