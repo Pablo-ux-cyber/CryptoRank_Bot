@@ -387,11 +387,12 @@ def test_format():
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)
 
-# Start the scheduler in a background thread when the app starts
+# Initialize scheduler at startup - for both direct run and gunicorn
 scheduler_thread = threading.Thread(target=start_scheduler_thread)
 scheduler_thread.daemon = True
 scheduler_thread.start()
+logger.info("Starting scheduler at app initialization")
 
 if __name__ == "__main__":
-    # When running directly (not through gunicorn)
+    # Run the Flask app when called directly
     app.run(host="0.0.0.0", port=5000, debug=True)
