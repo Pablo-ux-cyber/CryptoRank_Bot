@@ -24,13 +24,14 @@ class HistoryAPI:
         self.rank_history_file = os.path.join(self.data_dir, "rank_history.json")
         self.fear_greed_history_file = os.path.join(self.data_dir, "fear_greed_history.json")
         self.trends_history_file = os.path.join(self.data_dir, "trends_history.json")
+        self.gbi_history_file = os.path.join(self.data_dir, "gbi_history.json")
         
         # Создаем файлы истории, если они не существуют
         self._ensure_history_files_exist()
     
     def _ensure_history_files_exist(self):
         """Создает файлы истории, если они не существуют"""
-        for file_path in [self.rank_history_file, self.fear_greed_history_file, self.trends_history_file]:
+        for file_path in [self.rank_history_file, self.fear_greed_history_file, self.trends_history_file, self.gbi_history_file]:
             if not os.path.exists(file_path):
                 try:
                     with open(file_path, 'w') as f:
@@ -310,4 +311,75 @@ class HistoryAPI:
             return history[offset:offset + limit]
         except Exception as e:
             logger.error(f"Failed to get Google Trends history: {str(e)}")
+            return []
+            
+    def save_order_book_imbalance_history(self, signal, description, status, imbalance):
+        """
+        Сохраняет новые данные Order Book Imbalance в историю
+        
+        Args:
+            signal (str): Emoji-сигнал (🔴 🟠 ⚪ 🟢 🔵)
+            description (str): Текстовое описание сигнала
+            status (str): Текстовый статус (Bullish, Bearish и т.д.)
+            imbalance (float): Значение дисбаланса (-1.0 до +1.0)
+            
+        Returns:
+            dict: Запись истории данных Order Book Imbalance
+        """
+        try:
+            # Создаем запись в истории
+            history_entry = {
+                "signal": signal,
+                "description": description,
+                "status": status,
+                "imbalance": imbalance,
+                "timestamp": datetime.utcnow()
+            }
+            
+            # Загружаем существующую историю
+            history = self._load_history(self.gbi_history_file)
+            
+            # Добавляем новую запись
+            history.append(history_entry)
+            
+            # Сохраняем обновленную историю
+            if self._save_history(self.gbi_history_file, history):
+                logger.info(f"Saved new Order Book Imbalance history entry: {signal} - {status} ({imbalance})")
+                return history_entry
+            else:
+                return None
+            
+        except Exception as e:
+            logger.error(f"Failed to save Order Book Imbalance history: {str(e)}")
+            return None
+            
+    def get_order_book_imbalance_history(self, limit=100, offset=0):
+        """
+        Получает историю данных Order Book Imbalance, отсортированную по времени (новые сначала)
+        
+        Args:
+            limit (int): Максимальное количество записей
+            offset (int): Смещение для пагинации
+            
+        Returns:
+            list: Список записей истории данных Order Book Imbalance
+        """
+        try:
+            history = self._load_history(self.gbi_history_file)
+            
+            # Парсим timestamp в datetime для правильной сортировки
+            for entry in history:
+                if 'timestamp' in entry and isinstance(entry['timestamp'], str):
+                    try:
+                        entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
+                    except (ValueError, TypeError):
+                        entry['timestamp'] = datetime.utcnow()
+            
+            # Сортируем по времени (новые сначала)
+            history.sort(key=lambda x: x.get('timestamp', datetime.min), reverse=True)
+            
+            # Применяем пагинацию
+            return history[offset:offset + limit]
+        except Exception as e:
+            logger.error(f"Failed to get Order Book Imbalance history: {str(e)}")
             return []

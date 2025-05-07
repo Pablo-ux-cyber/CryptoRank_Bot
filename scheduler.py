@@ -47,7 +47,7 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения, Fear & Greed Index и Google Trends один раз в день в 11:10
+        - Проверяет рейтинг приложения, Fear & Greed Index и Order Book Imbalance один раз в день в 11:10
         - Все данные собираются за один раз и отправляются одним сообщением
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
@@ -64,7 +64,7 @@ class SensorTowerScheduler:
                 update_rank = False
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
-                # Fear & Greed Index и Google Trends (в 11:10)
+                # Fear & Greed Index и Order Book Imbalance (в 11:10)
                 if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
@@ -390,8 +390,7 @@ class SensorTowerScheduler:
                             'status' in imbalance_data and 
                             'imbalance' in imbalance_data and
                             imbalance_data['signal'] is not None):
-                            # Создаем новый метод для сохранения Order Book Imbalance данных
-                            # Если метод еще не реализован в HistoryAPI, предполагаем его структуру
+                            # Сохраняем данные Order Book Imbalance в историю
                             try:
                                 history_api.save_order_book_imbalance_history(
                                     signal=imbalance_data['signal'],
@@ -401,7 +400,7 @@ class SensorTowerScheduler:
                                 )
                                 logger.info(f"Сохранены данные Order Book Imbalance в историю: {imbalance_data['signal']} - {imbalance_data['status']}")
                             except Exception as e:
-                                logger.warning(f"Метод сохранения Order Book Imbalance не реализован: {str(e)}")
+                                logger.warning(f"Ошибка при сохранении Order Book Imbalance в историю: {str(e)}")
                             
                         logger.info(f"История данных успешно сохранена в JSON-файлы")
                     except ImportError:

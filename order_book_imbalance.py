@@ -3,26 +3,7 @@ import ccxt
 import logging
 import time
 from datetime import datetime
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] %(message)s',
-)
-logger = logging.getLogger(__name__)
-
-# List of markets to include in the global imbalance calculation
-MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,SOL/USDT,ADA/USDT,BNB/USDT').split(',')
-EXCHANGE_ID = os.getenv('GBI_EXCHANGE', 'binance')
-ORDERBOOK_LIMIT = int(os.getenv('GBI_LIMIT', 100))
-
-# Thresholds for interpretation
-THRESHOLDS = {
-    'strong_bull': 0.50,
-    'weak_bull': 0.20,
-    'weak_bear': -0.20,
-    'strong_bear': -0.50,
-}
+from logger import logger
 
 class OrderBookImbalance:
     def __init__(self):
@@ -36,8 +17,10 @@ class OrderBookImbalance:
         - 🟢 Бычий рынок (от +0.20 до +0.50): Умеренное превышение спроса
         - 🔵 Сильно бычий рынок (> +0.50): Значительное превышение спроса над предложением
         """
-        self.last_data = None
-        self.history_file = 'gbi_history.json'
+        self.logger = logger
+        self.default_exchange_id = 'binance'
+        self.default_symbols = ['BTC/USDT', 'ETH/USDT']
+        self.default_limit = 20  # Depth of order book levels
 
     def get_order_book_imbalance(self, symbols=None, limit=None, exchange_id=None):
         """
@@ -52,34 +35,62 @@ class OrderBookImbalance:
             dict: Imbalance data with value, status, and timestamp
         """
         try:
-            symbols = symbols or MARKETS
-            limit = limit or ORDERBOOK_LIMIT
-            exchange_id = exchange_id or EXCHANGE_ID
-            
-            logger.info(f"Calculating Global Order-Book Imbalance for: {symbols}")
-            
-            exchange = getattr(ccxt, exchange_id)()
-            total_bids = 0.0
-            total_asks = 0.0
+            # Use default values if not provided
+            symbols = symbols or self.default_symbols
+            limit = limit or self.default_limit
+            exchange_id = exchange_id or self.default_exchange_id
 
-            for sym in symbols:
+            # Initialize exchange
+            exchange_class = getattr(ccxt, exchange_id)
+            exchange = exchange_class({
+                'enableRateLimit': True,
+            })
+
+            # Initialize accumulators for bids and asks volumes
+            total_bid_volume = 0.0
+            total_ask_volume = 0.0
+
+            # Process each symbol
+            for symbol in symbols:
                 try:
-                    ob = exchange.fetch_order_book(sym, limit)
-                    total_bids += sum(qty for _, qty in ob['bids'])
-                    total_asks += sum(qty for _, qty in ob['asks'])
+                    # Fetch order book
+                    order_book = exchange.fetch_order_book(symbol, limit)
+                    
+                    # Calculate volume-weighted averages for bids and asks
+                    symbol_bid_volume = sum(bid[1] for bid in order_book['bids'])
+                    symbol_ask_volume = sum(ask[1] for ask in order_book['asks'])
+                    
+                    # Accumulate volumes
+                    total_bid_volume += symbol_bid_volume
+                    total_ask_volume += symbol_ask_volume
+                    
+                    self.logger.info(f"Processed {symbol}: Bids={symbol_bid_volume:.2f}, Asks={symbol_ask_volume:.2f}")
                 except Exception as e:
-                    logger.warning(f"Failed to fetch order book for {sym}: {e}")
+                    self.logger.error(f"Error fetching order book for {symbol}: {str(e)}")
+                    continue
 
-            if total_bids + total_asks == 0:
-                imbalance = 0.0
-            else:
-                imbalance = (total_bids - total_asks) / (total_bids + total_asks)
+            # Check if we have valid volume data
+            if total_bid_volume <= 0 or total_ask_volume <= 0:
+                self.logger.error("Invalid volume data: bid or ask volume is zero")
+                return self._create_fallback_data()
+
+            # Calculate global order-book imbalance
+            # Normalize to range [-1, 1] where:
+            # -1 = 100% asks (extreme sell pressure)
+            # 0 = equal bids and asks
+            # +1 = 100% bids (extreme buy pressure)
+            total_volume = total_bid_volume + total_ask_volume
+            imbalance = (total_bid_volume - total_ask_volume) / total_volume
             
-            status = self._interpret_imbalance(imbalance)
-            signal, description = self._determine_market_signal(imbalance)
+            # Round to 2 decimal places for display
+            imbalance = round(imbalance, 2)
             
+            # Interpret the imbalance
+            status, signal, description = self._determine_market_signal(imbalance)
+            
+            # Create result object
             result = {
-                'imbalance': round(imbalance, 3),
+                'imbalance': imbalance,
                 'status': status,
                 'signal': signal,
                 'description': description,
@@ -87,28 +98,28 @@ class OrderBookImbalance:
                 'date': datetime.now().strftime('%Y-%m-%d')
             }
             
-            logger.info(f"Global Imbalance: {imbalance:+.3f} ({status}) {signal}")
-            self.last_data = result
+            self.logger.info(f"Order Book Imbalance: {imbalance:.2f} ({status}) {signal}")
             return result
-            
+
         except Exception as e:
-            logger.error(f"Error calculating order book imbalance: {e}")
+            self.logger.error(f"Error calculating order book imbalance: {str(e)}")
             return self._create_fallback_data()
-    
+
     def _interpret_imbalance(self, value):
         """
         Return human-readable interpretation of imbalance value.
         """
-        if value >= THRESHOLDS['strong_bull']:
-            return 'Strong Bullish'
-        if value >= THRESHOLDS['weak_bull']:
-            return 'Bullish'
-        if value <= THRESHOLDS['strong_bear']:
-            return 'Strong Bearish'
-        if value <= THRESHOLDS['weak_bear']:
-            return 'Bearish'
-        return 'Neutral'
-    
+        if value < -0.5:
+            return "Strongly Bearish"
+        elif value < -0.2:
+            return "Bearish"
+        elif value < 0.2:
+            return "Neutral"
+        elif value < 0.5:
+            return "Bullish"
+        else:
+            return "Strongly Bullish"
+
     def _determine_market_signal(self, imbalance):
         """
         Определяет рыночный сигнал на основе значения дисбаланса
@@ -117,35 +128,32 @@ class OrderBookImbalance:
             imbalance (float): Значение дисбаланса в диапазоне [-1.0, +1.0]
             
         Returns:
-            tuple: (emoji-сигнал, текстовое описание)
+            tuple: (текстовый статус, emoji-сигнал, текстовое описание)
         """
-        if imbalance <= THRESHOLDS['strong_bear']:
-            return "🔴", "Strong sell pressure"
-        elif imbalance <= THRESHOLDS['weak_bear']:
-            return "🟠", "Moderate sell pressure"
-        elif imbalance >= THRESHOLDS['strong_bull']:
-            return "🔵", "Strong buy pressure"
-        elif imbalance >= THRESHOLDS['weak_bull']:
-            return "🟢", "Moderate buy pressure"
+        if imbalance < -0.5:
+            return "Strongly Bearish", "🔴", "Significant selling pressure"
+        elif imbalance < -0.2:
+            return "Bearish", "🟠", "Moderate selling pressure" 
+        elif imbalance < 0.2:
+            return "Neutral", "⚪", "Balanced order book"
+        elif imbalance < 0.5:
+            return "Bullish", "🟢", "Moderate buying pressure"
         else:
-            return "⚪", "Neutral market balance"
-    
+            return "Strongly Bullish", "🔵", "Significant buying pressure"
+
     def _create_fallback_data(self):
         """
         Creates fallback data in case of an error
         """
-        if self.last_data:
-            return self.last_data
-        
         return {
             'imbalance': 0.0,
             'status': 'Neutral',
-            'signal': "⚪",
-            'description': "Neutral market balance",
+            'signal': '⚪',
+            'description': 'Balanced order book (fallback)',
             'timestamp': int(time.time()),
             'date': datetime.now().strftime('%Y-%m-%d')
         }
-    
+
     def format_imbalance_message(self, imbalance_data=None):
         """
         Форматирует данные дисбаланса ордеров в упрощенное сообщение для Telegram
@@ -157,31 +165,20 @@ class OrderBookImbalance:
             str: Форматированное сообщение в упрощенном формате
         """
         if not imbalance_data:
-            if not self.last_data:
-                imbalance_data = self.get_order_book_imbalance()
-            else:
-                imbalance_data = self.last_data
+            imbalance_data = self.get_order_book_imbalance()
+            
+        if not imbalance_data:
+            return None
+            
+        # Создаем базовое сообщение с эмодзи и статусом
+        message = f"{imbalance_data['signal']} Order Book Imbalance: {imbalance_data['status']}"
         
-        signal = imbalance_data.get('signal', "⚪")
-        status = imbalance_data.get('status', 'Neutral')
-        imbalance = imbalance_data.get('imbalance', 0.0)
-        description = imbalance_data.get('description', "Neutral market balance")
-        
-        # Форматируем значение дисбаланса, чтобы всегда показывать знак + или -
-        if imbalance > 0:
-            imbalance_str = f"+{imbalance:.3f}"
-        else:
-            imbalance_str = f"{imbalance:.3f}"
-        
-        # Формируем сообщение в формате: "Эмодзи Статус: значение_дисбаланса - описание"
-        message = f"{signal} Order Book: {status} ({imbalance_str}) - {description}"
-        
+        # Добавляем описание
+        if 'description' in imbalance_data and imbalance_data['description']:
+            message += f" - {imbalance_data['description']}"
+            
+        # Добавляем значение дисбаланса для более точной информации
+        if 'imbalance' in imbalance_data:
+            message += f" ({imbalance_data['imbalance']})"
+            
         return message
-
-
-# Для тестирования модуля
-if __name__ == '__main__':
-    gbi = OrderBookImbalance()
-    imbalance_data = gbi.get_order_book_imbalance()
-    message = gbi.format_imbalance_message(imbalance_data)
-    print(message)
