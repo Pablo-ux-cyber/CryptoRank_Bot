@@ -21,6 +21,20 @@ app.secret_key = "sensortower_bot_secret"
 def template_now(_=None):
     return datetime.now()
 
+# Добавляем фильтр для преобразования timestamp в читаемую дату
+@app.template_filter('timestampToDate')
+def timestamp_to_date(timestamp):
+    if not timestamp:
+        return "N/A"
+    try:
+        # Если timestamp передан как строка, преобразуем ее в число
+        if isinstance(timestamp, str):
+            timestamp = float(timestamp)
+        # Преобразуем timestamp в читаемую дату
+        return datetime.fromtimestamp(timestamp).strftime('%Y-%m-%d %H:%M:%S')
+    except Exception:
+        return timestamp  # В случае ошибки возвращаем исходное значение
+
 # Добавляем глобальную функцию now() для шаблонов
 @app.context_processor
 def utility_processor():
@@ -38,8 +52,8 @@ last_scrape_data = None
 last_scrape_time = None
 last_fear_greed_data = None
 last_fear_greed_time = None
-last_trends_data = None
-last_trends_time = None
+last_imbalance_data = None
+last_imbalance_time = None
 
 def start_scheduler_thread():
     """Start the scheduler in a separate thread"""
@@ -60,7 +74,7 @@ def signal_handler(sig, frame):
 @app.route('/')
 def index():
     """Render the home page"""
-    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time, last_trends_data, last_trends_time
+    global last_scrape_data, last_scrape_time, last_fear_greed_data, last_fear_greed_time, last_imbalance_data, last_imbalance_time
     
     # Check if scheduler is running
     # Бот считаем работающим, если объект scheduler существует,
@@ -98,8 +112,8 @@ def index():
                           categories=categories,
                           last_fear_greed_data=last_fear_greed_data,
                           last_fear_greed_time=last_fear_greed_time,
-                          last_trends_data=last_trends_data,
-                          last_trends_time=last_trends_time)
+                          last_imbalance_data=last_imbalance_data,
+                          last_imbalance_time=last_imbalance_time)
 
 @app.route('/test-telegram')
 def test_telegram():
@@ -259,7 +273,7 @@ def get_fear_greed():
 @app.route('/get-order-book-imbalance')
 def get_order_book_imbalance():
     """Manually fetch Order Book Imbalance data and send it as a message"""
-    global last_scrape_data, last_scrape_time
+    global last_scrape_data, last_scrape_time, last_imbalance_data, last_imbalance_time
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
@@ -272,6 +286,10 @@ def get_order_book_imbalance():
         logger.info(f"Получены данные Order Book Imbalance: {imbalance_data['signal']} - {imbalance_data['status']}")
         
         if imbalance_data:
+            # Сохраняем данные для отображения
+            last_imbalance_data = imbalance_data
+            last_imbalance_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
             # В ручном режиме объединяем с данными о рейтинге для отправки полного сообщения
             # Получаем последние данные о рейтинге
             rankings_data = last_scrape_data if last_scrape_data else scheduler.scraper.scrape_category_rankings()

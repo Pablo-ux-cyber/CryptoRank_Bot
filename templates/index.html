@@ -114,8 +114,8 @@
                         <div class="mt-4">
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="/trigger-scrape?force=true" class="btn btn-danger">Force Send Message</a>
-                                <a href="/get-trends-pulse" class="btn btn-success">Get Google Trends Pulse</a>
-                                <a href="/trends" class="btn btn-outline-success">View Trends Analytics</a>
+                                <a href="/get-order-book-imbalance" class="btn btn-success">Get Order Book Imbalance</a>
+                                <a href="/orderbook" class="btn btn-outline-success">View Imbalance Analytics</a>
                                 <a href="/test-telegram" class="btn btn-info">Test Telegram Connection</a>
                                 <a href="/logs" class="btn btn-outline-secondary">View Logs</a>
                                 <a href="/history" class="btn btn-outline-primary">View History & Analytics</a>
@@ -229,21 +229,21 @@
                 </div>
                 {% endif %}
                 
-                {% if last_trends_data %}
+                {% if last_imbalance_data %}
                 <div class="card shadow-sm mb-4" style="border-left: 4px solid var(--bs-info);">
                     <div class="card-header">
-                        <h5 class="mb-0">Google Trends Pulse</h5>
+                        <h5 class="mb-0">Order Book Imbalance</h5>
                     </div>
                     <div class="card-body">
-                        <p>Last updated: {{ last_trends_time }}</p>
+                        <p>Last updated: {{ last_imbalance_time }}</p>
                         
                         <div class="row mt-3">
                             <div class="col-md-4">
                                 <div class="card bg-dark">
                                     <div class="card-body text-center">
-                                        <h1 class="display-2">{{ last_trends_data.signal }}</h1>
+                                        <h1 class="display-2">{{ last_imbalance_data.signal }}</h1>
                                         <p class="lead">
-                                            {{ last_trends_data.description }}
+                                            {{ last_imbalance_data.status }}
                                         </p>
                                     </div>
                                 </div>
@@ -251,36 +251,32 @@
                             <div class="col-md-8">
                                 <div class="card bg-dark">
                                     <div class="card-body">
-                                        <p class="mb-2">FOMO Score: {{ "%.2f"|format(last_trends_data.fomo_score) }}/100</p>
-                                        <div class="progress mb-3">
-                                            <div class="progress-bar bg-success" 
-                                                 role="progressbar" 
-                                                 style="width: {{ last_trends_data.fomo_score }}%;"
-                                                 title="High FOMO can indicate market peaks (similar to Greed)">
-                                            </div>
-                                        </div>
+                                        <p class="mb-3">{{ last_imbalance_data.description }}</p>
                                         
-                                        <p class="mb-2">Fear Score: {{ "%.2f"|format(last_trends_data.fear_score) }}/100</p>
-                                        <div class="progress mb-3">
-                                            <div class="progress-bar bg-danger" 
-                                                 role="progressbar" 
-                                                 style="width: {{ last_trends_data.fear_score }}%;"
-                                                 title="High Fear can indicate buying opportunities">
-                                            </div>
-                                        </div>
-                                        
-                                        <p class="mb-2">General Interest: {{ "%.2f"|format(last_trends_data.general_score) }}/100</p>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-info" 
-                                                 role="progressbar" 
-                                                 style="width: {{ last_trends_data.general_score }}%;">
-                                            </div>
-                                        </div>
-                                        
-                                        <div class="mt-3">
-                                            <p class="text-muted small mb-0">
-                                                <strong>FOMO/Fear Ratio:</strong> {{ "%.2f"|format(last_trends_data.fomo_to_fear_ratio) }}
-                                            </p>
+                                        <p class="mb-2">Imbalance Value: {{ "%.2f"|format(last_imbalance_data.imbalance) }}</p>
+                                        <div class="progress" style="height: 30px;">
+                                            {% if last_imbalance_data.imbalance < -0.2 %}
+                                                <div class="progress-bar bg-danger" 
+                                                     role="progressbar" 
+                                                     style="width: {{ ((-last_imbalance_data.imbalance) / 2) * 100 }}%;"
+                                                     title="Strong selling pressure">
+                                                    {{ last_imbalance_data.imbalance }}
+                                                </div>
+                                            {% elif last_imbalance_data.imbalance > 0.2 %}
+                                                <div class="progress-bar bg-success" 
+                                                     role="progressbar" 
+                                                     style="width: {{ (last_imbalance_data.imbalance / 2) * 100 }}%;"
+                                                     title="Strong buying pressure">
+                                                    {{ last_imbalance_data.imbalance }}
+                                                </div>
+                                            {% else %}
+                                                <div class="progress-bar bg-secondary" 
+                                                     role="progressbar" 
+                                                     style="width: 50%;"
+                                                     title="Neutral pressure">
+                                                    {{ last_imbalance_data.imbalance }}
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
@@ -288,14 +284,14 @@
                         </div>
                         <div class="mt-3">
                             <small class="text-muted">
-                                <strong>What is this?</strong> Google Trends Pulse analyzes search patterns to detect market sentiment.
+                                <strong>What is this?</strong> Order Book Imbalance analyzes the global order book from multiple exchanges to detect market sentiment.
                                 <br><br>
                                 The signals follow the same color scheme as the Fear & Greed Index:<br>
-                                - 🔴 <strong>Red</strong>: High fear, low FOMO - potential buying opportunity<br>
-                                - 🟡 <strong>Yellow</strong>: Rising interest in cryptocurrencies<br>
-                                - ⚪ <strong>White</strong>: Neutral market interest<br>
-                                - 🟢 <strong>Green</strong>: High FOMO, low fear - possible market peak<br>
-                                - 🔵 <strong>Blue</strong>: Very low interest - market hibernation
+                                - 🔴 <strong>Red</strong>: Strong selling pressure - potential buying opportunity<br>
+                                - 🟠 <strong>Orange</strong>: Moderate selling pressure<br>
+                                - ⚪ <strong>White</strong>: Neutral market balance<br>
+                                - 🟢 <strong>Green</strong>: Strong buying pressure - possible market peak<br>
+                                - 🔵 <strong>Blue</strong>: Market dormancy - very low trading activity
                             </small>
                         </div>
                     </div>
@@ -308,7 +304,7 @@
                     </div>
                     <div class="card-body">
                         <p>This bot scrapes category rankings data for the specified app from SensorTower and posts it to a Telegram channel.</p>
-                        <p>It also tracks the Crypto Fear & Greed Index and Google Trends Pulse to help monitor market sentiment across multiple data sources.</p>
+                        <p>It also tracks the Crypto Fear & Greed Index and Order Book Imbalance to help monitor market sentiment across multiple data sources.</p>
                         <p>The bot checks for new data every 5 minutes but only posts messages when the ranking changes.</p>
                         
                         <h6 class="mt-3">Configuration:</h6>
@@ -319,7 +315,7 @@
                                 <ul>
                                     <li>Telegram Channel @coinbaseappstore (App Rankings)</li>
                                     <li>Alternative.me Fear & Greed Index</li>
-                                    <li>Google Trends Search Data Analysis</li>
+                                    <li>Global Order Book Imbalance (multiple exchanges)</li>
                                 </ul>
                             </li>
                         </ul>
