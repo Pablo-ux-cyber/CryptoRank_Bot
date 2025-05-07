@@ -8,6 +8,7 @@ from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
 from order_book_imbalance import OrderBookImbalance
+from active_addresses import ActiveAddressesTracker
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -19,6 +20,7 @@ class SensorTowerScheduler:
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
         self.order_book_imbalance = OrderBookImbalance()
+        self.active_addresses_tracker = ActiveAddressesTracker()
         
         # Определяем пути для хранения данных непосредственно в директории бота вместо /tmp
         # Используем корневую директорию бота для файлов истории
@@ -232,6 +234,21 @@ class SensorTowerScheduler:
             else:
                 logger.info("Order Book Imbalance данные недоступны или неполные - пропускаем эту часть сообщения")
             
+            # Добавляем данные об активных адресах, если они доступны
+            try:
+                active_addresses_data = self.active_addresses_tracker.get_active_addresses_data()
+                if active_addresses_data:
+                    active_addresses_message = self.active_addresses_tracker.format_active_addresses_message(active_addresses_data)
+                    if active_addresses_message:
+                        combined_message += f"\n\n{active_addresses_message}"
+                        logger.info("Added Active Addresses data to the message")
+                    else:
+                        logger.info("Active Addresses message is empty - skipping this part")
+                else:
+                    logger.info("Active Addresses data unavailable - skipping this part of the message")
+            except Exception as e:
+                logger.error(f"Error getting Active Addresses data: {str(e)}")
+                
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
@@ -395,6 +412,25 @@ class SensorTowerScheduler:
                                 logger.info(f"Сохранены данные Order Book Imbalance в историю: {imbalance_data['signal']} - {imbalance_data['status']}")
                             except Exception as e:
                                 logger.warning(f"Ошибка при сохранении Order Book Imbalance в историю: {str(e)}")
+                                
+                        # Сохраняем данные Active Addresses в историю
+                        try:
+                            active_addresses_data = self.active_addresses_tracker.get_active_addresses_data()
+                            if active_addresses_data:
+                                for chain, chain_data in active_addresses_data.items():
+                                    if chain_data.get('status') == 'success':
+                                        # Для истории берем только краткосрочный период
+                                        short_period = chain_data.get('periods', {}).get('short', {})
+                                        if short_period:
+                                            history_api.save_active_addresses_history(
+                                                chain=chain,
+                                                value=chain_data.get('current', 0),
+                                                delta_pct=short_period.get('delta_pct', 0.0),
+                                                status=chain_data.get('primary_status', 'Unknown')
+                                            )
+                                            logger.info(f"Сохранены данные Active Addresses в историю: {chain} - {short_period.get('formatted_delta', '0%')}")
+                        except Exception as e:
+                            logger.warning(f"Ошибка при сохранении Active Addresses в историю: {str(e)}")
                             
                         logger.info(f"История данных успешно сохранена в JSON-файлы")
                     except ImportError:

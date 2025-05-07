@@ -361,16 +361,14 @@ class ActiveAddressesTracker:
                     }
             
             # Создаем результат
-            chain_data.update({
-                'status': 'success',
-                'current': current,
-                'periods': period_data,
-                # Используем данные краткосрочного периода по умолчанию, если доступны
-                'primary_status': period_data.get('short', {}).get('label', 'Недостаточно данных'),
-                'primary_emoji': period_data.get('short', {}).get('emoji', '⚪'),
-                'timestamp': int(time.time()),
-                'date': time.strftime('%Y-%m-%d')
-            })
+            chain_data['status'] = 'success'
+            chain_data['current'] = current
+            chain_data['periods'] = period_data
+            # Используем данные краткосрочного периода по умолчанию, если доступны
+            chain_data['primary_status'] = period_data.get('short', {}).get('label', 'Недостаточно данных')
+            chain_data['primary_emoji'] = period_data.get('short', {}).get('emoji', '⚪')
+            chain_data['timestamp'] = int(time.time())
+            chain_data['date'] = time.strftime('%Y-%m-%d')
             
             results[chain] = chain_data
             
@@ -426,6 +424,7 @@ class ActiveAddressesTracker:
 
 # Для тестирования при прямом запуске
 if __name__ == "__main__":
+    import logging
     logging.basicConfig(
         level=logging.INFO,
         format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',

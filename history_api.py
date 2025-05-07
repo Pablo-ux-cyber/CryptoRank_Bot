@@ -25,6 +25,7 @@ class HistoryAPI:
         self.fear_greed_history_file = os.path.join(self.data_dir, "fear_greed_history.json")
         self.trends_history_file = os.path.join(self.data_dir, "trends_history.json")
         self.gbi_history_file = os.path.join(self.data_dir, "gbi_history.json")
+        self.active_addresses_history_file = os.path.join(self.data_dir, "active_addresses_history.json")
         
         # Создаем файлы истории, если они не существуют
         self._ensure_history_files_exist()
