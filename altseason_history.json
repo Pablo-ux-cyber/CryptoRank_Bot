@@ -52,5 +52,41 @@
     "description": "Bitcoin dominates returns",
     "index": 0.22,
     "btc_performance": 21.96
+  },
+  {
+    "timestamp": "2025-05-07T18:14:40.362502",
+    "date": "2025-05-07",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.22,
+    "btc_performance": 21.41
+  },
+  {
+    "timestamp": "2025-05-07T18:15:50.216217",
+    "date": "2025-05-07",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.22,
+    "btc_performance": 21.44
+  },
+  {
+    "timestamp": "2025-05-07T18:16:19.621281",
+    "date": "2025-05-07",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.22,
+    "btc_performance": 21.44
+  },
+  {
+    "timestamp": "2025-05-07T18:16:25.289940",
+    "date": "2025-05-07",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.22,
+    "btc_performance": 21.44
   }
 ]
