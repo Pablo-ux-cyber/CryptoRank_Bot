@@ -25,15 +25,13 @@ class HistoryAPI:
         self.fear_greed_history_file = os.path.join(self.data_dir, "fear_greed_history.json")
         self.trends_history_file = os.path.join(self.data_dir, "trends_history.json")
         self.gbi_history_file = os.path.join(self.data_dir, "gbi_history.json")
-        self.active_addresses_history_file = os.path.join(self.data_dir, "active_addresses_history.json")
         
         # Создаем файлы истории, если они не существуют
         self._ensure_history_files_exist()
     
     def _ensure_history_files_exist(self):
         """Создает файлы истории, если они не существуют"""
-        for file_path in [self.rank_history_file, self.fear_greed_history_file, self.trends_history_file, 
-                        self.gbi_history_file, self.active_addresses_history_file]:
+        for file_path in [self.rank_history_file, self.fear_greed_history_file, self.trends_history_file, self.gbi_history_file]:
             if not os.path.exists(file_path):
                 try:
                     with open(file_path, 'w') as f:
@@ -384,84 +382,4 @@ class HistoryAPI:
             return history[offset:offset + limit]
         except Exception as e:
             logger.error(f"Failed to get Order Book Imbalance history: {str(e)}")
-            return []
-            
-    def save_active_addresses_history(self, chain, value, delta_pct, status):
-        """
-        Сохраняет новые данные об активных адресах в историю
-        
-        Args:
-            chain (str): Имя блокчейна ('bitcoin', 'ethereum')
-            value (int): Количество активных адресов
-            delta_pct (float): Изменение относительно среднего за предыдущий период (%)
-            status (str): Статус активности (Высокий спрос, Низкий спрос и т.д.)
-            
-        Returns:
-            dict: Запись истории данных активных адресов
-        """
-        try:
-            # Форматируем delta_pct в строку для логирования
-            formatted_delta = f"{delta_pct:+.1f}%" if isinstance(delta_pct, (int, float)) else str(delta_pct)
-            
-            # Создаем запись в истории
-            history_entry = {
-                "chain": chain,
-                "symbol": chain.upper()[:3] if chain else "UNK",
-                "value": value,
-                "delta_pct": delta_pct if isinstance(delta_pct, (int, float)) else 0.0, 
-                "status": status,
-                "timestamp": datetime.utcnow()
-            }
-            
-            # Загружаем существующую историю
-            history = self._load_history(self.active_addresses_history_file)
-            
-            # Добавляем новую запись
-            history.append(history_entry)
-            
-            # Сохраняем обновленную историю
-            if self._save_history(self.active_addresses_history_file, history):
-                logger.info(f"Saved new Active Addresses history entry: {chain} - {value} ({formatted_delta})")
-                return history_entry
-            else:
-                return None
-            
-        except Exception as e:
-            logger.error(f"Failed to save Active Addresses history: {str(e)}")
-            return None
-            
-    def get_active_addresses_history(self, limit=100, offset=0, chain=None):
-        """
-        Получает историю данных активных адресов, отсортированную по времени (новые сначала)
-        
-        Args:
-            limit (int): Максимальное количество записей
-            offset (int): Смещение для пагинации
-            chain (str, optional): Если указано, возвращает данные только для этого блокчейна
-            
-        Returns:
-            list: Список записей истории данных активных адресов
-        """
-        try:
-            history = self._load_history(self.active_addresses_history_file)
-            
-            # Фильтрация по цепочке, если указана
-            if chain:
-                history = [entry for entry in history if entry.get('chain') == chain]
-            
-            # Парсим timestamp в datetime для правильной сортировки
-            for entry in history:
-                if 'timestamp' in entry and isinstance(entry['timestamp'], str):
-                    try:
-                        entry['timestamp'] = datetime.fromisoformat(entry['timestamp'])
-                    except (ValueError, TypeError):
-                        entry['timestamp'] = datetime.utcnow()
-            
-            # Сортируем по времени (новые сначала)
-            history.sort(key=lambda x: x.get('timestamp', datetime.min), reverse=True)
-            
-            # Применяем пагинацию
-            return history[offset:offset + limit]
-        except Exception as e:
-            logger.error(f"Failed to get Active Addresses history: {str(e)}")
             return []
