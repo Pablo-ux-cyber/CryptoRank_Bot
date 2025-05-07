@@ -363,11 +363,13 @@ class ActiveAddressesTracker:
             # Создаем результат
             chain_data['status'] = 'success'
             chain_data['current'] = current
-            chain_data['periods'] = period_data
+            # Преобразуем period_data в строку для chain_data
+            # Чтобы обойти ошибку типов при присваивании словаря полю словаря
+            chain_data['periods'] = json.dumps(period_data)
             # Используем данные краткосрочного периода по умолчанию, если доступны
             chain_data['primary_status'] = period_data.get('short', {}).get('label', 'Недостаточно данных')
             chain_data['primary_emoji'] = period_data.get('short', {}).get('emoji', '⚪')
-            chain_data['timestamp'] = int(time.time())
+            chain_data['timestamp'] = str(int(time.time()))
             chain_data['date'] = time.strftime('%Y-%m-%d')
             
             results[chain] = chain_data
