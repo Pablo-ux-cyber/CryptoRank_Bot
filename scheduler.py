@@ -181,7 +181,7 @@ class SensorTowerScheduler:
                     logger.error(f"Ошибка при освобождении блокировки файла: {str(e)}")
             logger.info("Scheduler stopped")
     
-    def _send_combined_message(self, rankings_data, fear_greed_data=None):
+    def _send_combined_message(self, rankings_data, fear_greed_data=None, imbalance_data=None):
         """
         Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
         и сигналом от Order Book Imbalance в упрощенном формате
@@ -214,29 +214,23 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные Order Book Imbalance - использование свежих данных, т.к. они
-            # уже были запрошены в методе run_scraping_job перед вызовом этого метода
-            try:
-                # Получаем данные дисбаланса ордеров (они уже должны быть актуальными)
-                imbalance_data = self.order_book_imbalance.get_order_book_imbalance()
+            # Добавляем данные Order Book Imbalance, если они доступны
+            # Используем переданные данные, а не делаем запрос снова
+            if (imbalance_data and 
+                'signal' in imbalance_data and imbalance_data['signal'] and
+                'description' in imbalance_data and imbalance_data['description']):
                 
-                # Проверка, что данные существуют и содержат реальный сигнал
-                if (imbalance_data and 
-                    'signal' in imbalance_data and imbalance_data['signal'] and
-                    'description' in imbalance_data and imbalance_data['description']):
-                    
-                    # Форматируем сообщение о дисбалансе ордеров
-                    imbalance_message = self.order_book_imbalance.format_imbalance_message(imbalance_data)
-                    
-                    # Если сообщение сформировано, добавляем его
-                    if imbalance_message:
-                        combined_message += f"\n\n{imbalance_message}"
-                        logger.info(f"Added Order Book Imbalance data: {imbalance_data['signal']} - {imbalance_data['status']}")
+                # Форматируем сообщение о дисбалансе ордеров
+                imbalance_message = self.order_book_imbalance.format_imbalance_message(imbalance_data)
+                
+                # Если сообщение сформировано, добавляем его
+                if imbalance_message:
+                    combined_message += f"\n\n{imbalance_message}"
+                    logger.info(f"Added Order Book Imbalance data: {imbalance_data['signal']} - {imbalance_data['status']}")
                 else:
-                    logger.info("Order Book Imbalance данные недоступны или неполные - пропускаем эту часть сообщения")
-            except Exception as e:
-                logger.error(f"Ошибка при получении данных Order Book Imbalance: {str(e)}")
-                # Продолжаем без данных имбаланса
+                    logger.info("Order Book Imbalance данные не сформированы в сообщение - пропускаем эту часть")
+            else:
+                logger.info("Order Book Imbalance данные недоступны или неполные - пропускаем эту часть сообщения")
             
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
@@ -340,7 +334,7 @@ class SensorTowerScheduler:
             # Отправляем сообщение только если нужно
             if need_to_send:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
-                result = self._send_combined_message(rankings_data, fear_greed_data)
+                result = self._send_combined_message(rankings_data, fear_greed_data, imbalance_data)
                 
                 # Обновляем последний отправленный рейтинг независимо от результата отправки
                 # Это поможет избежать множественных сообщений при сбоях отправки

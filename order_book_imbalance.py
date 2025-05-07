@@ -143,16 +143,11 @@ class OrderBookImbalance:
 
     def _create_fallback_data(self):
         """
-        Creates fallback data in case of an error
+        Returns None in case of an error instead of providing fallback data
+        We should not show any imbalance data when there's an error
         """
-        return {
-            'imbalance': 0.0,
-            'status': 'Neutral',
-            'signal': '⚪',
-            'description': 'Balanced order book (fallback)',
-            'timestamp': int(time.time()),
-            'date': datetime.now().strftime('%Y-%m-%d')
-        }
+        self.logger.warning("Order Book Imbalance error - indicator will not be shown")
+        return None
 
     def format_imbalance_message(self, imbalance_data=None):
         """

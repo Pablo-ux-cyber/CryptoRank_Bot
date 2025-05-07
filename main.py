@@ -418,7 +418,10 @@ def test_format():
         # Format combined message
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
-        combined_message += "\n\n" + imbalance_message
+        
+        # Добавляем Order Book Imbalance только если данные доступны
+        if imbalance_message:
+            combined_message += "\n\n" + imbalance_message
         
         # If this is a web request (not API)
         if request.headers.get('Accept', '').find('application/json') == -1:
