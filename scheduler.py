@@ -1,6 +1,7 @@
 import os
 import threading
 import time
+import json
 from datetime import datetime, timedelta
 
 from logger import logger
@@ -420,13 +421,21 @@ class SensorTowerScheduler:
                                 for chain, chain_data in active_addresses_data.items():
                                     if chain_data.get('status') == 'success':
                                         # Для истории берем только краткосрочный период
-                                        short_period = chain_data.get('periods', {}).get('short', {})
+                                        periods = chain_data.get('periods', '{}')
+                                        # Если periods хранится как JSON-строка, конвертируем в словарь
+                                        if isinstance(periods, str):
+                                            try:
+                                                periods = json.loads(periods)
+                                            except:
+                                                periods = {}
+                                        
+                                        short_period = periods.get('short', {})
                                         if short_period:
                                             history_api.save_active_addresses_history(
                                                 chain=chain,
                                                 value=chain_data.get('current', 0),
                                                 delta_pct=short_period.get('delta_pct', 0.0),
-                                                status=chain_data.get('primary_status', 'Unknown')
+                                                status=short_period.get('label', 'Unknown')
                                             )
                                             logger.info(f"Сохранены данные Active Addresses в историю: {chain} - {short_period.get('formatted_delta', '0%')}")
                         except Exception as e:
