@@ -22,7 +22,7 @@ TELEGRAM_SOURCE_CHANNEL = "@coinbaseappstore"
 
 # Scheduler Configuration
 SCHEDULE_HOUR = 8  # 8 AM
-SCHEDULE_MINUTE = 0  # 00 minutes
+SCHEDULE_MINUTE = 10  # 10 minutes, to match the 11:10 MSK deployment time
 
 # Selenium Configuration
 SELENIUM_DRIVER_PATH = os.getenv("SELENIUM_DRIVER_PATH", "/usr/bin/chromedriver")
@@ -32,3 +32,12 @@ SELENIUM_TIMEOUT = 30  # seconds
 # Logging Configuration
 LOG_LEVEL = "INFO"
 LOG_FILE = "sensortower_bot.log"
+
+# Order Book Imbalance Configuration
+GBI_EXCHANGE = os.getenv('GBI_EXCHANGE', 'binance')
+GBI_MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,SOL/USDT,ADA/USDT,BNB/USDT')
+GBI_LIMIT = int(os.getenv('GBI_LIMIT', '100'))
+GBI_THRESHOLD_STRONG_BULL = float(os.getenv('GBI_THRESHOLD_STRONG_BULL', '0.50'))
+GBI_THRESHOLD_WEAK_BULL = float(os.getenv('GBI_THRESHOLD_WEAK_BULL', '0.20'))
+GBI_THRESHOLD_WEAK_BEAR = float(os.getenv('GBI_THRESHOLD_WEAK_BEAR', '-0.20'))
+GBI_THRESHOLD_STRONG_BEAR = float(os.getenv('GBI_THRESHOLD_STRONG_BEAR', '-0.50'))

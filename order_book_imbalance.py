@@ -18,9 +18,34 @@ class OrderBookImbalance:
         - 🔵 Сильно бычий рынок (> +0.50): Значительное превышение спроса над предложением
         """
         self.logger = logger
-        self.default_exchange_id = 'binance'
-        self.default_symbols = ['BTC/USDT', 'ETH/USDT']
-        self.default_limit = 20  # Depth of order book levels
+        
+        # Импортируем конфигурацию из общего файла config.py
+        try:
+            from config import GBI_EXCHANGE, GBI_MARKETS, GBI_LIMIT, GBI_THRESHOLD_STRONG_BULL, GBI_THRESHOLD_WEAK_BULL, GBI_THRESHOLD_WEAK_BEAR, GBI_THRESHOLD_STRONG_BEAR
+            self.default_exchange_id = GBI_EXCHANGE
+            self.default_symbols = GBI_MARKETS.split(',')
+            self.default_limit = GBI_LIMIT
+            self.thresholds = {
+                'strong_bull': GBI_THRESHOLD_STRONG_BULL,
+                'weak_bull': GBI_THRESHOLD_WEAK_BULL,
+                'weak_bear': GBI_THRESHOLD_WEAK_BEAR,
+                'strong_bear': GBI_THRESHOLD_STRONG_BEAR,
+            }
+        except ImportError:
+            # Fallback на переменные окружения, если не удалось импортировать config.py
+            self.default_exchange_id = os.getenv('GBI_EXCHANGE', 'binance')
+            default_markets = 'BTC/USDT,ETH/USDT,SOL/USDT,ADA/USDT,BNB/USDT'
+            self.default_symbols = os.getenv('GBI_MARKETS', default_markets).split(',')
+            self.default_limit = int(os.getenv('GBI_LIMIT', '100'))
+            self.thresholds = {
+                'strong_bull': float(os.getenv('GBI_THRESHOLD_STRONG_BULL', '0.50')),
+                'weak_bull': float(os.getenv('GBI_THRESHOLD_WEAK_BULL', '0.20')),
+                'weak_bear': float(os.getenv('GBI_THRESHOLD_WEAK_BEAR', '-0.20')),
+                'strong_bear': float(os.getenv('GBI_THRESHOLD_STRONG_BEAR', '-0.50')),
+            }
+        
+        self.logger.info(f"Initialized Order Book Imbalance module with markets: {self.default_symbols}")
+        self.logger.info(f"Using exchange: {self.default_exchange_id}, depth: {self.default_limit}")
 
     def get_order_book_imbalance(self, symbols=None, limit=None, exchange_id=None):
         """
@@ -32,8 +57,10 @@ class OrderBookImbalance:
             exchange_id (str, optional): CCXT exchange identifier
 
         Returns:
-            dict: Imbalance data with value, status, and timestamp
+            dict: Imbalance data with value, status, and timestamp or None if error
         """
+        self.logger.info("Запрос данных Order Book Imbalance...")
+        
         try:
             # Use default values if not provided
             symbols = symbols or self.default_symbols
@@ -49,6 +76,7 @@ class OrderBookImbalance:
             # Initialize accumulators for bids and asks volumes
             total_bid_volume = 0.0
             total_ask_volume = 0.0
+            processed_symbols = 0
 
             # Process each symbol
             for symbol in symbols:
@@ -56,23 +84,25 @@ class OrderBookImbalance:
                     # Fetch order book
                     order_book = exchange.fetch_order_book(symbol, limit)
                     
-                    # Calculate volume-weighted averages for bids and asks
+                    # Calculate sum of volumes for bids and asks
                     symbol_bid_volume = sum(bid[1] for bid in order_book['bids'])
                     symbol_ask_volume = sum(ask[1] for ask in order_book['asks'])
                     
                     # Accumulate volumes
                     total_bid_volume += symbol_bid_volume
                     total_ask_volume += symbol_ask_volume
+                    processed_symbols += 1
                     
                     self.logger.info(f"Processed {symbol}: Bids={symbol_bid_volume:.2f}, Asks={symbol_ask_volume:.2f}")
                 except Exception as e:
                     self.logger.error(f"Error fetching order book for {symbol}: {str(e)}")
+                    # Продолжаем с другими символами вместо возврата ошибки
                     continue
 
-            # Check if we have valid volume data
-            if total_bid_volume <= 0 or total_ask_volume <= 0:
+            # Check if we have valid volume data (at least один символ успешно обработан)
+            if processed_symbols == 0 or total_bid_volume <= 0 or total_ask_volume <= 0:
                 self.logger.error("Invalid volume data: bid or ask volume is zero")
-                return self._create_fallback_data()
+                return None  # No fallback data, just return None
 
             # Calculate global order-book imbalance
             # Normalize to range [-1, 1] where:
@@ -95,7 +125,9 @@ class OrderBookImbalance:
                 'signal': signal,
                 'description': description,
                 'timestamp': int(time.time()),
-                'date': datetime.now().strftime('%Y-%m-%d')
+                'date': datetime.now().strftime('%Y-%m-%d'),
+                'markets_processed': processed_symbols,
+                'total_markets': len(symbols)
             }
             
             self.logger.info(f"Order Book Imbalance: {imbalance:.2f} ({status}) {signal}")
@@ -103,26 +135,11 @@ class OrderBookImbalance:
 
         except Exception as e:
             self.logger.error(f"Error calculating order book imbalance: {str(e)}")
-            return self._create_fallback_data()
-
-    def _interpret_imbalance(self, value):
-        """
-        Return human-readable interpretation of imbalance value.
-        """
-        if value < -0.5:
-            return "Strongly Bearish"
-        elif value < -0.2:
-            return "Bearish"
-        elif value < 0.2:
-            return "Neutral"
-        elif value < 0.5:
-            return "Bullish"
-        else:
-            return "Strongly Bullish"
+            return None  # No fallback data, just return None
 
     def _determine_market_signal(self, imbalance):
         """
-        Определяет рыночный сигнал на основе значения дисбаланса
+        Определяет рыночный сигнал на основе значения дисбаланса и настроенных порогов
         
         Args:
             imbalance (float): Значение дисбаланса в диапазоне [-1.0, +1.0]
@@ -130,13 +147,13 @@ class OrderBookImbalance:
         Returns:
             tuple: (текстовый статус, emoji-сигнал, текстовое описание)
         """
-        if imbalance < -0.5:
+        if imbalance <= self.thresholds['strong_bear']:
             return "Strongly Bearish", "🔴", "Significant selling pressure"
-        elif imbalance < -0.2:
+        elif imbalance <= self.thresholds['weak_bear']:
             return "Bearish", "🟠", "Moderate selling pressure" 
-        elif imbalance < 0.2:
+        elif imbalance < self.thresholds['weak_bull']:
             return "Neutral", "⚪", "Balanced order book"
-        elif imbalance < 0.5:
+        elif imbalance < self.thresholds['strong_bull']:
             return "Bullish", "🟢", "Moderate buying pressure"
         else:
             return "Strongly Bullish", "🔵", "Significant buying pressure"
@@ -157,7 +174,7 @@ class OrderBookImbalance:
             imbalance_data (dict, optional): Данные дисбаланса или None для получения новых данных
             
         Returns:
-            str: Форматированное сообщение в упрощенном формате
+            str: Форматированное сообщение в упрощенном формате или None при ошибке
         """
         if not imbalance_data:
             imbalance_data = self.get_order_book_imbalance()

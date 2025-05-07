@@ -1,0 +1,87 @@
+import os
+import ccxt
+import logging
+import time
+
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+)
+logger = logging.getLogger(__name__)
+
+# List of markets to include in the global imbalance calculation
+MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,SOL/USDT,ADA/USDT,BNB/USDT').split(',')
+EXCHANGE_ID = os.getenv('GBI_EXCHANGE', 'binance')
+ORDERBOOK_LIMIT = int(os.getenv('GBI_LIMIT', 100))
+
+# Thresholds for interpretation
+THRESHOLDS = {
+    'strong_bull': 0.50,
+    'weak_bull': 0.20,
+    'weak_bear': -0.20,
+    'strong_bear': -0.50,
+}
+
+
+def global_order_book_imbalance(symbols, limit=100, exchange_id='binance') -> float:
+    """
+    Calculate a single imbalance value across multiple trading pairs.
+
+    Args:
+        symbols (list[str]): List of market symbols like ['BTC/USDT', 'ETH/USDT']
+        limit (int): Depth of order book levels to fetch
+        exchange_id (str): CCXT exchange identifier
+
+    Returns:
+        float: Imbalance in [-1.0, +1.0]
+    """
+    exchange = getattr(ccxt, exchange_id)()
+    total_bids = 0.0
+    total_asks = 0.0
+
+    for sym in symbols:
+        try:
+            ob = exchange.fetch_order_book(sym, limit)
+            total_bids += sum(qty for _, qty in ob['bids'])
+            total_asks += sum(qty for _, qty in ob['asks'])
+        except Exception as e:
+            logger.warning(f"Failed to fetch order book for {sym}: {e}")
+
+    if total_bids + total_asks == 0:
+        return 0.0
+    return (total_bids - total_asks) / (total_bids + total_asks)
+
+
+def interpret_imbalance(value: float) -> str:
+    """
+    Return human-readable interpretation of imbalance value.
+    """
+    if value >= THRESHOLDS['strong_bull']:
+        return 'Strong Bullish'
+    if value >= THRESHOLDS['weak_bull']:
+        return 'Bullish'
+    if value <= THRESHOLDS['strong_bear']:
+        return 'Strong Bearish'
+    if value <= THRESHOLDS['weak_bear']:
+        return 'Bearish'
+    return 'Neutral'
+
+
+def main():
+    logger.info(f"Calculating Global Order-Book Imbalance for: {MARKETS}")
+    imbalance = global_order_book_imbalance(MARKETS, ORDERBOOK_LIMIT, EXCHANGE_ID)
+    status = interpret_imbalance(imbalance)
+
+    logger.info(f"Global Imbalance: {imbalance:+.3f} ({status})")
+
+    # Output for integration: print JSON or Prometheus metric
+    print({
+        'imbalance': round(imbalance, 3),
+        'status': status,
+        'timestamp': int(time.time())
+    })
+
+
+if __name__ == '__main__':
+    main()
