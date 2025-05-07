@@ -191,12 +191,12 @@ class AltcoinSeasonIndex:
         if not altseason_data:
             return None
         
-        # Более компактный формат сообщения
-        # Эмодзи + короткое название индикатора + процент + BTC performance
+        # Более компактный формат сообщения, но с понятной для новичков меткой
+        # Эмодзи + название индикатора + статус + процент + BTC performance
         index_percent = f"{altseason_data['index']*100:.0f}"
         btc_perf = f"{altseason_data['btc_performance']:+.1f}"
         
         # Формируем компактное сообщение с основными данными
-        message = f"{altseason_data['signal']} {altseason_data['status']} ({index_percent}%, BTC: {btc_perf}%)"
+        message = f"{altseason_data['signal']} Altcoins vs BTC: {altseason_data['status']} ({index_percent}%, BTC: {btc_perf}%)"
             
         return message
