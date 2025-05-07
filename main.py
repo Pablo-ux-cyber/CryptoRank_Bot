@@ -231,15 +231,15 @@ def get_fear_greed():
             # Add Fear & Greed Index data
             combined_message += scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
             
-            # Добавляем существующие данные Google Trends (из истории), если они есть
-            if scheduler.google_trends_pulse:
-                # Получаем последние сохраненные данные из истории
-                trends_data = scheduler.google_trends_pulse.get_trends_data(force_refresh=False)
-                if trends_data:
-                    trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
-                    if trends_message:
-                        combined_message += "\n\n" + trends_message
-                        logger.info(f"Added Google Trends data to combined message: {trends_data['signal']}")
+            # Добавляем данные Order Book Imbalance
+            if scheduler.order_book_imbalance:
+                # Получаем свежие данные дисбаланса ордеров
+                imbalance_data = scheduler.order_book_imbalance.get_order_book_imbalance()
+                if imbalance_data:
+                    imbalance_message = scheduler.order_book_imbalance.format_imbalance_message(imbalance_data)
+                    if imbalance_message:
+                        combined_message += "\n\n" + imbalance_message
+                        logger.info(f"Added Order Book Imbalance data to combined message: {imbalance_data['signal']}")
             
             # Send the message
             sent = scheduler.telegram_bot.send_message(combined_message)
@@ -256,44 +256,22 @@ def get_fear_greed():
         logger.error(f"Error fetching data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/get-trends-pulse')
-def get_trends_pulse():
-    """Manually fetch Google Trends Pulse data and send it as a message"""
-    global last_trends_data, last_trends_time, last_scrape_data, last_scrape_time
+@app.route('/get-order-book-imbalance')
+def get_order_book_imbalance():
+    """Manually fetch Order Book Imbalance data and send it as a message"""
+    global last_scrape_data, last_scrape_time
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Используем реальные данные из Google Trends API
-        demo_mode = False
+        # Получаем реальные данные Order Book Imbalance
+        logger.info("Запрос данных Order Book Imbalance...")
+        imbalance_data = scheduler.order_book_imbalance.get_order_book_imbalance()
+        imbalance_message = scheduler.order_book_imbalance.format_imbalance_message(imbalance_data)
+        logger.info(f"Получены данные Order Book Imbalance: {imbalance_data['signal']} - {imbalance_data['status']}")
         
-        if demo_mode:
-            # Тестовые данные для демонстрации
-            trends_data = {
-                "signal": "🔴",
-                "description": "Высокий FOMO-фактор - возможный пик рынка",
-                "fomo_score": 78.5,
-                "fear_score": 22.3,
-                "general_score": 65.7,
-                "fomo_to_fear_ratio": 3.52,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            }
-            trends_message = f"{trends_data['signal']} Google Trends: {trends_data['description']}"
-            
-            logger.info("Демонстрационный режим: использованы тестовые данные Google Trends Pulse")
-        else:
-            # Реальные данные из API (может быть медленным или ограниченным)
-            logger.info("Запрос реальных данных из Google Trends API...")
-            trends_data = scheduler.google_trends_pulse.get_trends_data()
-            trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
-            logger.info(f"Получены реальные данные Google Trends: {trends_data['signal']} - {trends_data['description']}")
-        
-        if trends_data:
-            # Store the data for display
-            last_trends_data = trends_data
-            last_trends_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
+        if imbalance_data:
             # В ручном режиме объединяем с данными о рейтинге для отправки полного сообщения
             # Получаем последние данные о рейтинге
             rankings_data = last_scrape_data if last_scrape_data else scheduler.scraper.scrape_category_rankings()
@@ -305,15 +283,15 @@ def get_trends_pulse():
             sent = scheduler.run_now(force_send=True)
             
             if sent:
-                flash(f"Complete data with Google Trends Pulse ({trends_data['signal']}) successfully sent to Telegram!", "success")
+                flash(f"Complete data with Order Book Imbalance ({imbalance_data['signal']}) successfully sent to Telegram!", "success")
             else:
                 flash("Data fetched but failed to send to Telegram.", "warning")
                 
             return redirect(url_for('index'))
         else:
-            return jsonify({"status": "error", "message": "Failed to retrieve Google Trends Pulse data"}), 500
+            return jsonify({"status": "error", "message": "Failed to retrieve Order Book Imbalance data"}), 500
     except Exception as e:
-        logger.error(f"Error fetching Google Trends Pulse data: {str(e)}")
+        logger.error(f"Error fetching Order Book Imbalance data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/health')
@@ -324,7 +302,7 @@ def health():
 @app.route('/test-message')
 def test_message():
     """Manually send a test message with cached data to the test channel"""
-    global last_fear_greed_data, last_scrape_data, last_trends_data
+    global last_fear_greed_data, last_scrape_data
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
@@ -341,17 +319,8 @@ def test_message():
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
-        # Get Google Trends data from cache or history
-        trends_data = None
-        if scheduler.google_trends_pulse:
-            # Use available history data
-            from google_trends_pulse import GoogleTrendsPulse
-            pulse = scheduler.google_trends_pulse
-            # Явно устанавливаем флаг from_history в True для использования в main.py
-            trends_data = pulse._get_cached_trends_data()
-            if trends_data:
-                trends_data["from_history"] = True
-                trends_data["api_available"] = True  # Для совместимости
+        # Get Order Book Imbalance data
+        imbalance_data = scheduler.order_book_imbalance.get_order_book_imbalance()
         
         # Format individual messages
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
@@ -361,11 +330,11 @@ def test_message():
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
         
-        if trends_data:
-            trends_message = scheduler.google_trends_pulse.format_trends_message(trends_data)
-            if trends_message:
-                combined_message += "\n\n" + trends_message
-                logger.info(f"Added cached Google Trends data to test message: {trends_data['signal']}")
+        if imbalance_data:
+            imbalance_message = scheduler.order_book_imbalance.format_imbalance_message(imbalance_data)
+            if imbalance_message:
+                combined_message += "\n\n" + imbalance_message
+                logger.info(f"Added Order Book Imbalance data to test message: {imbalance_data['signal']}")
         
         # Send the message
         sent = scheduler.telegram_bot.send_message(combined_message)

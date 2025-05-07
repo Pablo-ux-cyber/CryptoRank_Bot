@@ -50,3 +50,17 @@ class GoogleTrendsData(db.Model):
     
     def __repr__(self):
         return f"<GoogleTrendsData {self.signal} at {self.timestamp}>"
+
+class OrderBookImbalance(db.Model):
+    """
+    Модель для хранения истории данных Order Book Imbalance
+    """
+    id = db.Column(db.Integer, primary_key=True)
+    imbalance = db.Column(db.Float, nullable=False)  # Значение дисбаланса (-1.0 до +1.0)
+    status = db.Column(db.String(20), nullable=False)  # Текстовый статус (Bullish, Bearish и т.д.)
+    signal = db.Column(db.String(10), nullable=False)  # Emoji-сигнал
+    description = db.Column(db.String(100), nullable=False)  # Текстовое описание
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    
+    def __repr__(self):
+        return f"<OrderBookImbalance {self.imbalance:.3f} ({self.status}) at {self.timestamp}>"
