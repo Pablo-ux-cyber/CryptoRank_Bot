@@ -480,6 +480,9 @@ class GoogleTrendsPulse:
             )
             # Берем самую последнюю запись
             latest_record = sorted_history[0]
+            # Помечаем данные как исторические, чтобы они отображались в сообщении
+            latest_record['from_history'] = True
+            latest_record['api_available'] = True  # Для совместимости с другими проверками
             logger.info(f"Используем последние данные Google Trends из истории: {latest_record['signal']} - {latest_record['description']}")
             return latest_record
             
@@ -522,7 +525,7 @@ class GoogleTrendsPulse:
         api_available = trends_data.get("api_available", False)  # По умолчанию считаем, что API недоступен
         
         # Если данные не из API и мы не используем fallback, возвращаем None
-        if not api_available:
+        if not api_available and not trends_data.get("from_history", False):
             trends_logger.warning("Данные Google Trends не из API, не добавляем их в сообщение")
             return None
         

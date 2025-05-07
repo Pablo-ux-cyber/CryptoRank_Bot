@@ -347,7 +347,11 @@ def test_message():
             # Use available history data
             from google_trends_pulse import GoogleTrendsPulse
             pulse = scheduler.google_trends_pulse
+            # Явно устанавливаем флаг from_history в True для использования в main.py
             trends_data = pulse._get_cached_trends_data()
+            if trends_data:
+                trends_data["from_history"] = True
+                trends_data["api_available"] = True  # Для совместимости
         
         # Format individual messages
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
