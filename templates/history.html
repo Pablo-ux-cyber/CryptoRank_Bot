@@ -47,7 +47,7 @@
                         <button class="nav-link" id="fear-greed-tab" data-bs-toggle="tab" data-bs-target="#fear-greed" type="button" role="tab" aria-controls="fear-greed" aria-selected="false">Fear & Greed</button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="trends-tab" data-bs-toggle="tab" data-bs-target="#trends" type="button" role="tab" aria-controls="trends" aria-selected="false">Google Trends</button>
+                        <button class="nav-link" id="orderbook-tab" data-bs-toggle="tab" data-bs-target="#orderbook" type="button" role="tab" aria-controls="orderbook" aria-selected="false">Order Book Imbalance</button>
                     </li>
                 </ul>
                 
@@ -149,11 +149,11 @@
                         </div>
                     </div>
                     
-                    <!-- Google Trends History Tab -->
-                    <div class="tab-pane fade" id="trends" role="tabpanel" aria-labelledby="trends-tab">
+                    <!-- Order Book Imbalance History Tab -->
+                    <div class="tab-pane fade" id="orderbook" role="tabpanel" aria-labelledby="orderbook-tab">
                         <div class="card trends-card shadow-sm mb-4">
                             <div class="card-header">
-                                <h5 class="mb-0">Google Trends Pulse History</h5>
+                                <h5 class="mb-0">Order Book Imbalance History</h5>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -162,29 +162,25 @@
                                             <tr>
                                                 <th>Date</th>
                                                 <th>Signal</th>
+                                                <th>Status</th>
+                                                <th>Imbalance</th>
                                                 <th>Description</th>
-                                                <th>FOMO/Fear Ratio</th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {% if trends_history %}
-                                                {% for entry in trends_history %}
+                                            {% if orderbook_history %}
+                                                {% for entry in orderbook_history %}
                                                 <tr>
-                                                    <td>{{ entry.timestamp }}</td>
+                                                    <td>{{ entry.timestamp | timestampToDate }}</td>
                                                     <td>{{ entry.signal }}</td>
+                                                    <td>{{ entry.status }}</td>
+                                                    <td>{{ entry.imbalance | round(2) }}</td>
                                                     <td>{{ entry.description }}</td>
-                                                    <td>
-                                                        {% if entry.fomo_to_fear_ratio %}
-                                                            {{ entry.fomo_to_fear_ratio|round(2) }}
-                                                        {% else %}
-                                                            —
-                                                        {% endif %}
-                                                    </td>
                                                 </tr>
                                                 {% endfor %}
                                             {% else %}
                                                 <tr>
-                                                    <td colspan="4" class="text-center">No Google Trends history available yet</td>
+                                                    <td colspan="5" class="text-center">No Order Book Imbalance history available yet</td>
                                                 </tr>
                                             {% endif %}
                                         </tbody>

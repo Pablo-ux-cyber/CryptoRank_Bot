@@ -1,1 +1,16 @@
-[]
+[
+  {
+    "signal": "\u26aa",
+    "description": "Balanced order book (fallback)",
+    "status": "Neutral",
+    "imbalance": 0.0,
+    "timestamp": "2025-05-07T15:40:54.325165"
+  },
+  {
+    "signal": "\u26aa",
+    "description": "Balanced order book (fallback)",
+    "status": "Neutral",
+    "imbalance": 0.0,
+    "timestamp": "2025-05-07T15:42:43.524148"
+  }
+]
