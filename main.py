@@ -10,7 +10,7 @@ from scheduler import SensorTowerScheduler
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
-from routes.trends_routes import trends_bp
+from routes.orderbook_routes import orderbook_bp
 
 # Create Flask app
 app = Flask(__name__)
@@ -30,7 +30,7 @@ def utility_processor():
 
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
-app.register_blueprint(trends_bp)
+app.register_blueprint(orderbook_bp)
 
 # Инициализируем глобальные переменные
 scheduler = None

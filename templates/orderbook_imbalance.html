@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Book Imbalance</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        body {
+            padding-top: 20px;
+        }
+        .signal-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        .card {
+            margin-bottom: 20px;
+        }
+        .progress-imbalance {
+            height: 20px;
+            margin-bottom: 10px;
+        }
+        .progress-bar-negative {
+            background-color: #dc3545;
+        }
+        .progress-bar-neutral {
+            background-color: #6c757d;
+        }
+        .progress-bar-positive {
+            background-color: #28a745;
+        }
+        .timestamp {
+            color: #6c757d;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Order Book Imbalance</h1>
+        
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Order Book Imbalance</li>
+            </ol>
+        </nav>
+
+        <div class="row mb-4">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Current Status</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if imbalance_data %}
+                            <div class="d-flex align-items-center mb-3">
+                                <span class="signal-icon">{{ imbalance_data.signal }}</span>
+                                <h3 class="mb-0">{{ imbalance_data.status }}</h3>
+                            </div>
+                            <p class="mb-3">{{ imbalance_data.description }}</p>
+                            
+                            <h5>Imbalance Value: {{ imbalance_data.imbalance }}</h5>
+                            <div class="progress progress-imbalance">
+                                {% if imbalance_data.imbalance < -0.2 %}
+                                    <div class="progress-bar progress-bar-negative" role="progressbar" 
+                                         style="width: {{ ((-imbalance_data.imbalance) / 2) * 100 }}%" 
+                                         aria-valuenow="{{ imbalance_data.imbalance }}" 
+                                         aria-valuemin="-1" aria-valuemax="0">
+                                        {{ imbalance_data.imbalance }}
+                                    </div>
+                                {% elif imbalance_data.imbalance > 0.2 %}
+                                    <div class="progress-bar progress-bar-positive" role="progressbar" 
+                                         style="width: {{ (imbalance_data.imbalance / 2) * 100 }}%" 
+                                         aria-valuenow="{{ imbalance_data.imbalance }}" 
+                                         aria-valuemin="0" aria-valuemax="1">
+                                        {{ imbalance_data.imbalance }}
+                                    </div>
+                                {% else %}
+                                    <div class="progress-bar progress-bar-neutral" role="progressbar" 
+                                         style="width: 50%" 
+                                         aria-valuenow="{{ imbalance_data.imbalance }}" 
+                                         aria-valuemin="-0.2" aria-valuemax="0.2">
+                                        {{ imbalance_data.imbalance }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <p class="timestamp mt-3">Last updated: {{ imbalance_data.timestamp | timestampToDate }}</p>
+                            
+                            <button id="refresh-btn" class="btn btn-primary mt-3">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh Data
+                            </button>
+                        {% else %}
+                            <p class="text-muted">No Order Book Imbalance data available</p>
+                            <button id="refresh-btn" class="btn btn-primary">
+                                <i class="bi bi-arrow-clockwise"></i> Get Data
+                            </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Historical Data</h5>
+                    </div>
+                    <div class="card-body">
+                        {% if imbalance_history %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Date</th>
+                                            <th>Signal</th>
+                                            <th>Status</th>
+                                            <th>Imbalance</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for record in imbalance_history %}
+                                            <tr>
+                                                <td>{{ record.timestamp | timestampToDate }}</td>
+                                                <td>{{ record.signal }}</td>
+                                                <td>{{ record.status }}</td>
+                                                <td>{{ record.imbalance }}</td>
+                                                <td>{{ record.description }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No historical Order Book Imbalance data available</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Convert timestamp to readable date format
+            function formatTimestamp(timestamp) {
+                const date = new Date(timestamp * 1000);
+                return date.toLocaleString();
+            }
+            
+            // Add timestamp filter for Jinja
+            // Note: This is client-side only as a fallback, the server should already format timestamps
+            const timestampElements = document.querySelectorAll('.timestamp');
+            timestampElements.forEach(el => {
+                const timestamp = el.getAttribute('data-timestamp');
+                if (timestamp) {
+                    el.textContent = 'Last updated: ' + formatTimestamp(timestamp);
+                }
+            });
+            
+            // Refresh data button handler
+            const refreshBtn = document.getElementById('refresh-btn');
+            if (refreshBtn) {
+                refreshBtn.addEventListener('click', function() {
+                    refreshBtn.disabled = true;
+                    refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+                    
+                    fetch('/api/orderbook/refresh', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.reload();
+                        } else {
+                            alert('Error refreshing data: ' + data.message);
+                            refreshBtn.disabled = false;
+                            refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Data';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error refreshing data: ' + error);
+                        refreshBtn.disabled = false;
+                        refreshBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Refresh Data';
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+</html>
