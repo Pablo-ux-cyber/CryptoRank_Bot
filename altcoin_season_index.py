@@ -191,18 +191,19 @@ class AltcoinSeasonIndex:
         if not altseason_data:
             return None
         
-        # Максимально чистый и простой формат сообщения
-        # Название индикатора + четкое указание текущего режима рынка
-        index_percent = f"{altseason_data['index']*100:.0f}"
-        btc_perf = f"{altseason_data['btc_performance']:+.1f}"
+        # Максимально понятный формат сообщения для новичков
+        # Название индикатора + четкое указание текущего режима рынка без сложных процентов
+        index_percent = int(altseason_data['index']*100)
         
         # Определяем режим рынка
-        if index_percent.startswith('0') or int(index_percent) < 25:
+        if index_percent < 25:
             market_mode = "Bitcoin Season"
+            explanation = "Most altcoins underperform Bitcoin"
         else:
             market_mode = "Altcoin Season"
+            explanation = "Many altcoins outperform Bitcoin"
         
-        # Формируем сообщение без эмодзи, только с четкой информацией
-        message = f"Altcoin Season Index: {market_mode} ({index_percent}%, BTC: {btc_perf}%)"
+        # Формируем сообщение без сложных процентов, только с понятной информацией
+        message = f"Altcoin Season Index: {market_mode}\n{explanation}"
             
         return message
