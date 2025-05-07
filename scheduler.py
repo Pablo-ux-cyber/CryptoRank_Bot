@@ -184,7 +184,7 @@ class SensorTowerScheduler:
     def _send_combined_message(self, rankings_data, fear_greed_data=None):
         """
         Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
-        и сигналом от Google Trends Pulse в упрощенном формате
+        и сигналом от Order Book Imbalance в упрощенном формате
         
         Args:
             rankings_data (dict): Данные о рейтинге приложения
@@ -214,29 +214,29 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные от Google Trends Pulse - использование свежих данных, т.к. они
+            # Добавляем данные Order Book Imbalance - использование свежих данных, т.к. они
             # уже были запрошены в методе run_scraping_job перед вызовом этого метода
             try:
-                # Получаем данные трендов (они уже должны быть актуальными)
-                trends_data = self.google_trends_pulse.get_trends_data()
+                # Получаем данные дисбаланса ордеров (они уже должны быть актуальными)
+                imbalance_data = self.order_book_imbalance.get_order_book_imbalance()
                 
                 # Проверка, что данные существуют и содержат реальный сигнал
-                if (trends_data and 
-                    'signal' in trends_data and trends_data['signal'] and
-                    'description' in trends_data and trends_data['description']):
+                if (imbalance_data and 
+                    'signal' in imbalance_data and imbalance_data['signal'] and
+                    'description' in imbalance_data and imbalance_data['description']):
                     
-                    # Форматируем сообщение о трендах
-                    trends_message = self.google_trends_pulse.format_trends_message(trends_data)
+                    # Форматируем сообщение о дисбалансе ордеров
+                    imbalance_message = self.order_book_imbalance.format_imbalance_message(imbalance_data)
                     
                     # Если сообщение сформировано, добавляем его
-                    if trends_message:
-                        combined_message += f"\n\n{trends_message}"
-                        logger.info(f"Added Google Trends Pulse data: {trends_data['signal']} - {trends_data['description']}")
+                    if imbalance_message:
+                        combined_message += f"\n\n{imbalance_message}"
+                        logger.info(f"Added Order Book Imbalance data: {imbalance_data['signal']} - {imbalance_data['status']}")
                 else:
-                    logger.info("Google Trends данные недоступны или неполные - пропускаем эту часть сообщения")
+                    logger.info("Order Book Imbalance данные недоступны или неполные - пропускаем эту часть сообщения")
             except Exception as e:
-                logger.error(f"Ошибка при получении данных Google Trends Pulse: {str(e)}")
-                # Продолжаем без данных трендов
+                logger.error(f"Ошибка при получении данных Order Book Imbalance: {str(e)}")
+                # Продолжаем без данных имбаланса
             
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
@@ -258,7 +258,7 @@ class SensorTowerScheduler:
     def run_scraping_job(self, force_refresh=False):
         """
         Выполняет задание по скрапингу: получает данные SensorTower, Fear & Greed Index, 
-        Google Trends и отправляет в Telegram только если рейтинг изменился или это первый запуск
+        Order Book Imbalance и отправляет в Telegram только если рейтинг изменился или это первый запуск
         
         Args:
             force_refresh (bool): Если True, отправить сообщение даже если рейтинг не изменился
@@ -301,18 +301,18 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Fear & Greed Index: {str(e)}")
                 
-            # Получаем свежие данные Google Trends
+            # Получаем свежие данные Order Book Imbalance
             # Это всегда происходит при отправке сообщения, чтобы данные были актуальными
-            google_trends_data = None
+            imbalance_data = None
             try:
-                logger.info("Получение свежих данных Google Trends для комбинированного сообщения")
-                google_trends_data = self.google_trends_pulse.refresh_trends_data()
-                if google_trends_data:
-                    logger.info(f"Успешно получены данные Google Trends: {google_trends_data['signal']} - {google_trends_data['description']}")
+                logger.info("Получение данных Order Book Imbalance для комбинированного сообщения")
+                imbalance_data = self.order_book_imbalance.get_order_book_imbalance()
+                if imbalance_data:
+                    logger.info(f"Успешно получены данные Order Book Imbalance: {imbalance_data['signal']} - {imbalance_data['status']} ({imbalance_data['imbalance']})")
                 else:
-                    logger.warning("Не удалось получить данные Google Trends")
+                    logger.warning("Не удалось получить данные Order Book Imbalance")
             except Exception as e:
-                logger.error(f"Ошибка при получении данных Google Trends: {str(e)}")
+                logger.error(f"Ошибка при получении данных Order Book Imbalance: {str(e)}")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
@@ -383,21 +383,25 @@ class SensorTowerScheduler:
                                 classification=fear_greed_data['classification']
                             )
                             
-                        # Если доступны данные Google Trends, сохраняем и их
-                        trends_data = self.google_trends_pulse.get_trends_data()
-                        # Проверяем, что данные содержат реальный сигнал (не None)
-                        if (trends_data and 
-                            'signal' in trends_data and 
-                            'description' in trends_data and 
-                            trends_data['signal'] is not None):
-                            history_api.save_google_trends_history(
-                                signal=trends_data['signal'],
-                                description=trends_data['description'],
-                                fomo_score=trends_data.get('fomo_score'),
-                                fear_score=trends_data.get('fear_score'),
-                                general_score=trends_data.get('general_score'),
-                                fomo_to_fear_ratio=trends_data.get('fomo_to_fear_ratio')
-                            )
+                        # Если доступны данные Order Book Imbalance, сохраняем их
+                        if (imbalance_data and 
+                            'signal' in imbalance_data and 
+                            'description' in imbalance_data and 
+                            'status' in imbalance_data and 
+                            'imbalance' in imbalance_data and
+                            imbalance_data['signal'] is not None):
+                            # Создаем новый метод для сохранения Order Book Imbalance данных
+                            # Если метод еще не реализован в HistoryAPI, предполагаем его структуру
+                            try:
+                                history_api.save_order_book_imbalance_history(
+                                    signal=imbalance_data['signal'],
+                                    description=imbalance_data['description'],
+                                    status=imbalance_data['status'],
+                                    imbalance=imbalance_data['imbalance']
+                                )
+                                logger.info(f"Сохранены данные Order Book Imbalance в историю: {imbalance_data['signal']} - {imbalance_data['status']}")
+                            except Exception as e:
+                                logger.warning(f"Метод сохранения Order Book Imbalance не реализован: {str(e)}")
                             
                         logger.info(f"История данных успешно сохранена в JSON-файлы")
                     except ImportError:

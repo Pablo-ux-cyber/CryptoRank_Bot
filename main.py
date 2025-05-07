@@ -356,13 +356,13 @@ def test_format():
     """Test the message formatting with sample data"""
     from scraper import SensorTowerScraper
     from fear_greed_index import FearGreedIndexTracker
-    from google_trends_pulse import GoogleTrendsPulse
+    from order_book_imbalance import OrderBookImbalance
     
     try:
         # Create instances for formatting even if scheduler is not running
         scraper = scheduler.scraper if scheduler else SensorTowerScraper()
         fear_greed_tracker = scheduler.fear_greed_tracker if scheduler else FearGreedIndexTracker()
-        google_trends_pulse = scheduler.google_trends_pulse if scheduler else GoogleTrendsPulse()
+        order_book_imbalance = scheduler.order_book_imbalance if scheduler else OrderBookImbalance()
         
         # Sample app ranking data
         rankings_data = {
@@ -382,34 +382,32 @@ def test_format():
             "date": datetime.now().strftime("%Y-%m-%d")
         }
         
-        # Sample Google Trends data
-        trends_data = {
-            "signal": "⚪",
-            "description": "Neutral interest in cryptocurrencies",
-            "fomo_score": 50,
-            "fear_score": 50,
-            "general_score": 50,
-            "fomo_to_fear_ratio": 1.0,
-            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "api_available": True
+        # Sample Order Book Imbalance data
+        imbalance_data = {
+            "imbalance": 0.32,
+            "status": "Bullish",
+            "signal": "🟢",
+            "description": "Moderate buy pressure",
+            "timestamp": int(time.time()),
+            "date": datetime.now().strftime('%Y-%m-%d')
         }
         
         # Format individual messages
         rankings_message = scraper.format_rankings_message(rankings_data)
         fear_greed_message = fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-        trends_message = google_trends_pulse.format_trends_message(trends_data)
+        imbalance_message = order_book_imbalance.format_imbalance_message(imbalance_data)
         
         # Format combined message
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
-        combined_message += "\n\n" + trends_message
+        combined_message += "\n\n" + imbalance_message
         
         # If this is a web request (not API)
         if request.headers.get('Accept', '').find('application/json') == -1:
             return render_template('format_test.html',
                                    rankings_message=rankings_message,
                                    fear_greed_message=fear_greed_message,
-                                   trends_message=trends_message,
+                                   imbalance_message=imbalance_message,
                                    combined_message=combined_message)
         
         # Return JSON for API requests
@@ -417,7 +415,7 @@ def test_format():
             "status": "success",
             "rankings_message": rankings_message,
             "fear_greed_message": fear_greed_message,
-            "trends_message": trends_message,
+            "imbalance_message": imbalance_message,
             "combined_message": combined_message
         })
     except Exception as e:
