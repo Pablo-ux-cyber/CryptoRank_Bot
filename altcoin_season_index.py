@@ -190,16 +190,13 @@ class AltcoinSeasonIndex:
             
         if not altseason_data:
             return None
-            
-        # Create base message with emoji and status
-        message = f"{altseason_data['signal']} Altcoin Season Index: {altseason_data['status']}"
         
-        # Add description
-        if 'description' in altseason_data and altseason_data['description']:
-            message += f" - {altseason_data['description']}"
-            
-        # Add index value and BTC performance
-        if 'index' in altseason_data and 'btc_performance' in altseason_data:
-            message += f" ({altseason_data['index']*100:.0f}%, BTC: {altseason_data['btc_performance']:+.1f}%)"
+        # Более компактный формат сообщения
+        # Эмодзи + короткое название индикатора + процент + BTC performance
+        index_percent = f"{altseason_data['index']*100:.0f}"
+        btc_perf = f"{altseason_data['btc_performance']:+.1f}"
+        
+        # Формируем компактное сообщение с основными данными
+        message = f"{altseason_data['signal']} {altseason_data['status']} ({index_percent}%, BTC: {btc_perf}%)"
             
         return message

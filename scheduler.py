@@ -219,7 +219,7 @@ class SensorTowerScheduler:
             # Используем переданные данные, а не делаем запрос снова
             if (altseason_data and 
                 'signal' in altseason_data and altseason_data['signal'] and
-                'description' in altseason_data and altseason_data['description']):
+                'status' in altseason_data and altseason_data['status']):
                 
                 # Форматируем сообщение индекса сезона альткоинов
                 altseason_message = self.altcoin_season_index.format_altseason_message(altseason_data)
