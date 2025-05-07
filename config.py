@@ -33,13 +33,10 @@ SELENIUM_TIMEOUT = 30  # seconds
 LOG_LEVEL = "INFO"
 LOG_FILE = "sensortower_bot.log"
 
-# Order Book Imbalance Configuration
-# Настройка биржи: binance часто блокирует запросы из некоторых регионов
-# альтернативы: kucoin, kraken, okx, bybit
-GBI_EXCHANGE = os.getenv('GBI_EXCHANGE', 'kraken')
-GBI_MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,XRP/USDT,SOL/USDT,ADA/USDT')
-GBI_LIMIT = int(os.getenv('GBI_LIMIT', '100'))
-GBI_THRESHOLD_STRONG_BULL = float(os.getenv('GBI_THRESHOLD_STRONG_BULL', '0.50'))
-GBI_THRESHOLD_WEAK_BULL = float(os.getenv('GBI_THRESHOLD_WEAK_BULL', '0.20'))
-GBI_THRESHOLD_WEAK_BEAR = float(os.getenv('GBI_THRESHOLD_WEAK_BEAR', '-0.20'))
-GBI_THRESHOLD_STRONG_BEAR = float(os.getenv('GBI_THRESHOLD_STRONG_BEAR', '-0.50'))
+# Altcoin Season Index Configuration
+ASI_VS_CURRENCY = os.getenv('ASI_VS_CURRENCY', 'usd')
+ASI_TOP_N = int(os.getenv('ASI_TOP_N', '50'))
+ASI_PERIOD = os.getenv('ASI_PERIOD', '30d')
+ASI_THRESHOLD_STRONG = float(os.getenv('ASI_THRESHOLD_STRONG', '0.75'))
+ASI_THRESHOLD_MODERATE = float(os.getenv('ASI_THRESHOLD_MODERATE', '0.50'))
+ASI_THRESHOLD_WEAK = float(os.getenv('ASI_THRESHOLD_WEAK', '0.25'))

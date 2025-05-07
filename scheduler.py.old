@@ -7,7 +7,7 @@ from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
-from altcoin_season_index import AltcoinSeasonIndex
+from order_book_imbalance import OrderBookImbalance
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -18,7 +18,7 @@ class SensorTowerScheduler:
         self.scraper = SensorTowerScraper()
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
-        self.altcoin_season_index = AltcoinSeasonIndex()
+        self.order_book_imbalance = OrderBookImbalance()
         
         # Определяем пути для хранения данных непосредственно в директории бота вместо /tmp
         # Используем корневую директорию бота для файлов истории

@@ -11,6 +11,7 @@ from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, T
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
 from routes.orderbook_routes import orderbook_bp
+from routes.altseason_routes import altseason_bp
 
 # Create Flask app
 app = Flask(__name__)
@@ -45,6 +46,7 @@ def utility_processor():
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
 app.register_blueprint(orderbook_bp)
+app.register_blueprint(altseason_bp)
 
 # Инициализируем глобальные переменные
 scheduler = None
