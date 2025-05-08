@@ -11,7 +11,10 @@ fear_greed_history.json
 rank_history.txt
 coinbasebot.lock
 
+# Файлы с чувствительными данными
+.env
+.env.*
+
 # ВАЖНО: НЕ игнорируются следующие критические файлы:
-# .env - нужен для переменных окружения 
 # config.py - нужен для конфигурации бота
 # requirements.txt - нужен для зависимостей

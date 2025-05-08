@@ -13,12 +13,20 @@ end_date = today.strftime("%Y-%m-%d")
 SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?os=ios&edit=1&granularity=daily&start_date={start_date}&end_date={end_date}&duration=P90D&country=US&breakdown_attribute=category&metricType=absolute&measure=revenue&rolling_days=0&selected_tab=0&session_count=sessionCount&time_spent=timeSpent&chart_plotting_type=line&sia={APP_ID}&ssia={APP_ID}&chart_type=free&chart_type=paid&chart_type=grossing&device=iphone&device=ipad&category=0&category=36&category=6015&time_period=day"
 
 # Telegram Configuration
-TELEGRAM_BOT_TOKEN = "7973595268:AAG_Pz_xZFnAXRHtVbTH5Juo8qtssPUof8E"
+# Используем переменные окружения для хранения чувствительных данных
+TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+if not TELEGRAM_BOT_TOKEN:
+    # Добавляем фолбэк для разработки, но в продакшене должна быть переменная окружения
+    # ВНИМАНИЕ: Этот токен не следует использовать в продакшене
+    # В случае компрометации создайте новый токен через @BotFather
+    TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Замените на переменную окружения в продакшене
+
 # Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
-TELEGRAM_CHANNEL_ID = "@cryptorankbase"  # Основной канал для отправки сообщений
+TELEGRAM_CHANNEL_ID = os.environ.get("TELEGRAM_CHANNEL_ID", "@cryptorankbase")  # Основной канал для отправки сообщений
 # Тестовая группа: "@telegrm_hub"
+
 # Канал, откуда бот получает данные о рейтинге (источник данных)
-TELEGRAM_SOURCE_CHANNEL = "@coinbaseappstore"
+TELEGRAM_SOURCE_CHANNEL = os.environ.get("TELEGRAM_SOURCE_CHANNEL", "@coinbaseappstore")
 
 # Scheduler Configuration
 SCHEDULE_HOUR = 8  # 8 AM
