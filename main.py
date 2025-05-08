@@ -5,6 +5,11 @@ import threading
 import os
 from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, redirect, url_for, flash, request
+
+# Загружаем переменные окружения из .env файла, если он есть
+from load_dotenv import load_dotenv
+load_dotenv()
+
 from logger import logger
 from scheduler import SensorTowerScheduler
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
@@ -14,7 +19,8 @@ from routes.altseason_routes import altseason_bp
 
 # Create Flask app
 app = Flask(__name__)
-app.secret_key = "sensortower_bot_secret"
+# Используем переменную окружения SESSION_SECRET для secret_key или фолбэк
+app.secret_key = os.environ.get("SESSION_SECRET", "sensortower_bot_secret")
 
 # Добавляем фильтр now() для шаблонов
 @app.template_filter('now')
