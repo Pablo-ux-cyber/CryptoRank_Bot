@@ -16,10 +16,12 @@ SENSORTOWER_URL = f"https://app.sensortower.com/app-analysis/category-rankings?o
 # Используем переменные окружения для хранения чувствительных данных
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
 if not TELEGRAM_BOT_TOKEN:
-    # Добавляем фолбэк для разработки, но в продакшене должна быть переменная окружения
-    # ВНИМАНИЕ: Этот токен не следует использовать в продакшене
-    # В случае компрометации создайте новый токен через @BotFather
-    TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"  # Замените на переменную окружения в продакшене
+    # Выводим предупреждение, если не найден токен бота
+    import logging
+    logging.warning(
+        "TELEGRAM_BOT_TOKEN not found in environment variables. "
+        "Please setup environment variables or create .env file with token."
+    )
 
 # Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
 TELEGRAM_CHANNEL_ID = os.environ.get("TELEGRAM_CHANNEL_ID", "@cryptorankbase")  # Основной канал для отправки сообщений
