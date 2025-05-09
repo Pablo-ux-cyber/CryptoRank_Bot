@@ -3,7 +3,7 @@ import requests
 import trafilatura
 import re
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 from config import APP_ID, TELEGRAM_SOURCE_CHANNEL
 from logger import logger
@@ -120,10 +120,30 @@ class SensorTowerScraper:
                 # Find all message blocks
                 blocks = re.findall(r'<div class="tgme_widget_message[^"]*"[^>]*?data-post="coinbaseappstore/(\d+)".*?>(.*?)<div class="tgme_widget_message_footer', html_content, re.DOTALL)
                 
+                # Get today's date for filtering
+                today = date.today()
+                logger.info(f"Current date is {today}. Will only use messages from today.")
+                
                 # Create a dictionary where key is message ID, value is message text
                 messages_dict = {}
                 
                 for msg_id, block_html in blocks:
+                    # Extract message date
+                    date_match = re.search(r'<a class="tgme_widget_message_date".*?><time datetime="(\d{4}-\d{2}-\d{2})T', block_html)
+                    message_date = None
+                    if date_match:
+                        try:
+                            message_date_str = date_match.group(1)
+                            message_date = datetime.strptime(message_date_str, "%Y-%m-%d").date()
+                            logger.info(f"Message ID {msg_id} date: {message_date}")
+                        except Exception as e:
+                            logger.warning(f"Failed to parse message date: {e}")
+                    
+                    # Skip messages not from today
+                    if message_date and message_date != today:
+                        logger.info(f"Skipping message ID {msg_id} from {message_date} as it's not from today ({today})")
+                        continue
+                    
                     # Extract message text
                     text_match = re.search(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', block_html, re.DOTALL)
                     
@@ -146,7 +166,7 @@ class SensorTowerScraper:
                     sorted_ids = sorted(messages_dict.keys(), reverse=True)
                     messages = [messages_dict[msg_id] for msg_id in sorted_ids]
                     
-                    logger.info(f"Found {len(messages)} messages with IDs")
+                    logger.info(f"Found {len(messages)} messages with IDs from today ({today})")
                     
                     # For debugging, print the first 3 messages
                     for i, msg in enumerate(messages[:3]):
@@ -160,35 +180,13 @@ class SensorTowerScraper:
                         logger.info(f"After filtering for 'Coinbase Rank', found {len(filtered_messages)} relevant messages")
                         return filtered_messages
                     else:
-                        # If no messages with Coinbase Rank, return all messages as fallback
-                        logger.warning("No messages containing 'Coinbase Rank' found, using all messages")
-                        return messages
+                        logger.warning("No messages containing 'Coinbase Rank' found from today")
+                        return []  # Return empty list to indicate no relevant messages from today
                 
-                # If direct search didn't work, use fallback method
-                if not messages:
-                    logger.info("Using fallback method to extract messages...")
-                    # Simply search for all message texts
-                    all_texts = re.findall(r'<div class="tgme_widget_message_text[^>]*>(.*?)</div>', html_content, re.DOTALL)
-                    
-                    for text_html in all_texts:
-                        clean_text = re.sub(r'<[^>]+>', ' ', text_html)
-                        clean_text = re.sub(r'\s+', ' ', clean_text).strip()
-                        if clean_text:
-                            messages.append(clean_text)
-                    
-                    if messages:
-                        logger.info(f"Found {len(messages)} message texts using fallback method")
-                        return messages
-                
-                # If all methods failed, try using trafilatura
-                if not messages:
-                    text_content = trafilatura.extract(html_content)
-                    if text_content:
-                        # Split into paragraphs
-                        paragraphs = re.split(r'\n+', text_content)
-                        messages = [p.strip() for p in paragraphs if p.strip()]
-                        logger.info(f"Extracted {len(messages)} paragraphs using trafilatura")
-                        return messages
+                # We don't use fallback methods that can't check message dates
+                # as we need to ensure we only get today's data
+                logger.warning("No messages found from today. Not using fallback methods since we can't verify message dates.")
+                return []
                 
                 return []
                 
@@ -369,8 +367,8 @@ class SensorTowerScraper:
             messages = self._get_messages_from_telegram()
             
             if not messages or len(messages) == 0:
-                logger.warning("No messages retrieved from Telegram channel")
-                logger.error("Cannot get reliable data - returning None instead of using fallback value")
+                logger.warning("No messages from today retrieved from Telegram channel")
+                logger.error("Cannot get today's data - returning None instead of using yesterday's data")
                 return None
             else:
                 # First message (the most recent by date) containing the ranking
@@ -398,8 +396,8 @@ class SensorTowerScraper:
                                 break
                 
                 if ranking is None:
-                    logger.warning("Could not find ranking in any of the messages")
-                    logger.error("Cannot get reliable data - returning None instead of using fallback value")
+                    logger.warning("Could not find ranking in any of today's messages")
+                    logger.error("Cannot get today's data - returning None instead of using yesterday's data")
                     return None
                 else:
                     rank = str(ranking)
