@@ -1,0 +1,89 @@
+(venv) root@imm1:~/coinbaserank_bot# cd /root/coinbaserank_bot
+grep -i "2025-05-09 11:" sensortower_bot.log
+2025-05-09 11:00:30,477 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:05:30,773 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:10:31,157 - sensortower_bot - INFO - Запланировано комплексное обновление данных в 2025-05-09 11:10:31.155719
+2025-05-09 11:10:31,158 - sensortower_bot - INFO - Получение данных о рейтинге Coinbase (ежедневное обновление в 11:10)
+2025-05-09 11:10:31,160 - sensortower_bot - INFO - Выполняется запланированное задание скрапинга в 2025-05-09 11:10:31.160262
+2025-05-09 11:10:31,520 - sensortower_bot - INFO - Connected to Telegram as @baserank_bot
+2025-05-09 11:10:31,523 - sensortower_bot - INFO - Attempting to get ranking data from Telegram channel: @coinbaseappstore
+2025-05-09 11:10:31,524 - sensortower_bot - INFO - Attempting to scrape web version of channel: https://t.me/s/coinbaseappstore
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Found 20 messages with IDs
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Message 1: [ID: 542] Coinbase Rank: 297...
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Message 2: [ID: 541] Coinbase Rank: 301...
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Message 3: [ID: 540] Coinbase Rank: 334...
+2025-05-09 11:10:31,632 - sensortower_bot - INFO - After filtering for 'Coinbase Rank', found 20 relevant messages
+2025-05-09 11:10:31,632 - sensortower_bot - INFO - Checking most recent message for ranking...
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Extracted ranking using pattern 0 (Coinbase Rank): 297
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Found ranking in the most recent message: 297
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Successfully scraped ranking from Telegram: 297
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Rank trend: 379 → 297 (up)
+2025-05-09 11:10:31,634 - sensortower_bot - INFO - Fetching Fear & Greed Index data
+2025-05-09 11:10:31,993 - sensortower_bot - INFO - Successfully fetched Fear & Greed Index: 73 (Greed)
+2025-05-09 11:10:31,994 - sensortower_bot - INFO - Успешно получены данные Fear & Greed Index: 73 (Greed)
+2025-05-09 11:10:31,994 - sensortower_bot - INFO - Получение данных Altcoin Season Index для комбинированного сообщения
+2025-05-09 11:10:31,995 - sensortower_bot - INFO - Fetching market data for top 50 coins from CoinGecko
+2025-05-09 11:10:32,454 - sensortower_bot - INFO - Altcoin Season Index: 0.52, BTC performance: 33.37%
+2025-05-09 11:10:32,456 - sensortower_bot - INFO - Успешно получены данные Altcoin Season Index: 🟡 - Moderate Altseason (Индекс: 0.52)
+2025-05-09 11:10:32,456 - sensortower_bot - INFO - Рейтинг не изменился (297 = 297). Сообщение не отправлено.
+2025-05-09 11:10:32,456 - sensortower_bot - INFO - Данные о рейтинге Coinbase успешно обновлены: 2025-05-09 11:10:31.155719
+2025-05-09 11:10:32,456 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:15:32,741 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:20:33,042 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:25:33,348 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:30:33,649 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:35:33,941 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:40:34,247 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:45:34,537 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:50:34,839 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:55:35,124 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# cd /root/coinbaserank_bot
+grep -i "error" sensortower_bot.log | grep -i "2025-05-09 11:"
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# cd /root/coinbaserank_bot
+grep -i "scheduler" sensortower_bot.log | grep -i "2025-05-09 11:"
+2025-05-09 11:00:30,477 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:05:30,773 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:10:32,456 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:15:32,741 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:20:33,042 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:25:33,348 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:30:33,649 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:35:33,941 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:40:34,247 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:45:34,537 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:50:34,839 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-05-09 11:55:35,124 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# cd /root/coinbaserank_bot
+grep -i "scrape\|rank\|telegram" sensortower_bot.log | grep -i "2025-05-09 11:"
+2025-05-09 11:10:31,520 - sensortower_bot - INFO - Connected to Telegram as @baserank_bot
+2025-05-09 11:10:31,523 - sensortower_bot - INFO - Attempting to get ranking data from Telegram channel: @coinbaseappstore
+2025-05-09 11:10:31,524 - sensortower_bot - INFO - Attempting to scrape web version of channel: https://t.me/s/coinbaseappstore
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Message 1: [ID: 542] Coinbase Rank: 297...
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Message 2: [ID: 541] Coinbase Rank: 301...
+2025-05-09 11:10:31,631 - sensortower_bot - INFO - Message 3: [ID: 540] Coinbase Rank: 334...
+2025-05-09 11:10:31,632 - sensortower_bot - INFO - After filtering for 'Coinbase Rank', found 20 relevant messages
+2025-05-09 11:10:31,632 - sensortower_bot - INFO - Checking most recent message for ranking...
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Extracted ranking using pattern 0 (Coinbase Rank): 297
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Found ranking in the most recent message: 297
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Successfully scraped ranking from Telegram: 297
+2025-05-09 11:10:31,633 - sensortower_bot - INFO - Rank trend: 379 → 297 (up)
+(venv) root@imm1:~/coinbaserank_bot# 

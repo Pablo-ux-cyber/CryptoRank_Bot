@@ -1,0 +1,34 @@
+(venv) root@imm1:~/coinbaserank_bot# sudo journalctl -u coinbasebot --since "2025-05-09 11:00" --until "2025-05-09 11:30"
+May 09 11:00:30 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:00:30,477 - sensorto>
+May 09 11:05:30 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:05:30,773 - sensorto>
+May 09 11:06:13 imm1.dinet.fvds.ru python[3323214]: 121.142.203.228 - - [09/May/2025 1>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,157 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,158 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,160 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,520 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,523 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,524 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,631 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,631 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,631 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,631 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,632 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,632 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,633 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,633 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,633 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,633 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,634 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,993 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,994 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,994 - sensorto>
+May 09 11:10:31 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:31,995 - sensorto>
+May 09 11:10:32 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:32,454 - sensorto>
+May 09 11:10:32 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:32,456 - sensorto>
+May 09 11:10:32 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:32,456 - sensorto>
+May 09 11:10:32 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:32,456 - sensorto>
+May 09 11:10:32 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:10:32,456 - sensorto>
+May 09 11:15:32 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:15:32,741 - sensorto>
+May 09 11:20:33 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:20:33,042 - sensorto>
+May 09 11:25:33 imm1.dinet.fvds.ru python[3323212]: 2025-05-09 11:25:33,348 - sensorto>
+lines 1-32/32 (END)
