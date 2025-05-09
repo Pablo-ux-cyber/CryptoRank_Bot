@@ -27,6 +27,50 @@ class SensorTowerScraper:
                         logger.info(f"Загружен предыдущий рейтинг из файла истории: {self.previous_rank}")
         except Exception as e:
             logger.error(f"Ошибка при чтении файла истории рейтинга в scraper: {str(e)}")
+            
+    def get_current_rank(self):
+        """
+        Получает текущий рейтинг приложения из Telegram канала.
+        Используется для дополнительной проверки поздних обновлений.
+        
+        Returns:
+            int: Текущий рейтинг приложения или None в случае ошибки
+        """
+        try:
+            logger.info("Получение текущего рейтинга для проверки поздних обновлений")
+            messages = self._get_messages_from_telegram()
+            
+            if not messages:
+                logger.warning("Не удалось получить сообщения из Telegram канала")
+                return None
+                
+            # Проверяем только самое последнее сообщение
+            latest_message = messages[0]
+            
+            # Пытаемся извлечь рейтинг из сообщения
+            pattern1 = r"Coinbase Rank: (\d+)"
+            pattern2 = r"Rank: (\d+)"
+            pattern3 = r"rank: (\d+)"
+            patterns = [pattern1, pattern2, pattern3]
+            
+            rank = None
+            for i, pattern in enumerate(patterns):
+                match = re.search(pattern, latest_message, re.IGNORECASE)
+                if match:
+                    rank = int(match.group(1))
+                    logger.info(f"Извлечен рейтинг с использованием шаблона {i} ({pattern}): {rank}")
+                    break
+                    
+            if rank:
+                logger.info(f"Текущий рейтинг из последнего сообщения: {rank}")
+                return rank
+            else:
+                logger.warning("Не удалось извлечь рейтинг из последнего сообщения")
+                return None
+                
+        except Exception as e:
+            logger.error(f"Ошибка при получении текущего рейтинга: {str(e)}")
+            return None
 
     def _get_messages_from_telegram(self):
         """
