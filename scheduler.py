@@ -47,14 +47,14 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения, Fear & Greed Index и Altcoin Season Index один раз в день в 11:10
+        - Проверяет рейтинг приложения, Fear & Greed Index и Altcoin Season Index один раз в день в 11:25
         - Все данные собираются за один раз и отправляются одним сообщением
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
         self.last_rank_update_date = None
         
         # При запуске не будем загружать данные Google Trends - получим их вместе с общим обновлением
-        logger.info("Планировщик запущен, первое обновление данных произойдет в 11:10")
+        logger.info("Планировщик запущен, первое обновление данных произойдет в 11:25")
         
         while not self.stop_event.is_set():
             try:
@@ -64,17 +64,11 @@ class SensorTowerScheduler:
                 update_rank = False
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
-                # Fear & Greed Index и Altcoin Season Index (в 11:10)
-                # Основной интервал 11:10-11:15 (штатное обновление)
-                if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
+                # Fear & Greed Index и Altcoin Season Index (в 11:25)
+                if (now.hour == 11 and now.minute >= 25 and now.minute <= 30):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"Запланировано комплексное обновление данных в {now}")
-                # Резервный интервал 11:25-11:30 (проверка на случай, если основной пропущен)
-                elif (now.hour == 11 and now.minute >= 25 and now.minute <= 30):
-                    if self.last_rank_update_date is None or self.last_rank_update_date < today:
-                        update_rank = True
-                        logger.info(f"Запланировано резервное обновление данных (через 15 мин после основного) в {now}")
+                        logger.info(f"Запланировано комплексное обновление данных в {now} (MSK 11:25)")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
@@ -82,7 +76,7 @@ class SensorTowerScheduler:
                 # Обновляем все данные, если пришло время
                 if update_rank:
                     try:
-                        time_type = "основное" if now.minute <= 15 else "резервное (15 мин после основного)"
+                        time_type = "основное"
                         logger.info(f"Получение данных о рейтинге Coinbase ({time_type} обновление в {now.hour}:{now.minute})")
                         self.run_scraping_job()
                         self.last_rank_update_date = today

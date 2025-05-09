@@ -32,7 +32,7 @@ TELEGRAM_SOURCE_CHANNEL = os.environ.get("TELEGRAM_SOURCE_CHANNEL", "@coinbaseap
 
 # Scheduler Configuration
 SCHEDULE_HOUR = 8  # 8 AM
-SCHEDULE_MINUTE = 10  # 10 minutes, to match the 11:10 MSK deployment time
+SCHEDULE_MINUTE = 25  # 25 minutes, to match the 11:25 MSK deployment time (изменено с 11:10)
 
 # Selenium Configuration
 SELENIUM_DRIVER_PATH = os.getenv("SELENIUM_DRIVER_PATH", "/usr/bin/chromedriver")
