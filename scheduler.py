@@ -1,7 +1,7 @@
 import os
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from logger import logger
 from config import SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE
@@ -285,11 +285,53 @@ class SensorTowerScheduler:
             rankings_data = self.scraper.scrape_category_rankings()
             
             if not rankings_data:
-                error_message = "❌ Failed to scrape SensorTower data."
+                today = date.today().strftime("%Y-%m-%d")
+                error_message = f"❌ No data from Coinbase AppStore ranking for today ({today}). Will retry later."
                 logger.error(error_message)
-                # Отправляем сообщение об ошибке, но только если это не связано с ошибкой получения данных
-                if "Failed to scrape SensorTower data" not in error_message:
-                    self.telegram_bot.send_message(error_message)
+                
+                # При плановой проверке (force_refresh=True) нужно отправить сообщение об отсутствии данных
+                if force_refresh:
+                    logger.info("Sending notification about missing data because it's a scheduled update (force_refresh=True)")
+                    # Получаем данные индекса страха и жадности и Altcoin Season Index, даже если нет рейтинга
+                    fear_greed_data = None
+                    try:
+                        fear_greed_data = self.fear_greed_tracker.get_fear_greed_index()
+                        if fear_greed_data:
+                            logger.info(f"Успешно получены данные Fear & Greed Index: {fear_greed_data['value']} ({fear_greed_data['classification']})")
+                        else:
+                            logger.warning("Не удалось получить данные Fear & Greed Index")
+                    except Exception as e:
+                        logger.error(f"Ошибка при получении данных Fear & Greed Index: {str(e)}")
+                        
+                    # Получаем свежие данные Altcoin Season Index
+                    altseason_data = None
+                    try:
+                        logger.info("Получение данных Altcoin Season Index для комбинированного сообщения")
+                        altseason_data = self.altcoin_season_index.get_altseason_index()
+                        if altseason_data:
+                            logger.info(f"Успешно получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']} (Индекс: {altseason_data['index']})")
+                        else:
+                            logger.warning("Не удалось получить данные Altcoin Season Index")
+                    except Exception as e:
+                        logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
+                    
+                    # Формируем сообщение, начиная с информации об отсутствии рейтинга
+                    combined_message = error_message
+                    
+                    # Добавляем информацию о Fear & Greed Index, если доступна
+                    if fear_greed_data:
+                        fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+                        combined_message += f"\n\n{fear_greed_message}"
+                    
+                    # Добавляем информацию о Altcoin Season Index, если доступна
+                    if altseason_data and 'signal' in altseason_data and altseason_data['signal']:
+                        altseason_message = self.altcoin_season_index.format_altseason_message(altseason_data)
+                        if altseason_message:
+                            combined_message += f"\n\n{altseason_message}"
+                    
+                    # Отправляем сообщение
+                    self.telegram_bot.send_message(combined_message)
+                    
                 return False
             
             # Проверяем наличие данных о категориях и рейтинге
