@@ -4,7 +4,7 @@ import time
 from datetime import datetime, timedelta
 
 from logger import logger
-from config import SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE
+from config import SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE, LATE_CHECK_HOUR, LATE_CHECK_MINUTE
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
@@ -83,6 +83,19 @@ class SensorTowerScheduler:
                                 update_rank = True
                         except Exception as e:
                             logger.error(f"Ошибка при дополнительной проверке рейтинга: {str(e)}")
+                
+                # Финальная проверка в 12:05 для очень поздних обновлений
+                if (now.hour == LATE_CHECK_HOUR and now.minute >= LATE_CHECK_MINUTE and now.minute <= LATE_CHECK_MINUTE + 5):
+                    if self.last_rank_update_date == today:  # Уже было обновление сегодня
+                        logger.info(f"Выполняется финальная проверка новых сообщений в канале в {now}")
+                        # Проверяем только новые сообщения
+                        try:
+                            current_rank = self.scraper.get_current_rank()
+                            if current_rank and current_rank != self.last_sent_rank:
+                                logger.info(f"Обнаружено очень позднее обновление рейтинга: {self.last_sent_rank} → {current_rank}")
+                                update_rank = True
+                        except Exception as e:
+                            logger.error(f"Ошибка при финальной проверке рейтинга: {str(e)}")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
