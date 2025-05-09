@@ -12,7 +12,7 @@ load_dotenv()
 
 from logger import logger
 from scheduler import SensorTowerScheduler
-from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE, LATE_CHECK_HOUR, LATE_CHECK_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
+from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
 from routes.altseason_routes import altseason_bp
@@ -101,7 +101,6 @@ def index():
     
     schedule_time = f"{SCHEDULE_HOUR:02d}:{SCHEDULE_MINUTE:02d}"
     additional_check_time = f"{ADDITIONAL_CHECK_HOUR:02d}:{ADDITIONAL_CHECK_MINUTE:02d}"
-    late_check_time = f"{LATE_CHECK_HOUR:02d}:{LATE_CHECK_MINUTE:02d}"
     
     # Get categories from last scrape if available
     categories = []
@@ -117,7 +116,6 @@ def index():
                           next_run=next_run,
                           schedule_time=schedule_time,
                           additional_check_time=additional_check_time,
-                          late_check_time=late_check_time,
                           last_scrape_time=last_scrape_time,
                           categories=categories,
                           last_fear_greed_data=last_fear_greed_data,
