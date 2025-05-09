@@ -12,7 +12,7 @@ load_dotenv()
 
 from logger import logger
 from scheduler import SensorTowerScheduler
-from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
+from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
 from routes.altseason_routes import altseason_bp
@@ -100,7 +100,6 @@ def index():
         next_run = (datetime.now() + timedelta(minutes=5)).strftime("%Y-%m-%d %H:%M:%S")
     
     schedule_time = f"{SCHEDULE_HOUR:02d}:{SCHEDULE_MINUTE:02d}"
-    additional_check_time = f"{ADDITIONAL_CHECK_HOUR:02d}:{ADDITIONAL_CHECK_MINUTE:02d}"
     
     # Get categories from last scrape if available
     categories = []
@@ -115,7 +114,6 @@ def index():
                           telegram_configured=telegram_configured,
                           next_run=next_run,
                           schedule_time=schedule_time,
-                          additional_check_time=additional_check_time,
                           last_scrape_time=last_scrape_time,
                           categories=categories,
                           last_fear_greed_data=last_fear_greed_data,
@@ -290,12 +288,8 @@ def get_altseason_index():
         # Получаем реальные данные Altcoin Season Index
         logger.info("Запрос данных Altcoin Season Index...")
         altseason_data = scheduler.altcoin_season_index.get_altseason_index()
-        if altseason_data:
-            altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
-            logger.info(f"Получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']}")
-        else:
-            altseason_message = None
-            logger.error("Не удалось получить данные Altcoin Season Index")
+        altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
+        logger.info(f"Получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']}")
         
         if altseason_data:
             # Сохраняем данные для отображения

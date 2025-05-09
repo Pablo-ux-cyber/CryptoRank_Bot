@@ -1,10 +1,9 @@
 import os
 import threading
 import time
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta
 
 from logger import logger
-from config import SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
@@ -66,23 +65,10 @@ class SensorTowerScheduler:
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
                 # Fear & Greed Index и Altcoin Season Index (в 11:10)
-                if (now.hour == SCHEDULE_HOUR and now.minute >= SCHEDULE_MINUTE and now.minute <= SCHEDULE_MINUTE + 5):
+                if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
                         logger.info(f"Запланировано комплексное обновление данных в {now}")
-                
-                # Дополнительная проверка в 11:25 для поздних обновлений в исходном канале
-                if (now.hour == ADDITIONAL_CHECK_HOUR and now.minute >= ADDITIONAL_CHECK_MINUTE and now.minute <= ADDITIONAL_CHECK_MINUTE + 5):
-                    if self.last_rank_update_date == today:  # Уже было обновление сегодня
-                        logger.info(f"Выполняется дополнительная проверка новых сообщений в канале в {now}")
-                        # Проверяем только новые сообщения
-                        try:
-                            current_rank = self.scraper.get_current_rank()
-                            if current_rank and current_rank != self.last_sent_rank:
-                                logger.info(f"Обнаружено позднее обновление рейтинга: {self.last_sent_rank} → {current_rank}")
-                                update_rank = True
-                        except Exception as e:
-                            logger.error(f"Ошибка при дополнительной проверке рейтинга: {str(e)}")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
@@ -91,8 +77,7 @@ class SensorTowerScheduler:
                 if update_rank:
                     try:
                         logger.info("Получение данных о рейтинге Coinbase (ежедневное обновление в 11:10)")
-                        # Принудительно отправляем сообщение при плановой проверке в 11:10, даже если рейтинг не изменился
-                        self.run_scraping_job(force_refresh=True)
+                        self.run_scraping_job()
                         self.last_rank_update_date = today
                         logger.info(f"Данные о рейтинге Coinbase успешно обновлены: {now}")
                     except Exception as e:
@@ -285,53 +270,11 @@ class SensorTowerScheduler:
             rankings_data = self.scraper.scrape_category_rankings()
             
             if not rankings_data:
-                today = date.today().strftime("%Y-%m-%d")
-                error_message = f"❌ No data from Coinbase AppStore ranking for today ({today}). Will retry later."
+                error_message = "❌ Failed to scrape SensorTower data."
                 logger.error(error_message)
-                
-                # При плановой проверке (force_refresh=True) нужно отправить сообщение об отсутствии данных
-                if force_refresh:
-                    logger.info("Sending notification about missing data because it's a scheduled update (force_refresh=True)")
-                    # Получаем данные индекса страха и жадности и Altcoin Season Index, даже если нет рейтинга
-                    fear_greed_data = None
-                    try:
-                        fear_greed_data = self.fear_greed_tracker.get_fear_greed_index()
-                        if fear_greed_data:
-                            logger.info(f"Успешно получены данные Fear & Greed Index: {fear_greed_data['value']} ({fear_greed_data['classification']})")
-                        else:
-                            logger.warning("Не удалось получить данные Fear & Greed Index")
-                    except Exception as e:
-                        logger.error(f"Ошибка при получении данных Fear & Greed Index: {str(e)}")
-                        
-                    # Получаем свежие данные Altcoin Season Index
-                    altseason_data = None
-                    try:
-                        logger.info("Получение данных Altcoin Season Index для комбинированного сообщения")
-                        altseason_data = self.altcoin_season_index.get_altseason_index()
-                        if altseason_data:
-                            logger.info(f"Успешно получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']} (Индекс: {altseason_data['index']})")
-                        else:
-                            logger.warning("Не удалось получить данные Altcoin Season Index")
-                    except Exception as e:
-                        logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
-                    
-                    # Формируем сообщение, начиная с информации об отсутствии рейтинга
-                    combined_message = error_message
-                    
-                    # Добавляем информацию о Fear & Greed Index, если доступна
-                    if fear_greed_data:
-                        fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-                        combined_message += f"\n\n{fear_greed_message}"
-                    
-                    # Добавляем информацию о Altcoin Season Index, если доступна
-                    if altseason_data and 'signal' in altseason_data and altseason_data['signal']:
-                        altseason_message = self.altcoin_season_index.format_altseason_message(altseason_data)
-                        if altseason_message:
-                            combined_message += f"\n\n{altseason_message}"
-                    
-                    # Отправляем сообщение
-                    self.telegram_bot.send_message(combined_message)
-                    
+                # Отправляем сообщение об ошибке, но только если это не связано с ошибкой получения данных
+                if "Failed to scrape SensorTower data" not in error_message:
+                    self.telegram_bot.send_message(error_message)
                 return False
             
             # Проверяем наличие данных о категориях и рейтинге
@@ -384,12 +327,6 @@ class SensorTowerScheduler:
                     logger.info(f"Ухудшение рейтинга: {self.last_sent_rank} → {current_rank}")
                     # Добавляем информацию о тренде в данные для отображения стрелки вниз
                     rankings_data["trend"] = {"direction": "down", "previous": self.last_sent_rank}
-                need_to_send = True
-            elif force_refresh:
-                # Если force_refresh=True, отправляем сообщение даже если рейтинг не изменился
-                logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}), но отправляем сообщение принудительно (force_refresh=True).")
-                # Используем нейтральный тренд
-                rankings_data["trend"] = {"direction": "same", "previous": self.last_sent_rank}
                 need_to_send = True
             else:
                 logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}). Сообщение не отправлено.")
