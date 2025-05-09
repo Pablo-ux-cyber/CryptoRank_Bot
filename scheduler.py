@@ -91,7 +91,8 @@ class SensorTowerScheduler:
                 if update_rank:
                     try:
                         logger.info("Получение данных о рейтинге Coinbase (ежедневное обновление в 11:10)")
-                        self.run_scraping_job()
+                        # Принудительно отправляем сообщение при плановой проверке в 11:10, даже если рейтинг не изменился
+                        self.run_scraping_job(force_refresh=True)
                         self.last_rank_update_date = today
                         logger.info(f"Данные о рейтинге Coinbase успешно обновлены: {now}")
                     except Exception as e:
@@ -341,6 +342,12 @@ class SensorTowerScheduler:
                     logger.info(f"Ухудшение рейтинга: {self.last_sent_rank} → {current_rank}")
                     # Добавляем информацию о тренде в данные для отображения стрелки вниз
                     rankings_data["trend"] = {"direction": "down", "previous": self.last_sent_rank}
+                need_to_send = True
+            elif force_refresh:
+                # Если force_refresh=True, отправляем сообщение даже если рейтинг не изменился
+                logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}), но отправляем сообщение принудительно (force_refresh=True).")
+                # Используем нейтральный тренд
+                rankings_data["trend"] = {"direction": "same", "previous": self.last_sent_rank}
                 need_to_send = True
             else:
                 logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}). Сообщение не отправлено.")
