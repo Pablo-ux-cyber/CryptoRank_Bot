@@ -65,10 +65,16 @@ class SensorTowerScheduler:
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
                 # Fear & Greed Index и Altcoin Season Index (в 11:10)
+                # Основной интервал 11:10-11:15 (штатное обновление)
                 if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
                         logger.info(f"Запланировано комплексное обновление данных в {now}")
+                # Резервный интервал 11:25-11:30 (проверка на случай, если основной пропущен)
+                elif (now.hour == 11 and now.minute >= 25 and now.minute <= 30):
+                    if self.last_rank_update_date is None or self.last_rank_update_date < today:
+                        update_rank = True
+                        logger.info(f"Запланировано резервное обновление данных (через 15 мин после основного) в {now}")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
@@ -76,7 +82,8 @@ class SensorTowerScheduler:
                 # Обновляем все данные, если пришло время
                 if update_rank:
                     try:
-                        logger.info("Получение данных о рейтинге Coinbase (ежедневное обновление в 11:10)")
+                        time_type = "основное" if now.minute <= 15 else "резервное (15 мин после основного)"
+                        logger.info(f"Получение данных о рейтинге Coinbase ({time_type} обновление в {now.hour}:{now.minute})")
                         self.run_scraping_job()
                         self.last_rank_update_date = today
                         logger.info(f"Данные о рейтинге Coinbase успешно обновлены: {now}")
