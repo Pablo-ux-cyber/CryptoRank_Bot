@@ -4,7 +4,6 @@ import time
 from datetime import datetime, timedelta
 
 from logger import logger
-from config import SCHEDULE_HOUR, SCHEDULE_MINUTE, ADDITIONAL_CHECK_HOUR, ADDITIONAL_CHECK_MINUTE
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
@@ -66,23 +65,10 @@ class SensorTowerScheduler:
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
                 # Fear & Greed Index и Altcoin Season Index (в 11:10)
-                if (now.hour == SCHEDULE_HOUR and now.minute >= SCHEDULE_MINUTE and now.minute <= SCHEDULE_MINUTE + 5):
+                if (now.hour == 11 and now.minute >= 10 and now.minute <= 15):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
                         logger.info(f"Запланировано комплексное обновление данных в {now}")
-                
-                # Дополнительная проверка в 11:25 для поздних обновлений в исходном канале
-                if (now.hour == ADDITIONAL_CHECK_HOUR and now.minute >= ADDITIONAL_CHECK_MINUTE and now.minute <= ADDITIONAL_CHECK_MINUTE + 5):
-                    if self.last_rank_update_date == today:  # Уже было обновление сегодня
-                        logger.info(f"Выполняется дополнительная проверка новых сообщений в канале в {now}")
-                        # Проверяем только новые сообщения
-                        try:
-                            current_rank = self.scraper.get_current_rank()
-                            if current_rank and current_rank != self.last_sent_rank:
-                                logger.info(f"Обнаружено позднее обновление рейтинга: {self.last_sent_rank} → {current_rank}")
-                                update_rank = True
-                        except Exception as e:
-                            logger.error(f"Ошибка при дополнительной проверке рейтинга: {str(e)}")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
