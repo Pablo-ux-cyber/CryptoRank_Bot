@@ -216,23 +216,12 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные Altcoin Season Index, если они доступны
-            # Используем переданные данные, а не делаем запрос снова
-            if (altseason_data and 
-                'signal' in altseason_data and altseason_data['signal'] and
-                'status' in altseason_data and altseason_data['status']):
-                
-                # Форматируем сообщение индекса сезона альткоинов
-                altseason_message = self.altcoin_season_index.format_altseason_message(altseason_data)
-                
-                # Если сообщение сформировано, добавляем его
-                if altseason_message:
-                    combined_message += f"\n\n{altseason_message}"
-                    logger.info(f"Added Altcoin Season Index data: {altseason_data['signal']} - {altseason_data['status']}")
-                else:
-                    logger.info("Altcoin Season Index данные не сформированы в сообщение - пропускаем эту часть")
+            # Altcoin Season Index удален из сообщений по запросу пользователя
+            # Данные по-прежнему собираются для веб-интерфейса, но не отправляются в Telegram
+            if altseason_data:
+                logger.info(f"Altcoin Season Index data collected but not included in message: {altseason_data['signal']} - {altseason_data['status']}")
             else:
-                logger.info("Altcoin Season Index данные недоступны или неполные - пропускаем эту часть сообщения")
+                logger.info("Altcoin Season Index данные недоступны")
             
             # Отправляем комбинированное сообщение
             if not self.telegram_bot.send_message(combined_message):
