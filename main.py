@@ -343,22 +343,13 @@ def test_message():
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
-        # Get Altcoin Season Index data
-        altseason_data = scheduler.altcoin_season_index.get_altseason_index()
-        
-        # Format individual messages
+        # Format individual messages (без Altcoin Season Index)
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
         fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
         
-        # Build combined message
+        # Build combined message (только рейтинг и Fear & Greed)
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
-        
-        if altseason_data:
-            altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
-            if altseason_message:
-                combined_message += "\n\n" + altseason_message
-                logger.info(f"Added Altcoin Season Index data to test message: {altseason_data['signal']}")
         
         # Send the message
         sent = scheduler.telegram_bot.send_message(combined_message)
