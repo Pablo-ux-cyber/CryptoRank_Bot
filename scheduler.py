@@ -1,6 +1,7 @@
 import os
 import threading
 import time
+import subprocess
 from datetime import datetime, timedelta
 
 from logger import logger
@@ -44,6 +45,32 @@ class SensorTowerScheduler:
             
         self.lockfile = None  # Для блокировки файла (предотвращения запуска нескольких экземпляров)
     
+    def run_rnk_script(self):
+        """
+        Запускает файл rnk.py в 7:59 MSK (4:59 UTC)
+        """
+        try:
+            logger.info("Запуск файла rnk.py...")
+            
+            # Запускаем rnk.py
+            result = subprocess.run([
+                "python3", "rnk.py"
+            ], capture_output=True, text=True, timeout=120)
+            
+            if result.returncode == 0:
+                logger.info("rnk.py выполнен успешно")
+                if result.stdout:
+                    logger.info(f"Вывод rnk.py: {result.stdout.strip()}")
+            else:
+                logger.error(f"rnk.py завершился с ошибкой (код {result.returncode})")
+                if result.stderr:
+                    logger.error(f"Ошибка rnk.py: {result.stderr.strip()}")
+                    
+        except subprocess.TimeoutExpired:
+            logger.error("rnk.py превысил время ожидания (120 секунд)")
+        except Exception as e:
+            logger.error(f"Ошибка при запуске rnk.py: {str(e)}")
+    
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
@@ -52,9 +79,10 @@ class SensorTowerScheduler:
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
         self.last_rank_update_date = None
+        self.last_rnk_update_date = None
         
         # При запуске не будем загружать данные Google Trends - получим их вместе с общим обновлением
-        logger.info("Планировщик запущен, первое обновление данных произойдет в 8:01 MSK")
+        logger.info("Планировщик запущен, rnk.py в 7:59 MSK, обновление данных в 8:01 MSK")
         
         while not self.stop_event.is_set():
             try:
@@ -62,9 +90,16 @@ class SensorTowerScheduler:
                 now = datetime.now()
                 today = now.date()
                 update_rank = False
+                run_rnk = False
+                
+                # Проверяем, не нужно ли запустить rnk.py (в 7:59 MSK = 4:59 UTC)
+                if (now.hour == 4 and now.minute >= 59 and now.minute <= 59):
+                    if self.last_rnk_update_date is None or self.last_rnk_update_date < today:
+                        run_rnk = True
+                        logger.info(f"Запланирован запуск rnk.py в {now} (UTC 4:59 = MSK 7:59)")
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
-                # Fear & Greed Index и Altcoin Season Index (в 8:01)
+                # Fear & Greed Index и Altcoin Season Index (в 8:01 MSK = 5:01 UTC)
                 if (now.hour == 5 and now.minute >= 1 and now.minute <= 6):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
@@ -72,6 +107,16 @@ class SensorTowerScheduler:
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
+                
+                # Запускаем rnk.py, если пришло время
+                if run_rnk:
+                    try:
+                        logger.info(f"Запуск rnk.py в {now.hour}:{now.minute}")
+                        self.run_rnk_script()
+                        self.last_rnk_update_date = today
+                        logger.info(f"rnk.py успешно выполнен: {now}")
+                    except Exception as e:
+                        logger.error(f"Ошибка при запуске rnk.py: {str(e)}")
                 
                 # Обновляем все данные, если пришло время
                 if update_rank:

@@ -105,6 +105,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Daily Auto-Updates**: When new dates added to JSON, system automatically detects and reports latest ranking
 - **Data Format**: JSON structure with date/rank pairs, system sorts by date to find latest entry
 - **Schedule Update**: Changed execution time to 05:01 UTC (08:01 MSK)
+- **Pre-execution Script**: Added rnk.py execution at 04:59 UTC (07:59 MSK) before main data collection
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection
