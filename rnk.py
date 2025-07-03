@@ -1,34 +1,97 @@
-#!/usr/bin/env python3
-"""
-Файл rnk.py - запускается в 7:59 MSK перед основным сбором данных
-"""
+    import requests
+    import json
+    from datetime import datetime, timedelta
 
-import os
-import sys
-from datetime import datetime
-from logger import logger
+    class SensorTowerParser:
+        """
+        Класс для получения и парсинга данных рейтинга приложения из SensorTower API.
 
-def main():
-    """
-    Основная функция файла rnk.py
-    Запускается в 7:59 MSK (4:59 UTC)
-    """
-    try:
-        current_time = datetime.now()
-        logger.info(f"rnk.py запущен в {current_time}")
-        
-        # Здесь можно добавить нужную логику
-        # Например:
-        # - Подготовка данных
-        # - Проверка соединений
-        # - Предварительные операции
-        
-        print(f"rnk.py executed at {current_time}")
-        logger.info("rnk.py выполнен успешно")
-        
-    except Exception as e:
-        logger.error(f"Ошибка в rnk.py: {str(e)}")
-        sys.exit(1)
+        Извлекает историю позиций приложения в рейтинге по дням и сохраняет результат в JSON-файл.
+        """
+        BASE_URL = (
+            "https://app.sensortower.com/api/ios/category/category_history?"
+            "app_ids%5B%5D=886427730&categories%5B%5D=6015&categories%5B%5D=0&categories%5B%5D=36&"
+            "chart_type_ids%5B%5D=topfreeipadapplications&chart_type_ids%5B%5D=topfreeapplications&"
+            "chart_type_ids%5B%5D=toppaidapplications&countries%5B%5D=US"
+        )
 
-if __name__ == "__main__":
-    main()
+        def __init__(self, start_date=None, end_date=None):
+            """
+            Инициализация парсера.
+
+            :param start_date: (str, optional) Начальная дата в формате YYYY-MM-DD. По умолчанию — месяц назад.
+            :param end_date: (str, optional) Конечная дата в формате YYYY-MM-DD. По умолчанию — сегодня.
+            """
+            today = datetime.utcnow().strftime("%Y-%m-%d")
+            if start_date is None:
+                month_ago = (datetime.utcnow() - timedelta(days=30)).strftime("%Y-%m-%d")
+                self.start_date = month_ago
+            else:
+                self.start_date = start_date
+            self.end_date = end_date or today
+            self.url = self._build_url()
+
+        def _build_url(self):
+            """
+            Формирует URL с нужными датами.
+            """
+            return f"{self.BASE_URL}&end_date={self.end_date}&start_date={self.start_date}"
+
+        def fetch_data(self):
+            """
+            Выполняет GET-запрос к API и возвращает ответ в формате JSON.
+
+            :return: (dict) Данные, полученные из API.
+            :raises: requests.HTTPError при ошибке запроса.
+            """
+            response = requests.get(self.url)
+            response.raise_for_status()
+            return response.json()
+
+        def parse_graph_data(self, data):
+            """
+            Извлекает из данных API историю позиций приложения по дням.
+
+            :param data: (dict) Исходные данные, полученные из API.
+            :return: (list of dict) Список словарей с ключами 'date' (строка, YYYY-MM-DD) и 'rank' (int).
+            """
+            try:
+                graph_data = (
+                    data["886427730"]["US"]["36"]["topfreeapplications"]["graphData"]
+                )
+            except (KeyError, TypeError):
+                return []
+            result = []
+            for entry in graph_data:
+                timestamp, rank, _ = entry
+                date = datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
+                result.append({"date": date, "rank": rank})
+            return result
+
+        def save_to_json(self, parsed_data, filename="parsed_ranks.json"):
+            """
+            Сохраняет распарсенные данные в JSON-файл.
+
+            :param parsed_data: (list of dict) Список данных для сохранения.
+            :param filename: (str) Имя файла для сохранения.
+            """
+            with open(filename, "w", encoding="utf-8") as f:
+                json.dump(parsed_data, f, ensure_ascii=False, indent=2)
+
+        def run(self, save_path="parsed_ranks.json"):
+            """
+            Основной метод: получает данные, парсит их и сохраняет в файл.
+
+            :param save_path: (str) Имя файла для сохранения результата.
+            :return: (list of dict) Список распарсенных данных.
+            """
+            data = self.fetch_data()
+            parsed = self.parse_graph_data(data)
+            self.save_to_json(parsed, save_path)
+            return parsed
+
+
+    if __name__ == "__main__":
+        parser = SensorTowerParser()
+        parsed = parser.run()
+        print(json.dumps(parsed, indent=2, ensure_ascii=False))
