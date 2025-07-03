@@ -290,8 +290,8 @@ class SensorTowerScraper:
                     rank = api_rank
                     logger.info(f"Successfully got rank from SensorTower API: {rank}")
                 else:
-                    logger.warning("SensorTower API returned no data - using default rank 300")
-                    rank = 300
+                    logger.warning("SensorTower API returned no data - no rank available")
+                    return None  # Возвращаем None если нет данных
             
             # Create data structure with obtained or fixed ranking
             app_name = "Coinbase"
