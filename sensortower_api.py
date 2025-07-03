@@ -1,66 +1,62 @@
 import requests
 import json
-from datetime import datetime, timedelta
 import logging
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
 class SensorTowerParser:
     """
     Класс для получения и парсинга данных рейтинга приложения из SensorTower API.
-    Извлекает текущий рейтинг приложения Coinbase из официального API.
+
+    Извлекает историю позиций приложения в рейтинге по дням и сохраняет результат в JSON-файл.
     """
-    
-    def __init__(self, app_id="886427730"):
+    API_URL = (
+        "https://app.sensortower.com/api/ios/category/category_history?"
+        "app_ids%5B%5D=886427730&categories%5B%5D=6015&categories%5B%5D=0&categories%5B%5D=36&"
+        "chart_type_ids%5B%5D=topfreeipadapplications&chart_type_ids%5B%5D=topfreeapplications&"
+        "chart_type_ids%5B%5D=toppaidapplications&countries%5B%5D=US&end_date=2025-07-03&start_date=2025-06-04"
+    )
+
+    def __init__(self, url=None):
         """
         Инициализация парсера.
-        
-        :param app_id: ID приложения Coinbase в App Store
-        """
-        self.app_id = app_id
-        self.base_url = "https://app.sensortower.com/api/ios/category/category_history"
-        
-    def _build_api_url(self, days_back=30):
-        """
-        Строит URL для запроса к SensorTower API
-        
-        :param days_back: Количество дней назад для получения данных
-        :return: Полный URL для запроса
-        """
-        end_date = datetime.now().strftime("%Y-%m-%d")
-        start_date = (datetime.now() - timedelta(days=days_back)).strftime("%Y-%m-%d")
-        
-        url = (
-            f"{self.base_url}?"
-            f"app_ids%5B%5D={self.app_id}&"
-            f"categories%5B%5D=6015&categories%5B%5D=0&categories%5B%5D=36&"
-            f"chart_type_ids%5B%5D=topfreeipadapplications&"
-            f"chart_type_ids%5B%5D=topfreeapplications&"
-            f"chart_type_ids%5B%5D=toppaidapplications&"
-            f"countries%5B%5D=US&"
-            f"end_date={end_date}&"
-            f"start_date={start_date}"
-        )
-        return url
 
-    def fetch_data(self, days_back=30):
+        :param url: (str, optional) URL для запроса к API. Если не указан, используется стандартный API_URL.
+        """
+        self.url = url or self.API_URL
+
+    def fetch_data(self):
         """
         Выполняет GET-запрос к API и возвращает ответ в формате JSON.
-        
-        :param days_back: Количество дней назад для получения данных
-        :return: Данные, полученные из API, или None при ошибке
+
+        :return: (dict) Данные, полученные из API.
+        :raises: requests.HTTPError при ошибке запроса.
         """
         try:
-            url = self._build_api_url(days_back)
-            logger.info(f"Fetching data from SensorTower API: {url}")
+            logger.info(f"Fetching data from SensorTower API: {self.url}")
             
-            response = requests.get(url, timeout=30)
+            # Добавляем заголовки браузера для обхода блокировки
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Language': 'en-US,en;q=0.9',
+                'Accept-Encoding': 'gzip, deflate, br',
+                'DNT': '1',
+                'Connection': 'keep-alive',
+                'Upgrade-Insecure-Requests': '1',
+                'Sec-Fetch-Dest': 'empty',
+                'Sec-Fetch-Mode': 'cors',
+                'Sec-Fetch-Site': 'same-origin',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+            
+            response = requests.get(self.url, headers=headers, timeout=30)
             response.raise_for_status()
-            
             data = response.json()
             logger.info("Successfully fetched data from SensorTower API")
             return data
-            
         except requests.exceptions.RequestException as e:
             logger.error(f"Error fetching data from SensorTower API: {str(e)}")
             return None
@@ -71,6 +67,28 @@ class SensorTowerParser:
             logger.error(f"Unexpected error fetching SensorTower data: {str(e)}")
             return None
 
+    def parse_graph_data(self, data):
+        """
+        Извлекает из данных API историю позиций приложения по дням.
+
+        :param data: (dict) Исходные данные, полученные из API.
+        :return: (list of dict) Список словарей с ключами 'date' (строка, YYYY-MM-DD) и 'rank' (int).
+        """
+        try:
+            graph_data = (
+                data["886427730"]["US"]["36"]["topfreeapplications"]["graphData"]
+            )
+        except (KeyError, TypeError):
+            logger.error("No graph data found in SensorTower API response")
+            return []
+        
+        result = []
+        for entry in graph_data:
+            timestamp, rank, _ = entry
+            date = datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
+            result.append({"date": date, "rank": rank})
+        return result
+
     def get_current_rank(self):
         """
         Получает текущий рейтинг приложения Coinbase.
@@ -78,97 +96,48 @@ class SensorTowerParser:
         :return: Текущий рейтинг (int) или None при ошибке
         """
         try:
-            data = self.fetch_data(days_back=7)  # Получаем данные за последнюю неделю
+            data = self.fetch_data()
             if not data:
                 logger.warning("No data received from SensorTower API")
                 return None
                 
-            # Извлекаем данные графика для topfreeapplications (основная категория)
-            try:
-                graph_data = (
-                    data[self.app_id]["US"]["36"]["topfreeapplications"]["graphData"]
-                )
-            except (KeyError, TypeError) as e:
-                logger.error(f"Error extracting graph data: {str(e)}")
-                logger.debug(f"Available data structure: {list(data.keys()) if data else 'No data'}")
-                return None
-            
+            # Парсим график данных для получения рейтинга
+            graph_data = self.parse_graph_data(data)
             if not graph_data:
-                logger.warning("No graph data available")
+                logger.warning("No graph data found in SensorTower API response")
                 return None
-            
-            # Получаем самую свежую запись (последний элемент)
+                
+            # Берем последний (самый свежий) рейтинг
             latest_entry = graph_data[-1]
-            timestamp, rank, _ = latest_entry
+            current_rank = latest_entry["rank"]
             
-            # Преобразуем timestamp в дату для логирования
-            date = datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
-            logger.info(f"Latest rank from SensorTower API: {rank} (date: {date})")
-            
-            return int(rank)
+            logger.info(f"Successfully got current rank from SensorTower API: {current_rank}")
+            return current_rank
             
         except Exception as e:
-            logger.error(f"Error getting current rank from SensorTower: {str(e)}")
+            logger.error(f"Error getting current rank from SensorTower API: {str(e)}")
             return None
 
-    def parse_graph_data(self, data):
-        """
-        Извлекает из данных API историю позиций приложения по дням.
-        
-        :param data: Исходные данные, полученные из API
-        :return: Список словарей с ключами 'date' и 'rank'
-        """
-        try:
-            graph_data = (
-                data[self.app_id]["US"]["36"]["topfreeapplications"]["graphData"]
-            )
-        except (KeyError, TypeError):
-            logger.error("Error extracting graph data for parsing")
-            return []
-            
-        result = []
-        for entry in graph_data:
-            timestamp, rank, _ = entry
-            date = datetime.utcfromtimestamp(timestamp).strftime("%Y-%m-%d")
-            result.append({"date": date, "rank": rank})
-            
-        return result
-
-    def save_to_json(self, parsed_data, filename="sensortower_ranks.json"):
+    def save_to_json(self, parsed_data, filename="parsed_ranks.json"):
         """
         Сохраняет распарсенные данные в JSON-файл.
-        
-        :param parsed_data: Список данных для сохранения
-        :param filename: Имя файла для сохранения
-        """
-        try:
-            with open(filename, "w", encoding="utf-8") as f:
-                json.dump(parsed_data, f, ensure_ascii=False, indent=2)
-            logger.info(f"Data saved to {filename}")
-        except Exception as e:
-            logger.error(f"Error saving data to {filename}: {str(e)}")
 
-    def get_rank_history(self, days_back=30, save_to_file=True):
+        :param parsed_data: (list of dict) Список данных для сохранения.
+        :param filename: (str) Имя файла для сохранения.
         """
-        Получает историю рейтингов за указанный период.
-        
-        :param days_back: Количество дней назад
-        :param save_to_file: Сохранить данные в файл
-        :return: Список данных с историей рейтингов
+        with open(filename, "w", encoding="utf-8") as f:
+            json.dump(parsed_data, f, ensure_ascii=False, indent=2)
+
+    def run(self, save_path="parsed_ranks.json"):
         """
-        try:
-            data = self.fetch_data(days_back)
-            if not data:
-                return []
-                
-            parsed = self.parse_graph_data(data)
-            
-            if save_to_file and parsed:
-                self.save_to_json(parsed)
-                
-            logger.info(f"Retrieved {len(parsed)} rank history entries")
-            return parsed
-            
-        except Exception as e:
-            logger.error(f"Error getting rank history: {str(e)}")
+        Основной метод: получает данные, парсит их и сохраняет в файл.
+
+        :param save_path: (str) Имя файла для сохранения результата.
+        :return: (list of dict) Список распарсенных данных.
+        """
+        data = self.fetch_data()
+        if not data:
             return []
+        parsed = self.parse_graph_data(data)
+        self.save_to_json(parsed, save_path)
+        return parsed

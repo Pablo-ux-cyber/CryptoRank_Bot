@@ -16,7 +16,7 @@ class SensorTowerScraper:
         self.telegram_source_channel = TELEGRAM_SOURCE_CHANNEL  # Channel where we get data from
         self.limit = 10  # Number of recent messages to check
         self.previous_rank = None  # Will be initialized with first value obtained
-        self.sensortower_api = SensorTowerParser(app_id=APP_ID)  # API парсер для SensorTower
+        self.sensortower_api = SensorTowerParser()  # API парсер для SensorTower
         
         # Попытка загрузить последний рейтинг из файла истории
         try:
