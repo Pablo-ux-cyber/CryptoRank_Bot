@@ -16,6 +16,7 @@ from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, T
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
 from routes.altseason_routes import altseason_bp
+from json_rank_reader import get_rank_from_json, get_latest_rank_date
 
 # Create Flask app
 app = Flask(__name__)
@@ -62,7 +63,7 @@ last_altseason_data = None
 last_altseason_time = None
 
 def get_current_rank():
-    """Get current rank from manual file or previous scrape"""
+    """Get current rank from manual file, JSON file, or previous scrape"""
     try:
         # Check if manual rank file exists
         if os.path.exists('manual_rank.txt'):
@@ -71,14 +72,19 @@ def get_current_rank():
                 if manual_rank and manual_rank.isdigit():
                     return int(manual_rank)
         
+        # Check JSON file for latest rank
+        json_rank = get_rank_from_json()
+        if json_rank is not None:
+            return json_rank
+        
         # Check last scrape data
         if last_scrape_data and last_scrape_data.get('categories'):
             return int(last_scrape_data['categories'][0]['rank'])
         
-        # Return default
-        return 300
+        # Return None if no data available
+        return None
     except Exception:
-        return 300
+        return None
 
 def start_scheduler_thread():
     """Start the scheduler in a separate thread"""

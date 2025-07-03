@@ -8,6 +8,7 @@ from datetime import datetime
 from config import APP_ID, TELEGRAM_SOURCE_CHANNEL
 from logger import logger
 from sensortower_api import SensorTowerParser
+from json_rank_reader import get_rank_from_json, get_latest_rank_date
 
 class SensorTowerScraper:
     def __init__(self):
@@ -283,15 +284,22 @@ class SensorTowerScraper:
                         logger.info(f"Using manual rank from file: {rank}")
                         os.remove(test_rank_file)
             
-            # Если нет ручной корректировки, пробуем SensorTower API
+            # Если нет ручной корректировки, пробуем JSON файл
             if rank is None:
-                api_rank = self.sensortower_api.get_current_rank()
-                if api_rank is not None:
-                    rank = api_rank
-                    logger.info(f"Successfully got rank from SensorTower API: {rank}")
+                json_rank = get_rank_from_json()
+                if json_rank is not None:
+                    rank = json_rank
+                    logger.info(f"Successfully got rank from JSON file: {rank}")
                 else:
-                    logger.warning("SensorTower API returned no data - no rank available")
-                    return None  # Возвращаем None если нет данных
+                    # В крайнем случае пробуем SensorTower API (для обратной совместимости)
+                    logger.info("JSON file has no data, trying SensorTower API")
+                    api_rank = self.sensortower_api.get_current_rank()
+                    if api_rank is not None:
+                        rank = api_rank
+                        logger.info(f"Successfully got rank from SensorTower API: {rank}")
+                    else:
+                        logger.warning("All data sources returned no data - no rank available")
+                        return None  # Возвращаем None если нет данных
             
             # Create data structure with obtained or fixed ranking
             app_name = "Coinbase"
