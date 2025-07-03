@@ -98,11 +98,12 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 03, 2025
-- **Fallback System Implementation**: Added automatic fallback to rank 300 when source channel @coinbaseappstore is unavailable (channel was deleted)
+- **Data Integrity Implementation**: System now shows either real SensorTower API data or "None" (no fallback values)
+- **Telegram Messaging Logic**: Messages sent to Telegram in both cases - with real rank or "None" when API unavailable
 - **Manual Rank Override**: Implemented web interface for manual rank adjustment via `manual_rank.txt` file
-- **Enhanced Error Handling**: Updated parsing logic to gracefully handle missing data sources
-- **Web Interface Updates**: Added manual rank control form with real-time feedback
-- **System Resilience**: Bot now continues operation despite source channel deletion
+- **Enhanced Error Handling**: Updated parsing logic to gracefully handle None values throughout the system
+- **Web Interface Updates**: Updated interface to display "None" when no data available from SensorTower API
+- **System Transparency**: Bot now provides authentic data status rather than synthetic fallback values
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection

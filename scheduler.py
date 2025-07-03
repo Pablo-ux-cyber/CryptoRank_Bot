@@ -260,8 +260,17 @@ class SensorTowerScheduler:
             rankings_data = self.scraper.scrape_category_rankings()
             
             if not rankings_data:
-                logger.info("SensorTower API не вернул данные, пропускаем отправку сообщения")
-                return False
+                logger.info("SensorTower API не вернул данные, создаем сообщение с None")
+                # Создаем структуру данных с None вместо рейтинга
+                rankings_data = {
+                    "app_name": "Coinbase",
+                    "app_id": "886427730",
+                    "date": time.strftime("%Y-%m-%d"),
+                    "categories": [
+                        {"category": "US - iPhone - Top Free", "rank": "None"}
+                    ],
+                    "trend": {"direction": "same", "previous": None}
+                }
             
             # Проверяем наличие данных о категориях и рейтинге
             if not rankings_data.get("categories") or not rankings_data["categories"]:
@@ -269,7 +278,12 @@ class SensorTowerScheduler:
                 return False
                 
             # Получаем текущий рейтинг
-            current_rank = int(rankings_data["categories"][0]["rank"])
+            rank_value = rankings_data["categories"][0]["rank"]
+            if rank_value == "None":
+                current_rank = None
+                logger.info("Текущий рейтинг: None (нет данных от SensorTower API)")
+            else:
+                current_rank = int(rank_value)
             
             # Получаем данные индекса страха и жадности
             fear_greed_data = None
@@ -299,20 +313,25 @@ class SensorTowerScheduler:
             if self.last_sent_rank is None:
                 logger.info(f"Первый запуск, предыдущее значение отсутствует. Текущий рейтинг: {current_rank}")
                 need_to_send = True
-                # Для тестирования добавляем искусственный тренд, чтобы проверить отображение индикаторов
-                rankings_data["trend"] = {"direction": "up", "previous": current_rank + 5}
-                logger.info(f"Добавлен искусственный тренд для тестирования отображения индикаторов: {current_rank + 5} → {current_rank}")
+                # Для тестирования добавляем искусственный тренд, если есть числовое значение
+                if current_rank is not None:
+                    rankings_data["trend"] = {"direction": "up", "previous": current_rank + 5}
+                    logger.info(f"Добавлен искусственный тренд для тестирования отображения индикаторов: {current_rank + 5} → {current_rank}")
+                else:
+                    rankings_data["trend"] = {"direction": "same", "previous": None}
             elif current_rank != self.last_sent_rank:
                 logger.info(f"Обнаружено изменение рейтинга: {current_rank} (предыдущий: {self.last_sent_rank})")
-                # Добавляем префикс для понимания, улучшение или ухудшение
-                if current_rank < self.last_sent_rank:
-                    logger.info(f"Улучшение рейтинга: {self.last_sent_rank} → {current_rank}")
-                    # Добавляем информацию о тренде в данные для отображения стрелки вверх
-                    rankings_data["trend"] = {"direction": "up", "previous": self.last_sent_rank}
+                # Добавляем префикс для понимания, улучшение или ухудшение (только для числовых значений)
+                if current_rank is not None and self.last_sent_rank is not None:
+                    if current_rank < self.last_sent_rank:
+                        logger.info(f"Улучшение рейтинга: {self.last_sent_rank} → {current_rank}")
+                        rankings_data["trend"] = {"direction": "up", "previous": self.last_sent_rank}
+                    else:
+                        logger.info(f"Ухудшение рейтинга: {self.last_sent_rank} → {current_rank}")
+                        rankings_data["trend"] = {"direction": "down", "previous": self.last_sent_rank}
                 else:
-                    logger.info(f"Ухудшение рейтинга: {self.last_sent_rank} → {current_rank}")
-                    # Добавляем информацию о тренде в данные для отображения стрелки вниз
-                    rankings_data["trend"] = {"direction": "down", "previous": self.last_sent_rank}
+                    # Если один из рейтингов None, просто показываем изменение
+                    rankings_data["trend"] = {"direction": "same", "previous": self.last_sent_rank}
                 need_to_send = True
             else:
                 logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}). Сообщение не отправлено.")
@@ -333,7 +352,7 @@ class SensorTowerScheduler:
                 # Делаем это синхронно с обновлением переменной, чтобы избежать рассинхронизации
                 try:
                     with open(self.rank_history_file, "w") as f:
-                        f.write(str(current_rank))
+                        f.write(str(current_rank) if current_rank is not None else "None")
                     logger.info(f"Рейтинг {current_rank} сохранен в файл {self.rank_history_file}")
                     
                     # Проверка записи в файл
