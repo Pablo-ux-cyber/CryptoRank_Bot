@@ -106,6 +106,8 @@ The system follows a modular, event-driven architecture with separate components
 - **Data Format**: JSON structure with date/rank pairs, system sorts by date to find latest entry
 - **Schedule Update**: Changed execution time to 05:01 UTC (08:01 MSK)
 - **Pre-execution Script**: Added rnk.py execution at 04:59 UTC (07:59 MSK) before main data collection
+- **SensorTower Integration**: Implemented user's SensorTower API code in rnk.py for automated data collection
+- **Dual Process System**: rnk.py collects fresh data at 7:59 MSK, main bot reads and sends at 8:01 MSK
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection
