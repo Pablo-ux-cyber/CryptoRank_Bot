@@ -61,6 +61,25 @@ last_fear_greed_time = None
 last_altseason_data = None
 last_altseason_time = None
 
+def get_current_rank():
+    """Get current rank from manual file or previous scrape"""
+    try:
+        # Check if manual rank file exists
+        if os.path.exists('manual_rank.txt'):
+            with open('manual_rank.txt', 'r') as f:
+                manual_rank = f.read().strip()
+                if manual_rank and manual_rank.isdigit():
+                    return int(manual_rank)
+        
+        # Check last scrape data
+        if last_scrape_data and last_scrape_data.get('categories'):
+            return int(last_scrape_data['categories'][0]['rank'])
+        
+        # Return default
+        return 300
+    except Exception:
+        return 300
+
 def start_scheduler_thread():
     """Start the scheduler in a separate thread"""
     global scheduler
@@ -119,7 +138,8 @@ def index():
                           last_fear_greed_data=last_fear_greed_data,
                           last_fear_greed_time=last_fear_greed_time,
                           last_altseason_data=last_altseason_data,
-                          last_altseason_time=last_altseason_time)
+                          last_altseason_time=last_altseason_time,
+                          current_rank=get_current_rank())
 
 @app.route('/test-telegram')
 def test_telegram():
@@ -289,7 +309,11 @@ def get_altseason_index():
         logger.info("Запрос данных Altcoin Season Index...")
         altseason_data = scheduler.altcoin_season_index.get_altseason_index()
         altseason_message = scheduler.altcoin_season_index.format_altseason_message(altseason_data)
-        logger.info(f"Получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']}")
+        
+        if altseason_data:
+            logger.info(f"Получены данные Altcoin Season Index: {altseason_data['signal']} - {altseason_data['status']}")
+        else:
+            logger.warning("Не удалось получить данные Altcoin Season Index")
         
         if altseason_data:
             # Сохраняем данные для отображения
@@ -439,6 +463,24 @@ def test_format():
         })
     except Exception as e:
         logger.error(f"Error testing message format: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/set_manual_rank', methods=['POST'])
+def set_manual_rank():
+    """Set manual rank for Coinbase app"""
+    try:
+        rank = request.form.get('rank')
+        if not rank or not rank.isdigit():
+            return jsonify({"status": "error", "message": "Invalid rank value"}), 400
+        
+        # Save rank to file
+        with open('manual_rank.txt', 'w') as f:
+            f.write(rank)
+        
+        logger.info(f"Manual rank set to: {rank}")
+        return jsonify({"status": "success", "message": f"Manual rank set to {rank}"})
+    except Exception as e:
+        logger.error(f"Error setting manual rank: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 # Set up signal handler for graceful shutdown

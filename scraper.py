@@ -269,8 +269,8 @@ class SensorTowerScraper:
         logger.info(f"Attempting to get ranking data from Telegram channel: {self.telegram_source_channel}")
         
         try:
-            # Проверяем наличие тестового файла для ручного ввода рейтинга
-            test_rank_file = "/tmp/test_rank"
+            # Проверяем наличие файла для ручного ввода рейтинга
+            test_rank_file = "manual_rank.txt"
             if os.path.exists(test_rank_file):
                 try:
                     with open(test_rank_file, "r") as f:
@@ -325,9 +325,9 @@ class SensorTowerScraper:
             messages = self._get_messages_from_telegram()
             
             if not messages or len(messages) == 0:
-                logger.warning("No messages retrieved from Telegram channel")
-                logger.error("Cannot get reliable data - returning None instead of using fallback value")
-                return None
+                logger.warning("No messages retrieved from Telegram channel - using default rank 300")
+                # Use default rank 300 when channel is unavailable
+                rank = "300"
             else:
                 # First message (the most recent by date) containing the ranking
                 ranking = None
@@ -354,9 +354,8 @@ class SensorTowerScraper:
                                 break
                 
                 if ranking is None:
-                    logger.warning("Could not find ranking in any of the messages")
-                    logger.error("Cannot get reliable data - returning None instead of using fallback value")
-                    return None
+                    logger.warning("Could not find ranking in any of the messages - using default rank 300")
+                    rank = "300"
                 else:
                     rank = str(ranking)
                     logger.info(f"Successfully scraped ranking from Telegram: {rank}")

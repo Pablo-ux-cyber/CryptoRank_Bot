@@ -173,5 +173,15 @@
     "value": 73,
     "classification": "Greed",
     "timestamp": "2025-05-09T13:00:55.401784"
+  },
+  {
+    "value": 50,
+    "classification": "Neutral",
+    "timestamp": "2025-05-31T11:27:44.477504"
+  },
+  {
+    "value": 56,
+    "classification": "Greed",
+    "timestamp": "2025-06-01T11:26:11.548963"
   }
 ]

@@ -112,6 +112,21 @@
                         {% endif %}
                         
                         <div class="mt-4">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5>Manual Rank Override</h5>
+                                    <div class="mb-3">
+                                        <label for="manualRank" class="form-label">Set Coinbase Rank (Current: {{ current_rank or 'N/A' }})</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="manualRank" placeholder="Enter rank number" min="1" max="1000">
+                                            <button class="btn btn-warning" type="button" onclick="setManualRank()">Set Rank</button>
+                                        </div>
+                                        <div class="form-text">
+                                            This will override the default rank of 300 for the next message.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="/trigger-scrape?force=true" class="btn btn-danger">Force Send Message</a>
                                 <a href="/get-altseason-index" class="btn btn-success">Get Altcoin Season Index</a>
@@ -332,5 +347,40 @@
             </div>
         </div>
     </div>
+
+    <script>
+        function setManualRank() {
+            const rankInput = document.getElementById('manualRank');
+            const rank = rankInput.value;
+            
+            if (!rank || rank < 1 || rank > 1000) {
+                alert('Please enter a valid rank between 1 and 1000');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('rank', rank);
+            
+            fetch('/set_manual_rank', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    alert('Manual rank set successfully! It will be used in the next message.');
+                    rankInput.value = '';
+                    // Refresh the page to show updated current rank
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error setting manual rank');
+            });
+        }
+    </script>
 </body>
 </html>

@@ -243,5 +243,19 @@
     "change_direction": null,
     "change_value": null,
     "timestamp": "2025-05-09T13:00:55.401202"
+  },
+  {
+    "rank": 335,
+    "category": "Finance",
+    "change_direction": "down",
+    "change_value": 88,
+    "timestamp": "2025-05-31T11:27:44.472330"
+  },
+  {
+    "rank": 383,
+    "category": "Finance",
+    "change_direction": "down",
+    "change_value": 48,
+    "timestamp": "2025-06-01T11:26:11.546247"
   }
 ]
