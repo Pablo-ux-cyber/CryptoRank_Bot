@@ -98,12 +98,12 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 03, 2025
-- **Data Integrity Implementation**: System now shows either real SensorTower API data or "None" (no fallback values)
-- **Telegram Messaging Logic**: Messages sent to Telegram in both cases - with real rank or "None" when API unavailable
-- **Manual Rank Override**: Implemented web interface for manual rank adjustment via `manual_rank.txt` file
-- **Enhanced Error Handling**: Updated parsing logic to gracefully handle None values throughout the system
-- **Web Interface Updates**: Updated interface to display "None" when no data available from SensorTower API
-- **System Transparency**: Bot now provides authentic data status rather than synthetic fallback values
+- **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
+- **Automatic Latest Date Detection**: Bot finds entry with most recent date and uses corresponding rank
+- **Simplified Data Flow**: Removed SensorTower API dependency, system reads: Manual Override → JSON File → No Data
+- **Real Data Integration**: Successfully shows rank 297 for date 2025-07-03 from user's parsed data
+- **Daily Auto-Updates**: When new dates added to JSON, system automatically detects and reports latest ranking
+- **Data Format**: JSON structure with date/rank pairs, system sorts by date to find latest entry
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection

@@ -63,7 +63,7 @@ last_altseason_data = None
 last_altseason_time = None
 
 def get_current_rank():
-    """Get current rank from manual file, JSON file, or previous scrape"""
+    """Get current rank from manual file or JSON file"""
     try:
         # Check if manual rank file exists
         if os.path.exists('manual_rank.txt'):
@@ -72,14 +72,10 @@ def get_current_rank():
                 if manual_rank and manual_rank.isdigit():
                     return int(manual_rank)
         
-        # Check JSON file for latest rank
+        # Read from JSON file
         json_rank = get_rank_from_json()
         if json_rank is not None:
             return json_rank
-        
-        # Check last scrape data
-        if last_scrape_data and last_scrape_data.get('categories'):
-            return int(last_scrape_data['categories'][0]['rank'])
         
         # Return None if no data available
         return None
