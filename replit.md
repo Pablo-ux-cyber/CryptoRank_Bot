@@ -24,7 +24,7 @@ The system follows a modular, event-driven architecture with separate components
 ## Key Components
 
 ### 1. Data Collection Modules
-- **SensorTowerScraper** (`scraper.py`): Scrapes Coinbase app ranking from Telegram channel @coinbaseappstore
+- **SensorTowerScraper** (`scraper.py`): Monitors Coinbase app ranking with fallback to rank 300 (source channel deleted)
 - **FearGreedIndexTracker** (`fear_greed_index.py`): Fetches cryptocurrency Fear & Greed Index
 - **GoogleTrendsPulse** (`google_trends_pulse.py`): Analyzes search trends for crypto-related terms
 - **AltcoinSeasonIndex** (`altcoin_season_index.py`): Calculates altcoin season indicators
@@ -95,10 +95,20 @@ The system follows a modular, event-driven architecture with separate components
 - Lock file cleanup utilities for maintenance
 - Built-in error handling and fallback mechanisms
 
-## Changelog
+## Recent Changes
 
-Changelog:
-- July 03, 2025. Initial setup
+### July 03, 2025
+- **Fallback System Implementation**: Added automatic fallback to rank 300 when source channel @coinbaseappstore is unavailable (channel was deleted)
+- **Manual Rank Override**: Implemented web interface for manual rank adjustment via `manual_rank.txt` file
+- **Enhanced Error Handling**: Updated parsing logic to gracefully handle missing data sources
+- **Web Interface Updates**: Added manual rank control form with real-time feedback
+- **System Resilience**: Bot now continues operation despite source channel deletion
+
+### Initial Setup
+- Core bot functionality with multi-source data collection
+- Telegram integration with scheduled messaging
+- Web dashboard for monitoring and manual controls
+- JSON-based data persistence system
 
 ## User Preferences
 
