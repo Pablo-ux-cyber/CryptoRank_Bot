@@ -267,131 +267,31 @@ class SensorTowerScraper:
         Returns:
             dict: A dictionary containing the scraped rankings data
         """
-        # Try to get data using multiple sources in priority order:
-        # 1. Manual rank file (highest priority)
-        # 2. SensorTower API (preferred source)
-        # 3. Telegram channel (fallback)
-        # 4. Default value 300 (last resort)
+        # Простая логика: сначала пробуем SensorTower API, если не работает - используем 300
+        logger.info("Attempting to get ranking data from SensorTower API")
         
         rank = None
-        data_source = None
         
         try:
-            # Первый приоритет: проверяем наличие файла для ручного ввода рейтинга
+            # Проверяем ручную корректировку
             test_rank_file = "manual_rank.txt"
             if os.path.exists(test_rank_file):
-                try:
-                    with open(test_rank_file, "r") as f:
-                        manual_rank = f.read().strip()
-                        if manual_rank and manual_rank.isdigit():
-                            rank = int(manual_rank)
-                            data_source = "manual_file"
-                            logger.info(f"Using manual rank from file: {rank}")
-                            # Удаляем файл после использования
-                            os.remove(test_rank_file)
-                            
-                            # Create a structured data format
-                            data = {
-                                "app_name": "Coinbase",
-                                "app_id": self.app_id,
-                                "date": time.strftime("%Y-%m-%d"),
-                                "categories": [
-                                    {"category": "US - iPhone - Top Free", "rank": str(rank)}
-                                ]
-                            }
-                            
-                            # Для тестирования тренда сравним с предыдущим значением
-                            current_rank_int = rank
-                            
-                            if self.previous_rank is None:
-                                self.previous_rank = current_rank_int
-                                data["trend"] = {"direction": "same", "previous": current_rank_int}
-                            else:
-                                # Determine trend direction
-                                if current_rank_int < self.previous_rank:
-                                    # Rank improved (smaller number is better)
-                                    data["trend"] = {"direction": "up", "previous": self.previous_rank}
-                                elif current_rank_int > self.previous_rank:
-                                    # Rank worsened (larger number is worse)
-                                    data["trend"] = {"direction": "down", "previous": self.previous_rank}
-                                else:
-                                    # Rank stayed the same
-                                    data["trend"] = {"direction": "same", "previous": self.previous_rank}
-                                
-                                # Log the trend
-                                trend_direction = data["trend"]["direction"]
-                                logger.info(f"Test rank trend: {self.previous_rank} → {current_rank_int} ({trend_direction})")
-                            
-                            # Update previous rank for next time
-                            self.previous_rank = current_rank_int
-                            self.last_scrape_data = data
-                            
-                            return data
-                except Exception as e:
-                    logger.error(f"Error reading manual rank file: {str(e)}")
+                with open(test_rank_file, "r") as f:
+                    manual_rank = f.read().strip()
+                    if manual_rank and manual_rank.isdigit():
+                        rank = int(manual_rank)
+                        logger.info(f"Using manual rank from file: {rank}")
+                        os.remove(test_rank_file)
             
-            # Второй приоритет: попытка получить данные через SensorTower API
+            # Если нет ручной корректировки, пробуем SensorTower API
             if rank is None:
-                logger.info("Attempting to get ranking data from SensorTower API")
-                try:
-                    # Получаем API ключ из переменных окружения
-                    sensortower_api_key = os.environ.get('SENSORTOWER_API_KEY')
-                    
-                    api_rank = self.sensortower_api.get_current_rank(api_key=sensortower_api_key)
-                    if api_rank is not None:
-                        rank = api_rank
-                        data_source = "sensortower_api"
-                        logger.info(f"Successfully got rank from SensorTower API: {rank}")
-                    else:
-                        logger.info("SensorTower API returned no data (likely requires authentication)")
-                except Exception as e:
-                    logger.warning(f"SensorTower API unavailable: {str(e)}")
-            
-            # Третий приоритет: get messages from Telegram channel as fallback
-            if rank is None:
-                logger.info("Attempting to get ranking data from Telegram channel")
-                messages = self._get_messages_from_telegram()
-                
-                if not messages or len(messages) == 0:
-                    logger.warning("No messages retrieved from Telegram channel - using default rank 300")
-                    rank = 300
-                    data_source = "default_fallback"
+                api_rank = self.sensortower_api.get_current_rank()
+                if api_rank is not None:
+                    rank = api_rank
+                    logger.info(f"Successfully got rank from SensorTower API: {rank}")
                 else:
-                    # Parse messages from Telegram channel
-                    ranking = None
-                    
-                    # Check the first message (which should be the most recent)
-                    if messages:
-                        logger.info("Checking most recent message for ranking...")
-                        first_message = messages[0]
-                        extracted_ranking = self._extract_ranking_from_message(first_message)
-                        if extracted_ranking is not None:
-                            ranking = extracted_ranking
-                            logger.info(f"Found ranking in the most recent message: {ranking}")
-                        else:
-                            logger.warning("Most recent message does not contain ranking, checking other messages...")
-                            # If the first message doesn't contain ranking, check the others
-                            for message in messages[1:]:
-                                extracted_ranking = self._extract_ranking_from_message(message)
-                                if extracted_ranking is not None:
-                                    ranking = extracted_ranking
-                                    logger.info(f"Found ranking in an older message: {ranking}")
-                                    break
-                    
-                    if ranking is None:
-                        logger.warning("Could not find ranking in any of the messages - using default rank 300")
-                        rank = 300
-                        data_source = "default_fallback"
-                    else:
-                        rank = int(ranking)
-                        data_source = "telegram_channel"
-                        logger.info(f"Successfully scraped ranking from Telegram: {rank}")
-            
-            # Последний приоритет: default value если ничего не получили
-            if rank is None:
-                logger.warning("All data sources failed - using default rank 300")
-                rank = 300
-                data_source = "default_fallback"
+                    logger.warning("SensorTower API returned no data - using default rank 300")
+                    rank = 300
             
             # Create data structure with obtained or fixed ranking
             app_name = "Coinbase"

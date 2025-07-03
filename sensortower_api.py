@@ -43,34 +43,18 @@ class SensorTowerParser:
         )
         return url
 
-    def fetch_data(self, days_back=30, api_key=None):
+    def fetch_data(self, days_back=30):
         """
         Выполняет GET-запрос к API и возвращает ответ в формате JSON.
         
         :param days_back: Количество дней назад для получения данных
-        :param api_key: API ключ для аутентификации (опционально)
         :return: Данные, полученные из API, или None при ошибке
         """
         try:
             url = self._build_api_url(days_back)
-            headers = {}
+            logger.info(f"Fetching data from SensorTower API: {url}")
             
-            # Добавляем аутентификацию если предоставлен API ключ
-            if api_key:
-                headers['Authorization'] = f'Bearer {api_key}'
-            
-            logger.info("Attempting to fetch data from SensorTower API")
-            
-            response = requests.get(url, headers=headers, timeout=30)
-            
-            if response.status_code == 403:
-                logger.warning("SensorTower API returned 403 Forbidden - authentication required")
-                logger.info("SensorTower API requires authentication. Please provide API key for access.")
-                return None
-            elif response.status_code == 401:
-                logger.warning("SensorTower API returned 401 Unauthorized - invalid API key")
-                return None
-            
+            response = requests.get(url, timeout=30)
             response.raise_for_status()
             
             data = response.json()
@@ -78,12 +62,7 @@ class SensorTowerParser:
             return data
             
         except requests.exceptions.RequestException as e:
-            if "403" in str(e):
-                logger.warning("SensorTower API access denied (403) - authentication required")
-            elif "401" in str(e):
-                logger.warning("SensorTower API authentication failed (401) - invalid credentials")
-            else:
-                logger.error(f"Error fetching data from SensorTower API: {str(e)}")
+            logger.error(f"Error fetching data from SensorTower API: {str(e)}")
             return None
         except json.JSONDecodeError as e:
             logger.error(f"Error parsing JSON response from SensorTower API: {str(e)}")
@@ -92,15 +71,14 @@ class SensorTowerParser:
             logger.error(f"Unexpected error fetching SensorTower data: {str(e)}")
             return None
 
-    def get_current_rank(self, api_key=None):
+    def get_current_rank(self):
         """
         Получает текущий рейтинг приложения Coinbase.
         
-        :param api_key: API ключ для аутентификации (опционально)
         :return: Текущий рейтинг (int) или None при ошибке
         """
         try:
-            data = self.fetch_data(days_back=7, api_key=api_key)  # Получаем данные за последнюю неделю
+            data = self.fetch_data(days_back=7)  # Получаем данные за последнюю неделю
             if not data:
                 logger.warning("No data received from SensorTower API")
                 return None
