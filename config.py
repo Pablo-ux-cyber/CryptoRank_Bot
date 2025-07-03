@@ -31,8 +31,8 @@ TELEGRAM_CHANNEL_ID = os.environ.get("TELEGRAM_CHANNEL_ID", "@cryptorankbase")  
 TELEGRAM_SOURCE_CHANNEL = os.environ.get("TELEGRAM_SOURCE_CHANNEL", "@coinbaseappstore")
 
 # Scheduler Configuration
-SCHEDULE_HOUR = 8  # 8 AM
-SCHEDULE_MINUTE = 1  # 1 minute - 8:01 AM UTC (11:01 MSK)
+SCHEDULE_HOUR = 5  # 5 AM UTC (8:01 MSK)
+SCHEDULE_MINUTE = 1  # 1 minute - 5:01 AM UTC (8:01 MSK)
 
 # Selenium Configuration
 SELENIUM_DRIVER_PATH = os.getenv("SELENIUM_DRIVER_PATH", "/usr/bin/chromedriver")

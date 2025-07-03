@@ -116,9 +116,9 @@ def index():
     # Calculate next run time
     next_run = "Not scheduled"
     if scheduler:
-        # Рассчитываем время следующего запуска (8:01 UTC)
+        # Рассчитываем время следующего запуска (5:01 UTC = 8:01 MSK)
         now = datetime.now()
-        next_scheduled = now.replace(hour=8, minute=1, second=0, microsecond=0)
+        next_scheduled = now.replace(hour=5, minute=1, second=0, microsecond=0)
         
         # Если время уже прошло сегодня, планируем на завтра
         if next_scheduled <= now:

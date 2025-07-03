@@ -54,7 +54,7 @@ class SensorTowerScheduler:
         self.last_rank_update_date = None
         
         # При запуске не будем загружать данные Google Trends - получим их вместе с общим обновлением
-        logger.info("Планировщик запущен, первое обновление данных произойдет в 8:01")
+        logger.info("Планировщик запущен, первое обновление данных произойдет в 8:01 MSK")
         
         while not self.stop_event.is_set():
             try:
@@ -65,10 +65,10 @@ class SensorTowerScheduler:
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
                 # Fear & Greed Index и Altcoin Season Index (в 8:01)
-                if (now.hour == 8 and now.minute >= 1 and now.minute <= 6):
+                if (now.hour == 5 and now.minute >= 1 and now.minute <= 6):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"Запланировано комплексное обновление данных в {now} (UTC 8:01)")
+                        logger.info(f"Запланировано комплексное обновление данных в {now} (UTC 5:01 = MSK 8:01)")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
@@ -153,9 +153,9 @@ class SensorTowerScheduler:
             self.thread.daemon = True
             self.thread.start()
             
-            # Рассчитываем время следующего запуска (8:01 UTC)
+            # Рассчитываем время следующего запуска (5:01 UTC = 8:01 MSK)
             now = datetime.now()
-            next_run = now.replace(hour=8, minute=1, second=0, microsecond=0)
+            next_run = now.replace(hour=5, minute=1, second=0, microsecond=0)
             
             # Если время уже прошло сегодня, планируем на завтра
             if next_run <= now:
