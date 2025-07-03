@@ -47,14 +47,14 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения, Fear & Greed Index и Altcoin Season Index один раз в день в 11:25
+        - Проверяет рейтинг приложения, Fear & Greed Index и Altcoin Season Index один раз в день в 8:01
         - Все данные собираются за один раз и отправляются одним сообщением
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
         self.last_rank_update_date = None
         
         # При запуске не будем загружать данные Google Trends - получим их вместе с общим обновлением
-        logger.info("Планировщик запущен, первое обновление данных произойдет в 11:25")
+        logger.info("Планировщик запущен, первое обновление данных произойдет в 8:01")
         
         while not self.stop_event.is_set():
             try:
@@ -64,11 +64,11 @@ class SensorTowerScheduler:
                 update_rank = False
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
-                # Fear & Greed Index и Altcoin Season Index (в 11:25)
-                if (now.hour == 11 and now.minute >= 25 and now.minute <= 30):
+                # Fear & Greed Index и Altcoin Season Index (в 8:01)
+                if (now.hour == 8 and now.minute >= 1 and now.minute <= 6):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"Запланировано комплексное обновление данных в {now} (MSK 11:25)")
+                        logger.info(f"Запланировано комплексное обновление данных в {now} (UTC 8:01)")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
@@ -153,7 +153,14 @@ class SensorTowerScheduler:
             self.thread.daemon = True
             self.thread.start()
             
-            next_run = datetime.now() + timedelta(minutes=5)
+            # Рассчитываем время следующего запуска (8:01 UTC)
+            now = datetime.now()
+            next_run = now.replace(hour=8, minute=1, second=0, microsecond=0)
+            
+            # Если время уже прошло сегодня, планируем на завтра
+            if next_run <= now:
+                next_run += timedelta(days=1)
+                
             logger.info(f"Scheduler started. Next run at: {next_run}")
             
             # Uncomment to run immediately for testing

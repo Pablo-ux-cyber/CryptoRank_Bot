@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a Python-based Telegram bot that monitors cryptocurrency market sentiment indicators and automatically sends notifications to Telegram channels. The bot tracks Coinbase app rankings in the App Store, cryptocurrency Fear & Greed Index, Google Trends data for crypto-related terms, and Altcoin Season Index to provide comprehensive market sentiment analysis.
+This is a Python-based Telegram bot that monitors cryptocurrency market sentiment indicators and automatically sends notifications to Telegram channels. The bot tracks Coinbase app rankings from user-provided JSON data, cryptocurrency Fear & Greed Index, Google Trends data for crypto-related terms, and Altcoin Season Index to provide comprehensive market sentiment analysis. Runs daily at 8:01 UTC (11:01 MSK).
 
 ## System Architecture
 
@@ -44,7 +44,7 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Data Flow
 
-1. **Scheduled Execution**: The scheduler runs daily at 08:25 UTC (11:25 MSK)
+1. **Scheduled Execution**: The scheduler runs daily at 08:01 UTC (11:01 MSK)
 2. **Data Collection**: Each module fetches its respective data from external sources
 3. **Change Detection**: System compares new data with historical values stored in JSON files
 4. **Message Composition**: If changes are detected, a formatted message is created
@@ -104,6 +104,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Real Data Integration**: Successfully shows rank 297 for date 2025-07-03 from user's parsed data
 - **Daily Auto-Updates**: When new dates added to JSON, system automatically detects and reports latest ranking
 - **Data Format**: JSON structure with date/rank pairs, system sorts by date to find latest entry
+- **Schedule Update**: Changed execution time from 08:25 UTC to 08:01 UTC (11:01 MSK)
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection
