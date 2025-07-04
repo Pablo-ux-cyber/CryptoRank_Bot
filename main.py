@@ -63,6 +63,8 @@ last_fear_greed_data = None
 last_fear_greed_time = None
 last_altseason_data = None
 last_altseason_time = None
+last_ma200_data = None
+last_ma200_time = None
 
 def get_current_rank():
     """Get current rank from manual file or JSON file"""
@@ -149,6 +151,8 @@ def index():
                           last_fear_greed_time=last_fear_greed_time,
                           last_altseason_data=last_altseason_data,
                           last_altseason_time=last_altseason_time,
+                          last_ma200_data=last_ma200_data,
+                          last_ma200_time=last_ma200_time,
                           current_rank=get_current_rank())
 
 @app.route('/test-telegram')
@@ -352,6 +356,51 @@ def get_altseason_index():
         logger.error(f"Error fetching Altcoin Season Index data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/get-ma200-index')
+def get_ma200_index():
+    """Manually fetch MA200 Market Indicator data and send it as a message"""
+    global last_ma200_data, last_ma200_time
+    
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+    
+    try:
+        # Импортируем MA200 индикатор
+        from ma200_indicator import MA200Indicator
+        ma200_indicator = MA200Indicator()
+        
+        # Получаем данные MA200 индикатора
+        logger.info("Запрос данных MA200 Market Indicator...")
+        ma200_data = ma200_indicator.get_ma200_indicator()
+        
+        if ma200_data:
+            logger.info(f"Получены данные MA200: {ma200_data['percentage']}% ({ma200_data['signal']}) - {ma200_data['status']}")
+            
+            # Сохраняем данные для отображения
+            last_ma200_data = ma200_data
+            last_ma200_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Форматируем сообщение
+            ma200_message = ma200_indicator.format_ma200_message(ma200_data)
+            
+            if ma200_message:
+                # Отправляем сообщение
+                sent = scheduler.telegram_bot.send_message(ma200_message)
+                
+                if sent:
+                    flash(f"MA200 Market Indicator ({ma200_data['percentage']}% - {ma200_data['status']}) successfully sent to Telegram!", "success")
+                else:
+                    flash("MA200 data fetched but failed to send to Telegram.", "warning")
+            else:
+                flash("Failed to format MA200 message.", "warning")
+                
+            return redirect(url_for('index'))
+        else:
+            return jsonify({"status": "error", "message": "Failed to retrieve MA200 Market Indicator data"}), 500
+    except Exception as e:
+        logger.error(f"Error fetching MA200 Market Indicator data: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/health')
 def health():
     """Health check endpoint"""
@@ -360,7 +409,7 @@ def health():
 @app.route('/test-message')
 def test_message():
     """Manually send a test message with cached data to the test channel"""
-    global last_fear_greed_data, last_scrape_data, last_altseason_data
+    global last_fear_greed_data, last_scrape_data, last_altseason_data, last_ma200_data
     
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
