@@ -29,8 +29,28 @@ def background_refresh_all_coins():
     
     try:
         ma200_indicator = MA200Indicator()
+        
+        # Monkey patch the logger to capture progress
+        original_info = ma200_indicator.logger.info
+        def patched_info(message):
+            if "Обрабатываем монету" in message and "/" in message:
+                try:
+                    # Extract progress from message like "Обрабатываем монету 5/50: BTC"
+                    parts = message.split("Обрабатываем монету ")[1].split("/")
+                    current = int(parts[0])
+                    background_refresh_status['progress'] = current
+                    background_refresh_status['current_coin'] = message.split(": ")[-1] if ": " in message else ""
+                except:
+                    pass
+            return original_info(message)
+        
+        ma200_indicator.logger.info = patched_info
+        
+        # Run the calculation
         ma200_indicator.calculate_ma200_percentage(force_refresh=True)
         background_refresh_status['completed_at'] = time.time()
+        background_refresh_status['progress'] = 50
+        
     except Exception as e:
         print(f"Background refresh error: {e}")
     finally:
