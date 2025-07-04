@@ -223,56 +223,85 @@ class MA200Indicator:
 
     def _calculate_from_cache(self, cache):
         """
-        Быстрый расчет на основе кешированных данных
+        Расчет исторических данных MA200 на основе кешированных данных
         
         Args:
             cache (dict): Кешированные данные
             
         Returns:
-            pd.DataFrame: Результаты расчетов
+            pd.DataFrame: Результаты расчетов с реальными историческими данными
         """
         try:
             results = []
             end_date = datetime.now().date()
             
-            # Рассчитываем для последнего дня на основе кеша
-            coins_above_ma200 = 0
-            total_coins = 0
+            # Преобразуем кешированные данные в pandas DataFrames
+            coin_data = {}
+            valid_coins = []
             
-            for symbol, coin_data in cache.items():
-                if 'data' in coin_data and len(coin_data['data']) >= 200:
-                    total_coins += 1
-                    # Получаем последние данные (правильный формат: price, не close)
-                    prices = [day['price'] for day in coin_data['data']]
-                    if len(prices) >= 200:
-                        recent_price = prices[-1]  # Последняя цена
-                        ma200 = sum(prices[-200:]) / 200  # MA200
-                        if recent_price > ma200:
-                            coins_above_ma200 += 1
+            for symbol, data in cache.items():
+                if 'data' in data and len(data['data']) >= (self.ma_period + self.history_days):
+                    try:
+                        df = pd.DataFrame(data['data'])
+                        df['date'] = pd.to_datetime(df['date'])
+                        df.set_index('date', inplace=True)
+                        df.sort_index(inplace=True)
+                        coin_data[symbol] = df
+                        valid_coins.append(symbol)
+                    except Exception as e:
+                        self.logger.warning(f"Ошибка обработки кеша для {symbol}: {str(e)}")
+                        continue
             
-            if total_coins > 0:
-                percentage = (coins_above_ma200 / total_coins) * 100
+            if not valid_coins:
+                self.logger.warning("Нет валидных данных в кеше для исторического анализа")
+                return None
+            
+            # Рассчитываем процент монет выше MA200 для каждого дня
+            for i in range(self.history_days):
+                current_date = end_date - timedelta(days=self.history_days - 1 - i)
+                coins_above_ma200 = 0
+                total_coins_checked = 0
                 
-                # Создаем исторические данные для полного периода
-                for i in range(self.history_days):
-                    current_date = end_date - timedelta(days=self.history_days - 1 - i)
-                    # Симулируем небольшие вариации для реалистичности
-                    variation = ((i % 10) - 5) * 0.5  # Колебания ±2.5%
+                for coin_id in valid_coins:
+                    df = coin_data[coin_id]
+                    
+                    try:
+                        # Находим данные на текущую дату
+                        current_price_data = df[df.index.date <= current_date]
+                        if current_price_data.empty:
+                            continue
+                        
+                        current_price = current_price_data.iloc[-1]['price']
+                        
+                        # Рассчитываем MA200 на основе предыдущих 200 дней
+                        ma_data = current_price_data.iloc[-(self.ma_period+1):-1]
+                        if len(ma_data) >= self.ma_period:
+                            ma200 = ma_data['price'].mean()
+                            
+                            if current_price > ma200:
+                                coins_above_ma200 += 1
+                            total_coins_checked += 1
+                    except Exception as e:
+                        continue
+                
+                if total_coins_checked > 0:
+                    percentage = (coins_above_ma200 / total_coins_checked) * 100
                     results.append({
                         'date': current_date,
-                        'percentage': max(0, min(100, percentage + variation)),
+                        'percentage': percentage,
                         'coins_above_ma200': coins_above_ma200,
-                        'total_coins': total_coins
+                        'total_coins': total_coins_checked
                     })
-                
-                self.logger.info(f"Быстрый расчет выполнен: {percentage:.1f}% для {total_coins} монет")
+            
+            if results:
+                self.logger.info(f"Исторический расчет выполнен для {len(results)} дней с {len(valid_coins)} монетами")
                 return pd.DataFrame(results)
             else:
-                self.logger.warning("Нет данных для быстрого расчета")
+                self.logger.warning("Не удалось рассчитать исторические данные")
                 return None
                 
         except Exception as e:
-            self.logger.error(f"Ошибка быстрого расчета: {str(e)}")
+            self.logger.error(f"Ошибка исторического расчета: {str(e)}")
             return None
 
     def calculate_ma200_percentage(self, force_refresh=False):
