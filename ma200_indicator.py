@@ -544,7 +544,7 @@ class MA200Indicator:
         try:
             # Рассчитываем данные
             results_df = self.calculate_ma200_percentage(force_refresh)
-            if results_df is None or len(results_df) == 0:
+            if results_df is None or results_df.empty:
                 return None
             
             # Создаем график
