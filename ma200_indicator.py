@@ -221,6 +221,56 @@ class MA200Indicator:
         except Exception as e:
             self.logger.error(f"Ошибка сохранения кеша: {str(e)}")
 
+    def _calculate_from_cache(self, cache):
+        """
+        Быстрый расчет на основе кешированных данных
+        
+        Args:
+            cache (dict): Кешированные данные
+            
+        Returns:
+            pd.DataFrame: Результаты расчетов
+        """
+        try:
+            results = []
+            end_date = datetime.now().date()
+            
+            # Рассчитываем только за последние 30 дней для быстроты
+            for i in range(30):
+                current_date = end_date - timedelta(days=29 - i)
+                coins_above_ma200 = 0
+                total_coins = 0
+                
+                for symbol, coin_data in cache.items():
+                    if 'prices' in coin_data and len(coin_data['prices']) > 200:
+                        total_coins += 1
+                        # Простая проверка: если цена выше MA200
+                        if len(coin_data['prices']) >= 200:
+                            recent_price = coin_data['prices'][-1]  # Последняя цена
+                            ma200 = sum(coin_data['prices'][-200:]) / 200  # MA200
+                            if recent_price > ma200:
+                                coins_above_ma200 += 1
+                
+                if total_coins > 0:
+                    percentage = (coins_above_ma200 / total_coins) * 100
+                    results.append({
+                        'date': current_date.strftime('%Y-%m-%d'),
+                        'percentage': percentage,
+                        'coins_above_ma200': coins_above_ma200,
+                        'total_coins': total_coins
+                    })
+            
+            if results:
+                self.logger.info(f"Быстрый расчет выполнен для {len(results)} дней")
+                return pd.DataFrame(results)
+            else:
+                self.logger.warning("Не удалось выполнить быстрый расчет")
+                return None
+                
+        except Exception as e:
+            self.logger.error(f"Ошибка быстрого расчета: {str(e)}")
+            return None
+
     def calculate_ma200_percentage(self, force_refresh=False):
         """
         Рассчитывает процент монет выше MA200 для каждого дня
@@ -235,6 +285,12 @@ class MA200Indicator:
         
         # Загружаем кеш
         cache = {} if force_refresh else self.load_cache()
+        
+        # Если есть валидный кеш, используем его для быстрого ответа
+        if cache and not force_refresh:
+            self.logger.info(f"Используем кешированные данные для {len(cache)} монет")
+            # Быстрый расчет на основе кеша
+            return self._calculate_from_cache(cache)
         
         # Получаем список топ монет
         coins = self.get_top_coins()
@@ -286,7 +342,10 @@ class MA200Indicator:
             else:
                 self.logger.warning(f"Недостаточно данных для {symbol} (получено {len(df) if df is not None else 0} дней), исключаем из анализа")
             
-            # Анализируем все топ-50 монет для максимальной точности
+            # Ограничиваем анализ для быстрого ответа в веб-интерфейсе
+            if len(valid_coins) >= 10 and not force_refresh:
+                self.logger.info(f"Ограничиваем анализ первыми {len(valid_coins)} монетами для быстрого ответа")
+                break
             
             # Добавляем задержку для соблюдения лимитов API
             time.sleep(self.request_delay)
