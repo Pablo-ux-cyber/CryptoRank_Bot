@@ -69,25 +69,26 @@ def ma200_page():
             # Есть кешированные данные - показываем их быстро
             cached_data = ma200_indicator._calculate_from_cache(cache)
             
-            def convert_numpy_types(obj):
-                if hasattr(obj, 'item'):  # numpy scalar
-                    return obj.item()
-                elif isinstance(obj, dict):
-                    return {k: convert_numpy_types(v) for k, v in obj.items()}
-                elif isinstance(obj, list):
-                    return [convert_numpy_types(v) for v in obj]
-                return obj
-            
-            # Запускаем фоновое обновление если данных недостаточно
-            if len(cache) < 30 and not background_refresh_status['running']:
-                import threading
-                thread = threading.Thread(target=background_refresh, args=(ma200_indicator,))
-                thread.daemon = True
-                thread.start()
+            if cached_data is not None and not cached_data.empty:
+                def convert_numpy_types(obj):
+                    if hasattr(obj, 'item'):  # numpy scalar
+                        return obj.item()
+                    elif isinstance(obj, dict):
+                        return {k: convert_numpy_types(v) for k, v in obj.items()}
+                    elif isinstance(obj, list):
+                        return [convert_numpy_types(v) for v in obj]
+                    return obj
                 
-            return render_template('ma200_indicator.html', 
-                                 ma200_data=convert_numpy_types(cached_data),
-                                 cache_info=f"Показаны данные {len(cache)} монет из кеша")
+                # Получаем данные для отображения
+                ma200_data = ma200_indicator.get_ma200_indicator()
+                
+                if ma200_data:
+                    return render_template('ma200_indicator.html', 
+                                         ma200_data=convert_numpy_types(ma200_data),
+                                         cache_info=f"Показаны данные {len(cache)} монет из кеша")
+                else:
+                    return render_template('ma200_indicator.html', 
+                                         message="Данные загружаются в фоне...")
         else:
             # Нет кешированных данных - запускаем фоновое обновление
             if not background_refresh_status['running']:
