@@ -164,3 +164,24 @@ def refresh_ma200():
 def refresh_status():
     """Get status of background refresh"""
     return jsonify(background_refresh_status)
+
+@ma200_bp.route('/api/ma200/chart')
+def get_ma200_chart():
+    """Serve the MA200 chart image"""
+    try:
+        from flask import send_file
+        import os
+        
+        chart_path = 'ma200_chart.png'
+        if os.path.exists(chart_path):
+            return send_file(chart_path, mimetype='image/png')
+        else:
+            # Создаем график если его нет
+            ma200_indicator = MA200Indicator()
+            ma200_data = ma200_indicator.get_ma200_indicator()
+            if ma200_data and ma200_data.get('chart_path'):
+                return send_file(chart_path, mimetype='image/png')
+            else:
+                return "График недоступен", 404
+    except Exception as e:
+        return f"Ошибка загрузки графика: {str(e)}", 500
