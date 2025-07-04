@@ -350,6 +350,36 @@ def get_altseason_index():
         logger.error(f"Error fetching Altcoin Season Index data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/test-market-breadth')
+def test_market_breadth():
+    """Test Market Breadth Indicator endpoint"""
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+    
+    try:
+        # Get Market Breadth Indicator data
+        market_breadth_data = scheduler.market_breadth_indicator.get_market_breadth_indicator()
+        
+        if market_breadth_data:
+            # Format the message
+            message = scheduler.market_breadth_indicator.format_market_breadth_message(market_breadth_data)
+            
+            return jsonify({
+                "status": "success", 
+                "data": {
+                    "breadth_percentage": market_breadth_data['breadth_percentage'],
+                    "above_ma200_count": market_breadth_data['above_ma200_count'],
+                    "total_analyzed": market_breadth_data['total_analyzed'],
+                    "market_condition": market_breadth_data['market_condition'],
+                    "formatted_message": message
+                }
+            })
+        else:
+            return jsonify({"status": "error", "message": "Failed to get Market Breadth data"}), 500
+    except Exception as e:
+        logger.error(f"Error fetching Market Breadth data: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/health')
 def health():
     """Health check endpoint"""

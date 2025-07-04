@@ -9,6 +9,7 @@ from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
 from fear_greed_index import FearGreedIndexTracker
 from altcoin_season_index import AltcoinSeasonIndex
+from market_breadth_indicator import MarketBreadthIndicator
 
 class SensorTowerScheduler:
     def __init__(self):
@@ -20,6 +21,7 @@ class SensorTowerScheduler:
         self.telegram_bot = TelegramBot()
         self.fear_greed_tracker = FearGreedIndexTracker()
         self.altcoin_season_index = AltcoinSeasonIndex()
+        self.market_breadth_indicator = MarketBreadthIndicator()
         
         # Определяем пути для хранения данных непосредственно в директории бота вместо /tmp
         # Используем корневую директорию бота для файлов истории
@@ -234,15 +236,16 @@ class SensorTowerScheduler:
                     logger.error(f"Ошибка при освобождении блокировки файла: {str(e)}")
             logger.info("Scheduler stopped")
     
-    def _send_combined_message(self, rankings_data, fear_greed_data=None, altseason_data=None):
+    def _send_combined_message(self, rankings_data, fear_greed_data=None, altseason_data=None, market_breadth_data=None):
         """
         Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
-        и сигналом от Altcoin Season Index в упрощенном формате
+        Altcoin Season Index и Market Breadth Indicator в упрощенном формате
         
         Args:
             rankings_data (dict): Данные о рейтинге приложения
             fear_greed_data (dict, optional): Данные индекса страха и жадности
             altseason_data (dict, optional): Данные индекса сезона альткоинов
+            market_breadth_data (dict, optional): Данные индикатора ширины рынка
             
         Returns:
             bool: True если сообщение успешно отправлено, False в противном случае
@@ -267,6 +270,16 @@ class SensorTowerScheduler:
                 # Используем метод fear_greed_tracker для форматирования сообщения
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
+            
+            # Добавляем данные Market Breadth Indicator, если доступны
+            if market_breadth_data:
+                # Используем метод market_breadth_indicator для форматирования сообщения
+                market_breadth_message = self.market_breadth_indicator.format_market_breadth_message(market_breadth_data)
+                if market_breadth_message:
+                    combined_message += f"\n\n{market_breadth_message}"
+                    logger.info(f"Added Market Breadth Indicator data: {market_breadth_data['breadth_percentage']:.1f}% - {market_breadth_data['market_condition']}")
+            else:
+                logger.info("Market Breadth Indicator данные недоступны")
             
             # Altcoin Season Index удален из сообщений по запросу пользователя
             # Данные по-прежнему собираются для веб-интерфейса, но не отправляются в Telegram
@@ -361,6 +374,18 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
+            # Получаем данные Market Breadth Indicator
+            market_breadth_data = None
+            try:
+                logger.info("Получение данных Market Breadth Indicator для комбинированного сообщения")
+                market_breadth_data = self.market_breadth_indicator.get_market_breadth_indicator()
+                if market_breadth_data:
+                    logger.info(f"Успешно получены данные Market Breadth Indicator: {market_breadth_data['breadth_percentage']:.1f}% - {market_breadth_data['market_condition']}")
+                else:
+                    logger.warning("Не удалось получить данные Market Breadth Indicator")
+            except Exception as e:
+                logger.error(f"Ошибка при получении данных Market Breadth Indicator: {str(e)}")
+            
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
                 logger.info(f"Первый запуск, предыдущее значение отсутствует. Текущий рейтинг: {current_rank}")
@@ -392,7 +417,7 @@ class SensorTowerScheduler:
             # Отправляем сообщение только если нужно
             if need_to_send:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
-                result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data)
+                result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data, market_breadth_data)
                 
                 # Обновляем последний отправленный рейтинг независимо от результата отправки
                 # Это поможет избежать множественных сообщений при сбоях отправки
