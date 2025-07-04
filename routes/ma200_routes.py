@@ -58,13 +58,17 @@ def background_refresh_all_coins():
 
 @ma200_bp.route('/ma200')
 def ma200_page():
-    """MA200 indicator page with data"""
+    """MA200 indicator page - shows cached data or triggers background refresh"""
     try:
         ma200_indicator = MA200Indicator()
-        ma200_data = ma200_indicator.get_ma200_indicator()
         
-        if ma200_data:
-            # Convert numpy types for template rendering
+        # Попробуем получить данные из кеша без принудительного обновления
+        cache = ma200_indicator.load_cache()
+        
+        if cache and len(cache) >= 10:
+            # Есть кешированные данные - показываем их быстро
+            cached_data = ma200_indicator._calculate_from_cache(cache)
+            
             def convert_numpy_types(obj):
                 if hasattr(obj, 'item'):  # numpy scalar
                     return obj.item()
@@ -74,11 +78,27 @@ def ma200_page():
                     return [convert_numpy_types(v) for v in obj]
                 return obj
             
+            # Запускаем фоновое обновление если данных недостаточно
+            if len(cache) < 30 and not background_refresh_status['running']:
+                import threading
+                thread = threading.Thread(target=background_refresh, args=(ma200_indicator,))
+                thread.daemon = True
+                thread.start()
+                
             return render_template('ma200_indicator.html', 
-                                 ma200_data=convert_numpy_types(ma200_data))
+                                 ma200_data=convert_numpy_types(cached_data),
+                                 cache_info=f"Показаны данные {len(cache)} монет из кеша")
         else:
+            # Нет кешированных данных - запускаем фоновое обновление
+            if not background_refresh_status['running']:
+                import threading
+                thread = threading.Thread(target=background_refresh, args=(ma200_indicator,))
+                thread.daemon = True
+                thread.start()
+                
             return render_template('ma200_indicator.html', 
-                                 error="Не удалось получить данные MA200 индикатора")
+                                 message="Загрузка данных запущена в фоне. Обновите страницу через минуту.")
+            
     except Exception as e:
         return render_template('ma200_indicator.html', 
                              error=f"Ошибка: {str(e)}")
