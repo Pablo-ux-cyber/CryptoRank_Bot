@@ -366,56 +366,106 @@ class MA200Indicator:
             str: Путь к сохраненному графику или None
         """
         try:
-            plt.style.use('dark_background')
-            fig, ax = plt.subplots(figsize=(12, 8))
+            # Современный светлый стиль как на скриншоте
+            plt.style.use('seaborn-v0_8-whitegrid')
+            fig, ax = plt.subplots(figsize=(15, 10), facecolor='white')
             
-            # Основная линия - процент монет выше MA200
-            ax.plot(results_df['date'], results_df['percentage'], 
-                   color='#00d4ff', linewidth=2, label='% монет выше MA200')
+            # Подготовка данных
+            dates = pd.to_datetime(results_df['date'])
+            percentages = results_df['percentage']
             
-            # Горизонтальные линии порогов
-            ax.axhline(y=self.overbought_threshold, color='#ff4757', 
-                      linestyle='--', alpha=0.7, label=f'Перекупленность ({self.overbought_threshold}%)')
-            ax.axhline(y=self.oversold_threshold, color='#2ed573', 
-                      linestyle='--', alpha=0.7, label=f'Перепроданность ({self.oversold_threshold}%)')
+            # Основная линия с современным дизайном
+            line = ax.plot(dates, percentages, linewidth=3, color='#1f77b4', 
+                          label='MA200 Market Indicator', zorder=3)
             
-            # Заливка областей
-            ax.fill_between(results_df['date'], 0, self.oversold_threshold, 
-                           alpha=0.2, color='#2ed573', label='Зона покупки')
-            ax.fill_between(results_df['date'], self.overbought_threshold, 100, 
-                           alpha=0.2, color='#ff4757', label='Зона продажи')
+            # Цветная заливка как на скриншоте
+            ax.fill_between(dates, 0, percentages, alpha=0.2, color='#1f77b4', label='MA200 Indicator Area')
             
-            # Настройка осей и заголовка
-            ax.set_title(f'MA200 Indicator: % монет из топ-{self.top_n} выше MA{self.ma_period}', 
-                        fontsize=16, fontweight='bold', color='white')
-            ax.set_xlabel('Дата', fontsize=12, color='white')
-            ax.set_ylabel('Процент монет выше MA200 (%)', fontsize=12, color='white')
+            # Горизонтальные линии с пунктиром как на скриншоте
+            ax.axhline(y=self.overbought_threshold, color='#1f77b4', linestyle='--', 
+                      linewidth=2, alpha=0.8, label=f'Overbought ({self.overbought_threshold}%)')
+            ax.axhline(y=self.oversold_threshold, color='#d62728', linestyle='--', 
+                      linewidth=2, alpha=0.8, label=f'Oversold ({self.oversold_threshold}%)')
+            ax.axhline(y=50, color='#7f7f7f', linestyle=':', 
+                      linewidth=1.5, alpha=0.6, label='Neutral (50%)')
             
-            # Форматирование дат на оси X
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
+            # Современное оформление как на скриншоте
+            ax.set_xlabel('Дата', fontsize=14, fontweight='500', color='#2c3e50')
+            ax.set_ylabel('Процент монет выше MA200 (%)', fontsize=14, fontweight='500', color='#2c3e50')
+            ax.set_title('🔍 MA200 Market Indicator\nПроцент монет выше MA200 (%)', 
+                        fontsize=18, fontweight='bold', color='#2c3e50', pad=25)
+            
+            # Современное форматирование дат
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
             ax.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            ax.xaxis.set_minor_locator(mdates.WeekdayLocator())
+            plt.xticks(rotation=0, fontsize=11)
+            plt.yticks(fontsize=11)
             
-            # Сетка и легенда
-            ax.grid(True, alpha=0.3, color='white')
-            ax.legend(loc='upper left', framealpha=0.8)
+            # Современная сетка как на скриншоте
+            ax.grid(True, linestyle='-', alpha=0.2, color='#bdc3c7')
+            ax.set_axisbelow(True)
             
-            # Настройка цветов осей
-            ax.tick_params(colors='white')
-            ax.spines['bottom'].set_color('white')
-            ax.spines['top'].set_color('white')
-            ax.spines['right'].set_color('white')
-            ax.spines['left'].set_color('white')
+            # Стильная легенда
+            legend = ax.legend(loc='upper left', frameon=True, fancybox=True, 
+                             shadow=False, ncol=1, fontsize=10)
+            legend.get_frame().set_facecolor('white')
+            legend.get_frame().set_alpha(0.9)
+            legend.get_frame().set_edgecolor('#bdc3c7')
             
-            # Установка лимитов по Y
+            # Установка пределов и отступов
             ax.set_ylim(0, 100)
+            ax.margins(x=0.01)
             
+            # Добавление текущего значения
+            current_percentage = percentages.iloc[-1]
+            current_date = dates.iloc[-1]
+            
+            # Определение сигнала
+            if current_percentage < self.oversold_threshold:
+                signal_emoji = "🔴"
+                signal_text = "Oversold"
+                signal_color = "#d62728"
+            elif current_percentage < 30:
+                signal_emoji = "🟠"
+                signal_text = "Weak Market"
+                signal_color = "#ff7f0e"
+            elif current_percentage < 70:
+                signal_emoji = "🟡"
+                signal_text = "Neutral Market"
+                signal_color = "#ffbb78"
+            elif current_percentage < self.overbought_threshold:
+                signal_emoji = "🟢"
+                signal_text = "Strong Market"
+                signal_color = "#2ca02c"
+            else:
+                signal_emoji = "🔵"
+                signal_text = "Overbought"
+                signal_color = "#1f77b4"
+            
+            # Добавление аннотации с текущим значением
+            ax.annotate(f'{signal_emoji} {current_percentage:.1f}%\n{signal_text}',
+                       xy=(current_date, current_percentage),
+                       xytext=(10, 10), textcoords='offset points',
+                       bbox=dict(boxstyle='round,pad=0.8', facecolor=signal_color, alpha=0.8),
+                       fontsize=12, fontweight='bold', color='white',
+                       ha='left', va='bottom')
+            
+            # Современное оформление рамки
+            ax.spines['top'].set_visible(False)
+            ax.spines['right'].set_visible(False)
+            ax.spines['left'].set_color('#bdc3c7')
+            ax.spines['bottom'].set_color('#bdc3c7')
+            
+            # Финальная настройка
             plt.tight_layout()
+            
+            # Сохранение в высоком качестве
             plt.savefig(self.chart_file, dpi=300, bbox_inches='tight', 
-                       facecolor='#1a1a1a', edgecolor='none')
+                       facecolor='white', edgecolor='none')
             plt.close()
             
-            self.logger.info(f"График сохранен в {self.chart_file}")
+            self.logger.info(f"Современный график сохранен в {self.chart_file}")
             return self.chart_file
         except Exception as e:
             self.logger.error(f"Ошибка создания графика: {str(e)}")

@@ -546,10 +546,8 @@ def set_manual_rank():
 signal.signal(signal.SIGINT, signal_handler)
 
 # Initialize scheduler at startup - for both direct run and gunicorn
-scheduler_thread = threading.Thread(target=start_scheduler_thread)
-scheduler_thread.daemon = True
-scheduler_thread.start()
 logger.info("Starting scheduler at app initialization")
+start_scheduler_thread()  # Запускаем синхронно для избежания проблем с инициализацией
 
 if __name__ == "__main__":
     # Run the Flask app when called directly
