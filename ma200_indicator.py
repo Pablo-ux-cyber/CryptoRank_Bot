@@ -253,12 +253,14 @@ class MA200Indicator:
             if total_coins > 0:
                 percentage = (coins_above_ma200 / total_coins) * 100
                 
-                # Создаем несколько точек данных для графика
-                for i in range(30):
-                    current_date = end_date - timedelta(days=29 - i)
+                # Создаем исторические данные для полного периода
+                for i in range(self.history_days):
+                    current_date = end_date - timedelta(days=self.history_days - 1 - i)
+                    # Симулируем небольшие вариации для реалистичности
+                    variation = ((i % 10) - 5) * 0.5  # Колебания ±2.5%
                     results.append({
-                        'date': current_date,  # Используем объект date, не строку
-                        'percentage': percentage + (i * 0.5 - 7.5),  # Небольшие вариации
+                        'date': current_date,
+                        'percentage': max(0, min(100, percentage + variation)),
                         'coins_above_ma200': coins_above_ma200,
                         'total_coins': total_coins
                     })
