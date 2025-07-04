@@ -331,7 +331,7 @@ class MA200Indicator:
             
             # Загружаем новые данные
             df = self.get_historical_data(symbol, total_days)
-            if df is not None and len(df) >= (self.ma_period + self.history_days):
+            if df is not None and not df.empty and len(df) >= (self.ma_period + self.history_days):
                 coin_data[symbol] = df
                 valid_coins.append(symbol)
                 self.logger.info(f"Загружено {len(df)} дней данных для {symbol}")
@@ -377,7 +377,7 @@ class MA200Indicator:
                 # Находим данные на текущую дату
                 try:
                     current_price_data = df[df.index.date <= current_date]
-                    if len(current_price_data) == 0:
+                    if current_price_data.empty:
                         continue
                     
                     current_price = current_price_data.iloc[-1]['price']
