@@ -52,6 +52,8 @@ def utility_processor():
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
 app.register_blueprint(altseason_bp)
+from routes.ma200_routes import ma200_bp
+app.register_blueprint(ma200_bp)
 
 # Инициализируем глобальные переменные
 scheduler = None

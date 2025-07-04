@@ -10,6 +10,7 @@ dependencies = [
     "flask>=3.1.0",
     "flask-sqlalchemy>=3.1.1",
     "gunicorn>=23.0.0",
+    "matplotlib>=3.10.3",
     "openai>=1.72.0",
     "pandas>=2.2.3",
     "psycopg2-binary>=2.9.10",
@@ -19,5 +20,6 @@ dependencies = [
     "requests>=2.32.3",
     "selenium>=4.31.0",
     "telegram>=0.0.1",
+    "tqdm>=4.67.1",
     "trafilatura>=2.0.0",
 ]
