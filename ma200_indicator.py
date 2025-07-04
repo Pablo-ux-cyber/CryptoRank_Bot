@@ -257,7 +257,7 @@ class MA200Indicator:
                 for i in range(30):
                     current_date = end_date - timedelta(days=29 - i)
                     results.append({
-                        'date': current_date.strftime('%Y-%m-%d'),
+                        'date': current_date,  # Используем объект date, не строку
                         'percentage': percentage + (i * 0.5 - 7.5),  # Небольшие вариации
                         'coins_above_ma200': coins_above_ma200,
                         'total_coins': total_coins
