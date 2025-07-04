@@ -12,7 +12,6 @@ load_dotenv()
 
 from logger import logger
 from scheduler import SensorTowerScheduler
-from chart_generator import ChartGenerator
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
@@ -56,7 +55,6 @@ app.register_blueprint(altseason_bp)
 
 # Инициализируем глобальные переменные
 scheduler = None
-chart_generator = None
 last_scrape_data = None
 last_scrape_time = None
 last_fear_greed_data = None
@@ -352,36 +350,6 @@ def get_altseason_index():
         logger.error(f"Error fetching Altcoin Season Index data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/test-market-breadth')
-def test_market_breadth():
-    """Test Market Breadth Indicator endpoint"""
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-    
-    try:
-        # Get Market Breadth Indicator data
-        market_breadth_data = scheduler.market_breadth_indicator.get_market_breadth_indicator()
-        
-        if market_breadth_data:
-            # Format the message
-            message = scheduler.market_breadth_indicator.format_market_breadth_message(market_breadth_data)
-            
-            return jsonify({
-                "status": "success", 
-                "data": {
-                    "breadth_percentage": market_breadth_data['breadth_percentage'],
-                    "above_ma200_count": market_breadth_data['above_ma200_count'],
-                    "total_analyzed": market_breadth_data['total_analyzed'],
-                    "market_condition": market_breadth_data['market_condition'],
-                    "formatted_message": message
-                }
-            })
-        else:
-            return jsonify({"status": "error", "message": "Failed to get Market Breadth data"}), 500
-    except Exception as e:
-        logger.error(f"Error fetching Market Breadth data: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
 @app.route('/health')
 def health():
     """Health check endpoint"""
@@ -523,103 +491,14 @@ def set_manual_rank():
         logger.error(f"Error setting manual rank: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route('/market-breadth-chart')
-def market_breadth_chart():
-    """Generate and return Market Breadth Indicator chart"""
-    global chart_generator
-    
-    try:
-        # Initialize chart generator if not available
-        if chart_generator is None:
-            chart_generator = ChartGenerator()
-        
-        # Create sample Market Breadth data for demonstration
-        from datetime import datetime
-        
-        sample_data = {
-            'breadth_percentage': 42.0,
-            'above_ma200_count': 21,
-            'total_analyzed': 50,
-            'market_condition': 'Bearish',
-            'timestamp': datetime.now(),
-            'analysis_details': {
-                'bullish_count': 21,
-                'bearish_count': 29,
-                'neutral_count': 0
-            }
-        }
-        
-        # Generate historical chart
-        chart_base64 = chart_generator.create_historical_breadth_chart()
-        
-        if chart_base64:
-            return f'''
-            <html>
-            <head>
-                <title>Market Breadth Indicator - Historical Analysis</title>
-                <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
-            </head>
-            <body>
-                <div class="container mt-4">
-                    <h1 class="mb-4">Market Breadth Indicator - Historical Analysis</h1>
-                    <div class="text-center mb-4">
-                        <img src="data:image/png;base64,{chart_base64}" class="img-fluid" alt="Market Breadth Historical Chart">
-                    </div>
-                    <div class="row mt-4">
-                        <div class="col-md-6">
-                            <div class="card bg-dark">
-                                <div class="card-header">
-                                    <h5 class="mb-0">About Market Breadth</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>What it shows:</strong> Percentage of top 50 cryptocurrencies trading above their 200-day moving average</p>
-                                    <p><strong>Bullish Signal:</strong> >70% coins above MA200</p>
-                                    <p><strong>Bearish Signal:</strong> <30% coins above MA200</p>
-                                    <p><strong>Neutral Zone:</strong> 30-70% range</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card bg-dark">
-                                <div class="card-header">
-                                    <h5 class="mb-0">Current Market State</h5>
-                                </div>
-                                <div class="card-body">
-                                    <p><strong>Current Breadth:</strong> 50%</p>
-                                    <p><strong>Market Condition:</strong> Neutral</p>
-                                    <p><strong>Coins Above MA200:</strong> 25 out of 50</p>
-                                    <p><strong>Analysis Period:</strong> Last 35 days</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-4 text-center">
-                        <a href="/" class="btn btn-primary">Back to Dashboard</a>
-                        <a href="/test-market-breadth" class="btn btn-outline-info">Test Live Data</a>
-                    </div>
-                </div>
-            </body>
-            </html>
-            '''
-        else:
-            return jsonify({"status": "error", "message": "Failed to generate chart"}), 500
-            
-    except Exception as e:
-        logger.error(f"Error generating Market Breadth chart: {str(e)}")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)
 
-# Initialize scheduler and chart generator at startup
+# Initialize scheduler at startup - for both direct run and gunicorn
 scheduler_thread = threading.Thread(target=start_scheduler_thread)
 scheduler_thread.daemon = True
 scheduler_thread.start()
 logger.info("Starting scheduler at app initialization")
-
-# Initialize chart generator
-chart_generator = ChartGenerator()
-logger.info("Chart generator initialized")
 
 if __name__ == "__main__":
     # Run the Flask app when called directly

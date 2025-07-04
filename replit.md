@@ -28,7 +28,6 @@ The system follows a modular, event-driven architecture with separate components
 - **FearGreedIndexTracker** (`fear_greed_index.py`): Fetches cryptocurrency Fear & Greed Index
 - **GoogleTrendsPulse** (`google_trends_pulse.py`): Analyzes search trends for crypto-related terms
 - **AltcoinSeasonIndex** (`altcoin_season_index.py`): Calculates altcoin season indicators
-- **MarketBreadthIndicator** (`market_breadth_indicator.py`): Tracks percentage of top-50 cryptocurrencies trading above MA200
 - **OrderBookImbalance** (`order_book_imbalance.py`): Analyzes market order book data
 
 ### 2. Communication Layer
@@ -110,7 +109,6 @@ The system follows a modular, event-driven architecture with separate components
 - **Pre-execution Script**: Added rnk.py execution at 07:59 UTC (10:59 MSK) before main data collection
 - **SensorTower Integration**: Implemented user's SensorTower API code in rnk.py for automated data collection
 - **Dual Process System**: rnk.py collects fresh data at 10:59 MSK, main bot reads and sends at 11:01 MSK
-- **Market Breadth Indicator**: Added new indicator tracking percentage of top-50 cryptocurrencies above MA200
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection
