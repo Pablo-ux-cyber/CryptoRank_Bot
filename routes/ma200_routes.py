@@ -79,16 +79,10 @@ def ma200_page():
                         return [convert_numpy_types(v) for v in obj]
                     return obj
                 
-                # Получаем данные для отображения
-                ma200_data = ma200_indicator.get_ma200_indicator()
-                
-                if ma200_data:
-                    return render_template('ma200_indicator.html', 
-                                         ma200_data=convert_numpy_types(ma200_data),
-                                         cache_info=f"Показаны данные {len(cache)} монет из кеша")
-                else:
-                    return render_template('ma200_indicator.html', 
-                                         message="Данные загружаются в фоне...")
+                # Быстрое отображение страницы без автоматических вычислений
+                return render_template('ma200_indicator.html', 
+                                     cache_info=f"Загружены {len(cache)} монет из кеша. Нажмите 'Get MA200 Data' для анализа.",
+                                     quick_load=True)
         else:
             # Нет кешированных данных - запускаем фоновое обновление
             if not background_refresh_status['running']:
