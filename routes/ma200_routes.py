@@ -58,8 +58,30 @@ def background_refresh_all_coins():
 
 @ma200_bp.route('/ma200')
 def ma200_page():
-    """MA200 indicator page"""
-    return render_template('ma200_indicator.html')
+    """MA200 indicator page with data"""
+    try:
+        ma200_indicator = MA200Indicator()
+        ma200_data = ma200_indicator.get_ma200_indicator()
+        
+        if ma200_data:
+            # Convert numpy types for template rendering
+            def convert_numpy_types(obj):
+                if hasattr(obj, 'item'):  # numpy scalar
+                    return obj.item()
+                elif isinstance(obj, dict):
+                    return {k: convert_numpy_types(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_numpy_types(v) for v in obj]
+                return obj
+            
+            return render_template('ma200_indicator.html', 
+                                 ma200_data=convert_numpy_types(ma200_data))
+        else:
+            return render_template('ma200_indicator.html', 
+                                 error="Не удалось получить данные MA200 индикатора")
+    except Exception as e:
+        return render_template('ma200_indicator.html', 
+                             error=f"Ошибка: {str(e)}")
 
 @ma200_bp.route('/api/ma200')
 def get_ma200_data():

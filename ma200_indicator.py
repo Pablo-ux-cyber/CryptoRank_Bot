@@ -288,11 +288,13 @@ class MA200Indicator:
         # Загружаем кеш
         cache = {} if force_refresh else self.load_cache()
         
-        # Если есть валидный кеш, используем его для быстрого ответа
-        if cache and not force_refresh:
+        # Если есть валидный кеш с достаточным количеством монет, используем его для быстрого ответа
+        if cache and not force_refresh and len(cache) >= 30:
             self.logger.info(f"Используем кешированные данные для {len(cache)} монет")
             # Быстрый расчет на основе кеша
             return self._calculate_from_cache(cache)
+        elif cache and len(cache) < 30:
+            self.logger.info(f"Кеш содержит только {len(cache)} монет, требуется полное обновление")
         
         # Получаем список топ монет
         coins = self.get_top_coins()
