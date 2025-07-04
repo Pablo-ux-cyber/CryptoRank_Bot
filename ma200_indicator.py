@@ -53,6 +53,7 @@ class MA200Indicator:
         self.base_url = "https://min-api.cryptocompare.com/data"
         self.request_delay = 1.0  # CryptoCompare имеет более мягкие лимиты
         self.max_retries = 3  # Максимальное количество повторных попыток
+        self.cache_hours = 8  # Кеш действителен 8 часов
         
         self.logger.info(f"Initialized MA200 Indicator with top {self.top_n} coins, {self.ma_period}d MA, {self.history_days}d history")
         self.logger.info(f"Thresholds: Overbought={self.overbought_threshold}%, Oversold={self.oversold_threshold}%")
@@ -171,7 +172,7 @@ class MA200Indicator:
 
     def load_cache(self):
         """
-        Загружает кешированные данные
+        Загружает кешированные данные с проверкой времени
         
         Returns:
             dict: Кешированные данные или пустой словарь
@@ -179,9 +180,23 @@ class MA200Indicator:
         try:
             if os.path.exists(self.cache_file):
                 with open(self.cache_file, 'r') as f:
-                    cache = json.load(f)
-                self.logger.info(f"Загружен кеш с данными {len(cache)} монет")
-                return cache
+                    cache_data = json.load(f)
+                
+                # Проверяем время последнего обновления кеша
+                if 'last_updated' in cache_data:
+                    from datetime import datetime, timedelta
+                    last_updated = datetime.fromisoformat(cache_data['last_updated'])
+                    cache_age = datetime.now() - last_updated
+                    
+                    if cache_age < timedelta(hours=self.cache_hours):
+                        cache = cache_data.get('data', {})
+                        self.logger.info(f"Загружен актуальный кеш с данными {len(cache)} монет (возраст: {cache_age})")
+                        return cache
+                    else:
+                        self.logger.info(f"Кеш устарел (возраст: {cache_age}), обновляем данные")
+                else:
+                    # Старый формат кеша без временных меток
+                    self.logger.info("Старый формат кеша, обновляем данные")
         except Exception as e:
             self.logger.error(f"Ошибка загрузки кеша: {str(e)}")
         
@@ -189,14 +204,19 @@ class MA200Indicator:
 
     def save_cache(self, cache):
         """
-        Сохраняет кешированные данные
+        Сохраняет кешированные данные с временной меткой
         
         Args:
             cache (dict): Данные для кеширования
         """
         try:
+            from datetime import datetime
+            cache_data = {
+                'last_updated': datetime.now().isoformat(),
+                'data': cache
+            }
             with open(self.cache_file, 'w') as f:
-                json.dump(cache, f, indent=2)
+                json.dump(cache_data, f, indent=2)
             self.logger.info(f"Кеш сохранен с данными {len(cache)} монет")
         except Exception as e:
             self.logger.error(f"Ошибка сохранения кеша: {str(e)}")
@@ -266,10 +286,7 @@ class MA200Indicator:
             else:
                 self.logger.warning(f"Недостаточно данных для {symbol} (получено {len(df) if df is not None else 0} дней), исключаем из анализа")
             
-            # Ограничиваем количество монет для начального тестирования
-            if len(valid_coins) >= 10 and not force_refresh:
-                self.logger.info(f"Ограничиваем анализ первыми {len(valid_coins)} монетами для тестирования")
-                break
+            # Анализируем все топ-50 монет для максимальной точности
             
             # Добавляем задержку для соблюдения лимитов API
             time.sleep(self.request_delay)
