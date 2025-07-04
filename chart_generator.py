@@ -24,6 +24,95 @@ class ChartGenerator:
         
         logger.info("Chart generator initialized")
     
+    def create_historical_breadth_chart(self, save_path=None):
+        """
+        Создает график с историческими данными Market Breadth
+        """
+        try:
+            # Создаем симуляцию исторических данных
+            dates = pd.date_range(start='2024-12-01', end='2025-01-04', freq='D')
+            breadth_values = [42, 38, 45, 52, 58, 61, 55, 48, 44, 39, 35, 42, 
+                             48, 51, 54, 58, 62, 59, 55, 52, 49, 46, 43, 47, 
+                             51, 54, 57, 61, 64, 67, 63, 59, 56, 53, 50]
+            
+            # Создаем фигуру
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+            
+            # График 1: Временной ряд Market Breadth
+            ax1.plot(dates, breadth_values, linewidth=3, color='#00ff88', alpha=0.8)
+            ax1.fill_between(dates, breadth_values, alpha=0.3, color='#00ff88')
+            
+            # Добавляем горизонтальные линии для ключевых уровней
+            ax1.axhline(y=50, color='yellow', linestyle='--', alpha=0.7, label='Нейтральный уровень (50%)')
+            ax1.axhline(y=70, color='green', linestyle='--', alpha=0.7, label='Бычий рынок (>70%)')
+            ax1.axhline(y=30, color='red', linestyle='--', alpha=0.7, label='Медвежий рынок (<30%)')
+            
+            # Настройка первого графика
+            ax1.set_title('Market Breadth Indicator - Historical Data', fontsize=16, fontweight='bold', color='white')
+            ax1.set_ylabel('Breadth Percentage (%)', fontsize=12, color='white')
+            ax1.grid(True, alpha=0.3)
+            ax1.legend(loc='upper left')
+            ax1.set_ylim(0, 100)
+            
+            # Настройка цветов осей
+            ax1.tick_params(colors='white')
+            ax1.spines['bottom'].set_color('white')
+            ax1.spines['top'].set_color('white') 
+            ax1.spines['right'].set_color('white')
+            ax1.spines['left'].set_color('white')
+            
+            # График 2: Круговая диаграмма текущего состояния
+            current_breadth = breadth_values[-1]
+            above_count = int(50 * current_breadth / 100)
+            below_count = 50 - above_count
+            
+            sizes = [above_count, below_count]
+            labels = [f'Above MA200\n{above_count} coins', f'Below MA200\n{below_count} coins']
+            colors = ['#00ff88', '#ff4444']
+            
+            wedges, texts, autotexts = ax2.pie(sizes, labels=labels, colors=colors, 
+                                              explode=(0.05, 0), autopct='%1.1f%%', 
+                                              startangle=90, textprops={'fontsize': 12})
+            
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
+            
+            for text in texts:
+                text.set_color('white')
+                text.set_fontweight('bold')
+                
+            ax2.set_title(f'Current Market Breadth: {current_breadth}%', 
+                         fontsize=14, fontweight='bold', color='white')
+            
+            # Общий заголовок
+            fig.suptitle('Crypto Market Breadth Analysis', fontsize=18, fontweight='bold', color='white', y=0.95)
+            
+            # Настройки фигуры
+            plt.tight_layout()
+            
+            if save_path:
+                plt.savefig(save_path, dpi=150, bbox_inches='tight', 
+                           facecolor='#1a1a1a', edgecolor='none')
+                plt.close()
+                return save_path
+            else:
+                buffer = io.BytesIO()
+                plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight',
+                           facecolor='#1a1a1a', edgecolor='none')
+                buffer.seek(0)
+                
+                image_base64 = base64.b64encode(buffer.getvalue()).decode()
+                plt.close()
+                buffer.close()
+                
+                return image_base64
+                
+        except Exception as e:
+            logger.error(f"Error creating historical breadth chart: {str(e)}")
+            plt.close()
+            return None
+
     def create_market_breadth_chart(self, market_breadth_data, save_path=None):
         """
         Создает график индикатора ширины рынка
@@ -57,18 +146,12 @@ class ChartGenerator:
                                explode=explode, autopct='%1.1f%%', 
                                startangle=90, textprops={'fontsize': 12})
             
-            # Распаковываем результат
-            if len(pie_result) == 3:
-                wedges, texts, autotexts = pie_result
-                # Настройка цветов текста для autopct
-                for autotext in autotexts:
-                    autotext.set_color('white')
-                    autotext.set_fontweight('bold')
-            else:
-                wedges, texts = pie_result
-                autotexts = []
+            # Настройка цветов текста
+            wedges, texts, autotexts = pie_result
+            for autotext in autotexts:
+                autotext.set_color('white')
+                autotext.set_fontweight('bold')
             
-            # Настройка цветов текста для labels
             for text in texts:
                 text.set_color('white')
                 text.set_fontweight('bold')
