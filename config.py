@@ -50,22 +50,3 @@ ASI_PERIOD = os.getenv('ASI_PERIOD', '30d')
 ASI_THRESHOLD_STRONG = float(os.getenv('ASI_THRESHOLD_STRONG', '0.75'))
 ASI_THRESHOLD_MODERATE = float(os.getenv('ASI_THRESHOLD_MODERATE', '0.50'))
 ASI_THRESHOLD_WEAK = float(os.getenv('ASI_THRESHOLD_WEAK', '0.25'))
-
-# MA200 Indicator Configuration
-MA200_TOP_N = int(os.getenv('MA200_TOP_N', '50'))
-MA200_MA_PERIOD = int(os.getenv('MA200_MA_PERIOD', '200'))
-MA200_HISTORY_DAYS = int(os.getenv('MA200_HISTORY_DAYS', '1095'))  # 3 года
-MA200_OVERBOUGHT_THRESHOLD = float(os.getenv('MA200_OVERBOUGHT_THRESHOLD', '80'))
-MA200_OVERSOLD_THRESHOLD = float(os.getenv('MA200_OVERSOLD_THRESHOLD', '10'))
-MA200_CACHE_FILE = os.getenv('MA200_CACHE_FILE', 'ma200_cache.json')
-MA200_RESULTS_FILE = os.getenv('MA200_RESULTS_FILE', 'ma200_data.csv')
-MA200_CHART_FILE = os.getenv('MA200_CHART_FILE', 'ma200_chart.png')
-
-# Global Order Book Imbalance Configuration
-GBI_EXCHANGE = os.getenv('GBI_EXCHANGE', 'binance')
-GBI_MARKETS = os.getenv('GBI_MARKETS', 'BTC/USDT,ETH/USDT,SOL/USDT,ADA/USDT,BNB/USDT')
-GBI_LIMIT = int(os.getenv('GBI_LIMIT', '100'))
-GBI_THRESHOLD_STRONG_BULL = float(os.getenv('GBI_THRESHOLD_STRONG_BULL', '0.50'))
-GBI_THRESHOLD_WEAK_BULL = float(os.getenv('GBI_THRESHOLD_WEAK_BULL', '0.20'))
-GBI_THRESHOLD_WEAK_BEAR = float(os.getenv('GBI_THRESHOLD_WEAK_BEAR', '-0.20'))
-GBI_THRESHOLD_STRONG_BEAR = float(os.getenv('GBI_THRESHOLD_STRONG_BEAR', '-0.50'))

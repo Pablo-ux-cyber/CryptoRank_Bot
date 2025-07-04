@@ -98,16 +98,6 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Recent Changes
 
-### July 04, 2025
-- **MA200 Market Indicator**: Complete cryptocurrency market sentiment indicator for all top-50 coins
-- **Real Data Integration**: Uses CryptoCompare API for authentic historical price data from all 50 cryptocurrencies
-- **Technical Implementation**: Analyzes percentage of top-50 cryptocurrencies trading above 200-day moving average
-- **Web Interface**: Modern dashboard with interactive charts and real-time analytics
-- **Market Zones**: Identifies overbought (>80%), oversold (<10%), and neutral market conditions
-- **Performance Optimization**: 8-hour caching system with background refresh for all 50 coins
-- **Data Validation**: Processes 40+ cryptocurrencies with 616+ days of historical data for accurate calculations
-- **Background Processing**: Asynchronous data loading with progress tracking for optimal performance
-
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
 - **Automatic Latest Date Detection**: Bot finds entry with most recent date and uses corresponding rank
