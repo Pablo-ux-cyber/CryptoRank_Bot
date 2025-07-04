@@ -344,10 +344,7 @@ class MA200Indicator:
             else:
                 self.logger.warning(f"Недостаточно данных для {symbol} (получено {len(df) if df is not None else 0} дней), исключаем из анализа")
             
-            # Ограничиваем анализ для быстрого ответа в веб-интерфейсе
-            if len(valid_coins) >= 10 and not force_refresh:
-                self.logger.info(f"Ограничиваем анализ первыми {len(valid_coins)} монетами для быстрого ответа")
-                break
+            # Анализируем все топ-50 монет для максимальной точности
             
             # Добавляем задержку для соблюдения лимитов API
             time.sleep(self.request_delay)

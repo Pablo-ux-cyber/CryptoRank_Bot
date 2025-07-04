@@ -1,154 +1,93 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-from flask import Blueprint, render_template, jsonify, request, send_file
+"""
+Routes for MA200 Market Indicator
+"""
+import threading
+import time
+from flask import Blueprint, render_template, jsonify, request
 from ma200_indicator import MA200Indicator
-import os
 
 ma200_bp = Blueprint('ma200', __name__)
-ma200_indicator = MA200Indicator()
+
+# Global variable to track background refresh status
+background_refresh_status = {
+    'running': False,
+    'progress': 0,
+    'total': 50,
+    'current_coin': '',
+    'started_at': None,
+    'completed_at': None
+}
+
+def background_refresh_all_coins():
+    """Background function to refresh all 50 coins data"""
+    global background_refresh_status
+    
+    background_refresh_status['running'] = True
+    background_refresh_status['progress'] = 0
+    background_refresh_status['started_at'] = time.time()
+    background_refresh_status['completed_at'] = None
+    
+    try:
+        ma200_indicator = MA200Indicator()
+        ma200_indicator.calculate_ma200_percentage(force_refresh=True)
+        background_refresh_status['completed_at'] = time.time()
+    except Exception as e:
+        print(f"Background refresh error: {e}")
+    finally:
+        background_refresh_status['running'] = False
 
 @ma200_bp.route('/ma200')
 def ma200_page():
-    """
-    Отображает страницу с данными MA200 индикатора и историей
-    """
+    """MA200 indicator page"""
+    return render_template('ma200_indicator.html')
+
+@ma200_bp.route('/api/ma200')
+def get_ma200_data():
+    """Get MA200 indicator data (uses cache if available)"""
     try:
-        # Получаем текущие данные
-        current_data = ma200_indicator.get_ma200_indicator()
+        ma200_indicator = MA200Indicator()
+        data = ma200_indicator.get_ma200_indicator()
         
-        # Проверяем, есть ли файл с историческими данными
-        history_data = []
-        if os.path.exists(ma200_indicator.results_file):
-            try:
-                import pandas as pd
-                df = pd.read_csv(ma200_indicator.results_file)
-                # Берем последние 30 дней для отображения в таблице
-                recent_data = df.tail(30)
-                history_data = recent_data.to_dict('records')
-            except Exception as e:
-                ma200_indicator.logger.error(f"Ошибка загрузки исторических данных: {str(e)}")
-        
-        return render_template('ma200_indicator.html', 
-                              ma200_data=current_data,
-                              history_data=history_data)
+        if data:
+            return jsonify({
+                'status': 'success',
+                'data': data
+            })
+        else:
+            return jsonify({
+                'status': 'error',
+                'message': 'Failed to retrieve MA200 Market Indicator data'
+            })
     except Exception as e:
-        ma200_indicator.logger.error(f"Ошибка отображения страницы MA200: {str(e)}")
-        return render_template('ma200_indicator.html', 
-                              ma200_data=None,
-                              history_data=[],
-                              error=str(e))
+        return jsonify({
+            'status': 'error',
+            'message': f'Error: {str(e)}'
+        })
 
 @ma200_bp.route('/api/ma200/refresh', methods=['POST'])
 def refresh_ma200():
-    """
-    API для принудительного обновления данных MA200 индикатора
-    """
-    try:
-        # Принудительно получаем новые данные
-        data = ma200_indicator.get_ma200_indicator(force_refresh=True)
-        if data:
-            return jsonify({
-                'status': 'success', 
-                'data': data
-            })
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': 'Failed to fetch MA200 data'
-            }), 500
-    except Exception as e:
+    """Start background refresh of all 50 coins"""
+    global background_refresh_status
+    
+    if background_refresh_status['running']:
         return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+            'status': 'already_running',
+            'message': 'Background refresh already in progress',
+            'progress': background_refresh_status['progress']
+        })
+    
+    # Start background thread for full refresh
+    thread = threading.Thread(target=background_refresh_all_coins)
+    thread.daemon = True
+    thread.start()
+    
+    return jsonify({
+        'status': 'started',
+        'message': 'Background refresh of all 50 coins started',
+        'estimated_time': '2-3 minutes'
+    })
 
-@ma200_bp.route('/api/ma200/data')
-def get_ma200_data():
-    """
-    API для получения текущих данных MA200 индикатора
-    """
-    try:
-        # Получаем данные (кешированные или новые)
-        data = ma200_indicator.get_ma200_indicator()
-        if data:
-            return jsonify({
-                'status': 'success', 
-                'data': data
-            })
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': 'No MA200 data available'
-            }), 404
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
-
-@ma200_bp.route('/api/ma200/chart')
-def get_ma200_chart():
-    """
-    API для получения графика MA200 индикатора
-    """
-    try:
-        if os.path.exists(ma200_indicator.chart_file):
-            return send_file(ma200_indicator.chart_file, mimetype='image/png')
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': 'Chart file not found'
-            }), 404
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
-
-@ma200_bp.route('/api/ma200/download-csv')
-def download_ma200_csv():
-    """
-    API для скачивания CSV файла с данными MA200
-    """
-    try:
-        if os.path.exists(ma200_indicator.results_file):
-            return send_file(ma200_indicator.results_file, 
-                           mimetype='text/csv',
-                           as_attachment=True,
-                           download_name='ma200_data.csv')
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': 'CSV file not found'
-            }), 404
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
-
-@ma200_bp.route('/api/ma200/history')
-def get_ma200_history():
-    """
-    API для получения полной истории MA200 данных
-    """
-    try:
-        if os.path.exists(ma200_indicator.results_file):
-            import pandas as pd
-            df = pd.read_csv(ma200_indicator.results_file)
-            history = df.to_dict('records')
-            return jsonify({
-                'status': 'success', 
-                'data': history
-            })
-        else:
-            return jsonify({
-                'status': 'error',
-                'message': 'No historical data available'
-            }), 404
-    except Exception as e:
-        return jsonify({
-            'status': 'error',
-            'message': str(e)
-        }), 500
+@ma200_bp.route('/api/ma200/status')
+def refresh_status():
+    """Get status of background refresh"""
+    return jsonify(background_refresh_status)

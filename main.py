@@ -16,6 +16,7 @@ from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, T
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
 from routes.altseason_routes import altseason_bp
+from routes.ma200_routes import ma200_bp
 from json_rank_reader import get_rank_from_json, get_latest_rank_date
 
 # Create Flask app
@@ -52,7 +53,6 @@ def utility_processor():
 # Регистрируем Blueprint'ы
 app.register_blueprint(history_bp)
 app.register_blueprint(altseason_bp)
-from routes.ma200_routes import ma200_bp
 app.register_blueprint(ma200_bp)
 
 # Инициализируем глобальные переменные
