@@ -69,9 +69,19 @@ def get_ma200_data():
         data = ma200_indicator.get_ma200_indicator()
         
         if data:
+            # Convert numpy types to native Python types for JSON serialization
+            def convert_numpy_types(obj):
+                if hasattr(obj, 'item'):  # numpy scalar
+                    return obj.item()
+                elif isinstance(obj, dict):
+                    return {k: convert_numpy_types(v) for k, v in obj.items()}
+                elif isinstance(obj, list):
+                    return [convert_numpy_types(v) for v in obj]
+                return obj
+            
             return jsonify({
                 'status': 'success',
-                'data': data
+                'data': convert_numpy_types(data)
             })
         else:
             return jsonify({
