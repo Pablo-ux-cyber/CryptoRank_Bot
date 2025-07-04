@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template, jsonify, request, send_file
-from ma200_indicator import MA200Indicator
+from ma200_demo import MA200Demo
 import os
 
 ma200_bp = Blueprint('ma200', __name__)
-ma200_indicator = MA200Indicator()
+ma200_indicator = MA200Demo()
 
 @ma200_bp.route('/ma200')
 def ma200_page():
@@ -15,7 +15,7 @@ def ma200_page():
     """
     try:
         # Получаем текущие данные
-        current_data = ma200_indicator.get_ma200_indicator()
+        current_data = ma200_indicator.get_demo_ma200_indicator()
         
         # Проверяем, есть ли файл с историческими данными
         history_data = []
@@ -46,7 +46,7 @@ def refresh_ma200():
     """
     try:
         # Принудительно получаем новые данные
-        data = ma200_indicator.get_ma200_indicator(force_refresh=True)
+        data = ma200_indicator.get_demo_ma200_indicator()
         if data:
             return jsonify({
                 'status': 'success', 
@@ -70,7 +70,7 @@ def get_ma200_data():
     """
     try:
         # Получаем данные (кешированные или новые)
-        data = ma200_indicator.get_ma200_indicator()
+        data = ma200_indicator.get_demo_ma200_indicator()
         if data:
             return jsonify({
                 'status': 'success', 

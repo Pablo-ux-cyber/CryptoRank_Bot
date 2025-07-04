@@ -347,11 +347,9 @@
     <script>
         function refreshMA200Data() {
             const refreshBtn = document.getElementById('refresh-btn');
-            const spinner = refreshBtn.querySelector('.loading-spinner');
             
             // Показываем индикатор загрузки
             refreshBtn.disabled = true;
-            spinner.style.display = 'inline-block';
             refreshBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Обновление...';
             
             // Отправляем запрос на обновление

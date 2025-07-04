@@ -11,6 +11,7 @@ dependencies = [
     "flask-sqlalchemy>=3.1.1",
     "gunicorn>=23.0.0",
     "matplotlib>=3.10.3",
+    "numpy>=2.2.4",
     "openai>=1.72.0",
     "pandas>=2.2.3",
     "psycopg2-binary>=2.9.10",

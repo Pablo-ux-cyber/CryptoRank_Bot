@@ -50,75 +50,123 @@ class MA200Indicator:
             self.results_file = os.getenv('MA200_RESULTS_FILE', 'ma200_data.csv')
             self.chart_file = os.getenv('MA200_CHART_FILE', 'ma200_chart.png')
         
-        self.base_url = "https://api.coingecko.com/api/v3"
-        self.request_delay = 1.3  # Ограничение CoinGecko API
+        self.base_url = "https://min-api.cryptocompare.com/data"
+        self.request_delay = 1.0  # CryptoCompare имеет более мягкие лимиты
+        self.max_retries = 3  # Максимальное количество повторных попыток
         
         self.logger.info(f"Initialized MA200 Indicator with top {self.top_n} coins, {self.ma_period}d MA, {self.history_days}d history")
         self.logger.info(f"Thresholds: Overbought={self.overbought_threshold}%, Oversold={self.oversold_threshold}%")
 
+    def _make_api_request(self, url, params=None):
+        """
+        Выполняет запрос к API с повторными попытками
+        
+        Args:
+            url (str): URL для запроса
+            params (dict): Параметры запроса
+            
+        Returns:
+            dict: Ответ API или None в случае ошибки
+        """
+        for attempt in range(self.max_retries):
+            try:
+                self.logger.info(f"API запрос (попытка {attempt + 1}): {url}")
+                response = requests.get(url, params=params, timeout=30)
+                
+                if response.status_code == 429:
+                    wait_time = (attempt + 1) * 5  # Увеличиваем время ожидания
+                    self.logger.warning(f"Rate limit exceeded, waiting {wait_time} seconds...")
+                    time.sleep(wait_time)
+                    continue
+                
+                response.raise_for_status()
+                return response.json()
+                
+            except requests.exceptions.RequestException as e:
+                self.logger.error(f"API запрос неудачен (попытка {attempt + 1}): {str(e)}")
+                if attempt < self.max_retries - 1:
+                    time.sleep(self.request_delay * (attempt + 1))
+                else:
+                    return None
+        
+        return None
+
     def get_top_coins(self):
         """
-        Получает список топ-N монет по капитализации
+        Получает список топ-N монет по капитализации из CryptoCompare
         
         Returns:
             list: Список словарей с данными монет или None в случае ошибки
         """
-        try:
-            url = f"{self.base_url}/coins/markets"
-            params = {
-                'vs_currency': 'usd',
-                'order': 'market_cap_desc',
-                'per_page': self.top_n,
-                'page': 1,
-                'sparkline': False
-            }
-            
-            response = requests.get(url, params=params, timeout=30)
-            response.raise_for_status()
-            
-            coins = response.json()
-            self.logger.info(f"Получен список {len(coins)} монет из топ-{self.top_n}")
-            
-            return coins
-        except Exception as e:
-            self.logger.error(f"Ошибка получения списка топ монет: {str(e)}")
+        url = f"{self.base_url}/top/mktcapfull"
+        params = {
+            'limit': self.top_n,
+            'tsym': 'USD'
+        }
+        
+        data = self._make_api_request(url, params)
+        if not data or 'Data' not in data:
+            self.logger.error("Не удалось получить список топ монет")
             return None
+            
+        coins = []
+        for item in data['Data']:
+            coin_info = item['CoinInfo']
+            coins.append({
+                'id': coin_info['Name'].lower(),
+                'symbol': coin_info['Name'],
+                'name': coin_info['FullName']
+            })
+        
+        self.logger.info(f"Получен список {len(coins)} монет из топ-{self.top_n}")
+        return coins
 
-    def get_historical_data(self, coin_id, days):
+    def get_historical_data(self, symbol, days):
         """
-        Получает исторические данные цен для монеты
+        Получает исторические данные цен для монеты из CryptoCompare
         
         Args:
-            coin_id (str): ID монеты в CoinGecko
+            symbol (str): Символ монеты (например, BTC)
             days (int): Количество дней истории
             
         Returns:
             pd.DataFrame: DataFrame с историческими данными или None
         """
+        url = f"{self.base_url}/v2/histoday"
+        params = {
+            'fsym': symbol.upper(),
+            'tsym': 'USD',
+            'limit': days,
+            'aggregate': 1
+        }
+        
+        data = self._make_api_request(url, params)
+        if not data or 'Data' not in data or 'Data' not in data['Data']:
+            self.logger.error(f"Ошибка получения исторических данных для {symbol}")
+            return None
+        
         try:
-            url = f"{self.base_url}/coins/{coin_id}/market_chart"
-            params = {
-                'vs_currency': 'usd',
-                'days': days,
-                'interval': 'daily'
-            }
-            
-            response = requests.get(url, params=params, timeout=30)
-            response.raise_for_status()
-            
-            data = response.json()
-            
             # Преобразуем данные в DataFrame
-            prices = data['prices']
-            df = pd.DataFrame(prices)
+            prices_data = []
+            for item in data['Data']['Data']:
+                timestamp = item['time']
+                close_price = item['close']
+                if close_price > 0:  # Исключаем нулевые цены
+                    prices_data.append([timestamp, close_price])
+            
+            if not prices_data:
+                return None
+                
+            df = pd.DataFrame(prices_data)
             df.columns = ['timestamp', 'price']
-            df['date'] = pd.to_datetime(df['timestamp'], unit='ms')
+            df['date'] = pd.to_datetime(df['timestamp'], unit='s')
             df = df[['date', 'price']]
             df = df.set_index('date')
+            df = df.sort_index()  # Сортируем по дате
             
             return df
         except Exception as e:
-            self.logger.error(f"Ошибка получения исторических данных для {coin_id}: {str(e)}")
+            self.logger.error(f"Ошибка обработки данных для {symbol}: {str(e)}")
             return None
 
     def load_cache(self):
@@ -181,25 +229,25 @@ class MA200Indicator:
         
         # Загружаем исторические данные для каждой монеты
         for coin in tqdm(coins, desc="Загрузка исторических данных"):
-            coin_id = coin['id']
+            symbol = coin['symbol']
             
             # Проверяем кеш
-            cache_key = f"{coin_id}_{total_days}"
+            cache_key = f"{symbol}_{total_days}"
             if cache_key in cache and not force_refresh:
                 # Проверяем актуальность кеша (не старше 1 дня)
                 cache_date = datetime.fromisoformat(cache[cache_key]['updated'])
                 if (datetime.now() - cache_date).days < 1:
-                    coin_data[coin_id] = pd.DataFrame(cache[cache_key]['data'])
-                    coin_data[coin_id]['date'] = pd.to_datetime(coin_data[coin_id]['date'])
-                    coin_data[coin_id] = coin_data[coin_id].set_index('date')
-                    valid_coins.append(coin_id)
+                    coin_data[symbol] = pd.DataFrame(cache[cache_key]['data'])
+                    coin_data[symbol]['date'] = pd.to_datetime(coin_data[symbol]['date'])
+                    coin_data[symbol] = coin_data[symbol].set_index('date')
+                    valid_coins.append(symbol)
                     continue
             
             # Загружаем новые данные
-            df = self.get_historical_data(coin_id, total_days)
+            df = self.get_historical_data(symbol, total_days)
             if df is not None and len(df) >= (self.ma_period + self.history_days):
-                coin_data[coin_id] = df
-                valid_coins.append(coin_id)
+                coin_data[symbol] = df
+                valid_coins.append(symbol)
                 
                 # Сохраняем в кеш
                 cache[cache_key] = {
@@ -207,7 +255,7 @@ class MA200Indicator:
                     'updated': datetime.now().isoformat()
                 }
             else:
-                self.logger.warning(f"Недостаточно данных для {coin_id}, исключаем из анализа")
+                self.logger.warning(f"Недостаточно данных для {symbol}, исключаем из анализа")
             
             # Добавляем задержку для соблюдения лимитов API
             time.sleep(self.request_delay)
