@@ -319,68 +319,90 @@ class MA200Indicator:
         # Загружаем кеш
         cache = {} if force_refresh else self.load_cache()
         
-        # Если есть валидный кеш с достаточным количеством монет, используем его для быстрого ответа
-        if cache and not force_refresh and len(cache) >= 30:
-            self.logger.info(f"Используем кешированные данные для {len(cache)} монет")
-            # Быстрый расчет на основе кеша
+        # Если есть валидный кеш с полными 50 монетами, используем его для расчета
+        if cache and not force_refresh and len(cache) >= 50:
+            self.logger.info(f"Используем кешированные данные для всех {len(cache)} монет")
+            # Исторический расчет на основе полного кеша
             return self._calculate_from_cache(cache)
-        elif cache and len(cache) < 30:
-            self.logger.info(f"Кеш содержит только {len(cache)} монет, требуется полное обновление")
+        elif cache and len(cache) < 50:
+            self.logger.info(f"Кеш содержит только {len(cache)} монет, требуется загрузка всех 50")
         
         # Получаем список топ монет
         coins = self.get_top_coins()
         if not coins:
             return None
         
-        # Определяем количество дней для загрузки (MA период + история + запас)
-        total_days = self.ma_period + self.history_days + 50
+        # 3 года данных + MA период + запас для точных расчетов
+        total_days = self.ma_period + self.history_days + 100  # 200 + 1095 + 100 = 1395 дней
         
         coin_data = {}
         valid_coins = []
         
-        # Загружаем исторические данные для каждой монеты
-        self.logger.info(f"Начинаем загрузку исторических данных для {len(coins)} монет...")
+        # ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ВСЕХ 50 МОНЕТ С 3-ЛЕТНЕЙ ИСТОРИЕЙ
+        self.logger.info(f"НАЧИНАЕМ ПОЛНУЮ ЗАГРУЗКУ {len(coins)} МОНЕТ С {self.history_days} ДНЯМИ ИСТОРИИ")
+        
+        failed_coins = []
+        
         for i, coin in enumerate(coins):
             symbol = coin['symbol']
-            self.logger.info(f"Обрабатываем монету {i+1}/{len(coins)}: {symbol}")
+            progress = f"[{i+1}/{len(coins)}]"
             
-            # Проверяем кеш
+            # Проверяем кеш только для полных 3-летних данных
             cache_key = f"{symbol}_{total_days}"
+            cache_valid = False
+            
             if cache_key in cache and not force_refresh:
-                # Проверяем актуальность кеша (не старше 1 дня)
                 try:
                     cache_date = datetime.fromisoformat(cache[cache_key]['updated'])
-                    if (datetime.now() - cache_date).days < 1:
-                        coin_data[symbol] = pd.DataFrame(cache[cache_key]['data'])
-                        coin_data[symbol]['date'] = pd.to_datetime(coin_data[symbol]['date'])
-                        coin_data[symbol] = coin_data[symbol].set_index('date')
-                        valid_coins.append(symbol)
-                        self.logger.info(f"Используем кешированные данные для {symbol}")
-                        continue
+                    cache_age_hours = (datetime.now() - cache_date).total_seconds() / 3600
+                    
+                    if cache_age_hours < 8:  # 8-часовой кеш
+                        cached_df = pd.DataFrame(cache[cache_key]['data'])
+                        cached_df['date'] = pd.to_datetime(cached_df['date'])
+                        cached_df = cached_df.set_index('date')
+                        
+                        # Проверяем покрытие 3-летнего периода
+                        if len(cached_df) >= (self.ma_period + self.history_days):
+                            coin_data[symbol] = cached_df
+                            valid_coins.append(symbol)
+                            cache_valid = True
+                            self.logger.info(f"{progress} ✓ КЕШ: {symbol} ({len(cached_df)} дней)")
                 except Exception as e:
-                    self.logger.warning(f"Ошибка при загрузке кеша для {symbol}: {str(e)}")
+                    self.logger.warning(f"{progress} Ошибка кеша для {symbol}: {str(e)}")
             
-            # Загружаем новые данные
-            df = self.get_historical_data(symbol, total_days)
-            if df is not None and not df.empty and len(df) >= (self.ma_period + self.history_days):
-                coin_data[symbol] = df
-                valid_coins.append(symbol)
-                self.logger.info(f"Загружено {len(df)} дней данных для {symbol}")
-                
-                # Сохраняем в кеш (конвертируем даты в строки)
-                df_for_cache = df.reset_index()
-                df_for_cache['date'] = df_for_cache['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-                cache[cache_key] = {
-                    'data': df_for_cache.to_dict('records'),
-                    'updated': datetime.now().isoformat()
-                }
-            else:
-                self.logger.warning(f"Недостаточно данных для {symbol} (получено {len(df) if df is not None else 0} дней), исключаем из анализа")
-            
-            # Анализируем все топ-50 монет для максимальной точности
-            
-            # Добавляем задержку для соблюдения лимитов API
-            time.sleep(self.request_delay)
+            # Если кеш невалиден - принудительно загружаем из API
+            if not cache_valid:
+                df = self.get_historical_data(symbol, total_days)
+                if df is not None and not df.empty and len(df) >= (self.ma_period + self.history_days):
+                    coin_data[symbol] = df
+                    valid_coins.append(symbol)
+                    
+                    # Обновляем кеш полными данными
+                    df_for_cache = df.reset_index()
+                    df_for_cache['date'] = df_for_cache['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                    cache[cache_key] = {
+                        'data': df_for_cache.to_dict('records'),
+                        'updated': datetime.now().isoformat()
+                    }
+                    
+                    self.logger.info(f"{progress} ✓ API: {symbol} ({len(df)} дней)")
+                else:
+                    failed_coins.append(symbol)
+                    self.logger.error(f"{progress} ✗ ОШИБКА: {symbol} - недостаточно данных")
+        
+        # Логируем результаты загрузки
+        success_count = len(valid_coins)
+        failed_count = len(failed_coins)
+        
+        self.logger.info(f"РЕЗУЛЬТАТЫ ЗАГРУЗКИ: ✓{success_count} ✗{failed_count} из {len(coins)} монет")
+        if failed_coins:
+            self.logger.warning(f"Не удалось загрузить: {', '.join(failed_coins)}")
+        
+        # Требуем минимум 45 монет из 50 для качественного анализа
+        if success_count < 45:
+            self.logger.error(f"Критически мало данных: {success_count}/50 монет. Требуется минимум 45 для точного анализа")
+            if success_count == 0:
+                return None
         
         # Сохраняем обновленный кеш
         self.save_cache(cache)

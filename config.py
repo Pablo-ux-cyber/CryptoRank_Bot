@@ -54,7 +54,7 @@ ASI_THRESHOLD_WEAK = float(os.getenv('ASI_THRESHOLD_WEAK', '0.25'))
 # MA200 Indicator Configuration
 MA200_TOP_N = int(os.getenv('MA200_TOP_N', '50'))
 MA200_MA_PERIOD = int(os.getenv('MA200_MA_PERIOD', '200'))
-MA200_HISTORY_DAYS = int(os.getenv('MA200_HISTORY_DAYS', '365'))
+MA200_HISTORY_DAYS = int(os.getenv('MA200_HISTORY_DAYS', '1095'))  # 3 года
 MA200_OVERBOUGHT_THRESHOLD = float(os.getenv('MA200_OVERBOUGHT_THRESHOLD', '80'))
 MA200_OVERSOLD_THRESHOLD = float(os.getenv('MA200_OVERSOLD_THRESHOLD', '10'))
 MA200_CACHE_FILE = os.getenv('MA200_CACHE_FILE', 'ma200_cache.json')
