@@ -2,14 +2,14 @@
 
 ## Overview
 
-This is a Python-based Telegram bot that monitors cryptocurrency market sentiment indicators and automatically sends notifications to Telegram channels. The bot tracks Coinbase app rankings from user-provided JSON data, cryptocurrency Fear & Greed Index, Google Trends data for crypto-related terms, and Altcoin Season Index to provide comprehensive market sentiment analysis. Runs daily at 5:01 UTC (8:01 MSK).
+This is a Python-based Telegram bot that monitors cryptocurrency market sentiment indicators and automatically sends notifications to Telegram channels. The bot tracks Coinbase app rankings from user-provided JSON data, cryptocurrency Fear & Greed Index, Google Trends data for crypto-related terms, and Altcoin Season Index to provide comprehensive market sentiment analysis. Runs daily at 8:01 UTC (11:01 MSK).
 
 ## System Architecture
 
 ### Core Technologies
 - **Backend**: Python 3.10+ with Flask web framework
 - **Data Storage**: JSON files for data persistence (no database required)
-- **Scheduling**: Custom threading-based scheduler with file locking mechanism
+- **Scheduling**: Custom threading-based scheduler with file locking mechanism (10:59 MSK data collection, 11:01 MSK messaging)
 - **External APIs**: 
   - Telegram Bot API for messaging
   - Alternative.me API for Fear & Greed Index
@@ -44,12 +44,13 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Data Flow
 
-1. **Scheduled Execution**: The scheduler runs daily at 05:01 UTC (08:01 MSK)
-2. **Data Collection**: Each module fetches its respective data from external sources
-3. **Change Detection**: System compares new data with historical values stored in JSON files
-4. **Message Composition**: If changes are detected, a formatted message is created
-5. **Notification Delivery**: Message is sent to the configured Telegram channel
-6. **Data Persistence**: New data is saved to JSON history files
+1. **Pre-collection**: The scheduler runs rnk.py at 07:59 UTC (10:59 MSK) to collect fresh SensorTower data
+2. **Scheduled Execution**: The scheduler runs daily at 08:01 UTC (11:01 MSK)
+3. **Data Collection**: Each module fetches its respective data from external sources
+4. **Change Detection**: System compares new data with historical values stored in JSON files
+5. **Message Composition**: If changes are detected, a formatted message is created
+6. **Notification Delivery**: Message is sent to the configured Telegram channel
+7. **Data Persistence**: New data is saved to JSON history files
 
 ### Data Storage Structure
 - `rank_history.json`: Coinbase app ranking history
@@ -104,10 +105,10 @@ The system follows a modular, event-driven architecture with separate components
 - **Real Data Integration**: Successfully shows rank 297 for date 2025-07-03 from user's parsed data
 - **Daily Auto-Updates**: When new dates added to JSON, system automatically detects and reports latest ranking
 - **Data Format**: JSON structure with date/rank pairs, system sorts by date to find latest entry
-- **Schedule Update**: Changed execution time to 05:01 UTC (08:01 MSK)
-- **Pre-execution Script**: Added rnk.py execution at 04:59 UTC (07:59 MSK) before main data collection
+- **Schedule Update**: Changed execution time to 08:01 UTC (11:01 MSK)
+- **Pre-execution Script**: Added rnk.py execution at 07:59 UTC (10:59 MSK) before main data collection
 - **SensorTower Integration**: Implemented user's SensorTower API code in rnk.py for automated data collection
-- **Dual Process System**: rnk.py collects fresh data at 7:59 MSK, main bot reads and sends at 8:01 MSK
+- **Dual Process System**: rnk.py collects fresh data at 10:59 MSK, main bot reads and sends at 11:01 MSK
 
 ### Initial Setup
 - Core bot functionality with multi-source data collection
