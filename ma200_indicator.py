@@ -332,63 +332,86 @@ class MA200Indicator:
         if not coins:
             return None
         
-        # 3 года данных + MA период + запас для точных расчетов
-        total_days = self.ma_period + self.history_days + 100  # 200 + 1095 + 100 = 1395 дней
+        # Точно 3 года + MA период для расчетов
+        total_days = self.ma_period + self.history_days  # 200 + 1095 = 1295 дней
         
         coin_data = {}
         valid_coins = []
         
-        # ПРИНУДИТЕЛЬНАЯ ЗАГРУЗКА ВСЕХ 50 МОНЕТ С 3-ЛЕТНЕЙ ИСТОРИЕЙ
-        self.logger.info(f"НАЧИНАЕМ ПОЛНУЮ ЗАГРУЗКУ {len(coins)} МОНЕТ С {self.history_days} ДНЯМИ ИСТОРИИ")
+        # ПАКЕТНАЯ ЗАГРУЗКА МОНЕТ ПО 5 ЗА РАЗ ДЛЯ СТАБИЛЬНОСТИ
+        self.logger.info(f"НАЧИНАЕМ ПАКЕТНУЮ ЗАГРУЗКУ {len(coins)} МОНЕТ С {self.history_days} ДНЯМИ ИСТОРИИ")
         
         failed_coins = []
+        batch_size = 5
         
-        for i, coin in enumerate(coins):
-            symbol = coin['symbol']
-            progress = f"[{i+1}/{len(coins)}]"
+        for batch_start in range(0, len(coins), batch_size):
+            batch_end = min(batch_start + batch_size, len(coins))
+            batch_coins = coins[batch_start:batch_end]
             
-            # Проверяем кеш только для полных 3-летних данных
-            cache_key = f"{symbol}_{total_days}"
-            cache_valid = False
+            self.logger.info(f"Обрабатываем пакет {batch_start//batch_size + 1}: монеты {batch_start+1}-{batch_end}")
             
-            if cache_key in cache and not force_refresh:
-                try:
-                    cache_date = datetime.fromisoformat(cache[cache_key]['updated'])
-                    cache_age_hours = (datetime.now() - cache_date).total_seconds() / 3600
-                    
-                    if cache_age_hours < 8:  # 8-часовой кеш
-                        cached_df = pd.DataFrame(cache[cache_key]['data'])
-                        cached_df['date'] = pd.to_datetime(cached_df['date'])
-                        cached_df = cached_df.set_index('date')
+            for i, coin in enumerate(batch_coins):
+                symbol = coin['symbol']
+                global_index = batch_start + i + 1
+                progress = f"[{global_index}/{len(coins)}]"
+                
+                # Проверяем кеш для 3-летних данных
+                cache_key = f"{symbol}_{total_days}"
+                cache_valid = False
+                
+                if cache_key in cache and not force_refresh:
+                    try:
+                        cache_date = datetime.fromisoformat(cache[cache_key]['updated'])
+                        cache_age_hours = (datetime.now() - cache_date).total_seconds() / 3600
                         
-                        # Проверяем покрытие 3-летнего периода
-                        if len(cached_df) >= (self.ma_period + self.history_days):
-                            coin_data[symbol] = cached_df
+                        if cache_age_hours < 8:  # 8-часовой кеш
+                            cached_df = pd.DataFrame(cache[cache_key]['data'])
+                            cached_df['date'] = pd.to_datetime(cached_df['date'])
+                            cached_df = cached_df.set_index('date')
+                            
+                            if len(cached_df) >= (self.ma_period + self.history_days):
+                                coin_data[symbol] = cached_df
+                                valid_coins.append(symbol)
+                                cache_valid = True
+                                self.logger.info(f"{progress} ✓ КЕШ: {symbol} ({len(cached_df)} дней)")
+                    except Exception as e:
+                        self.logger.warning(f"{progress} Ошибка кеша для {symbol}: {str(e)}")
+                
+                # Загружаем из API если нет в кеше
+                if not cache_valid:
+                    try:
+                        df = self.get_historical_data(symbol, total_days)
+                        if df is not None and not df.empty and len(df) >= (self.ma_period + self.history_days):
+                            coin_data[symbol] = df
                             valid_coins.append(symbol)
-                            cache_valid = True
-                            self.logger.info(f"{progress} ✓ КЕШ: {symbol} ({len(cached_df)} дней)")
-                except Exception as e:
-                    self.logger.warning(f"{progress} Ошибка кеша для {symbol}: {str(e)}")
+                            
+                            # Сохраняем в кеш
+                            df_for_cache = df.reset_index()
+                            df_for_cache['date'] = df_for_cache['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                            cache[cache_key] = {
+                                'data': df_for_cache.to_dict('records'),
+                                'updated': datetime.now().isoformat()
+                            }
+                            
+                            self.logger.info(f"{progress} ✓ API: {symbol} ({len(df)} дней)")
+                        else:
+                            failed_coins.append(symbol)
+                            self.logger.warning(f"{progress} ✗ ПРОПУСК: {symbol} - нет 3-летней истории")
+                    except Exception as e:
+                        failed_coins.append(symbol)
+                        self.logger.error(f"{progress} ✗ ОШИБКА: {symbol} - {str(e)}")
+                        
+                # Добавляем небольшую задержку между запросами
+                if not cache_valid:
+                    time.sleep(0.2)
             
-            # Если кеш невалиден - принудительно загружаем из API
-            if not cache_valid:
-                df = self.get_historical_data(symbol, total_days)
-                if df is not None and not df.empty and len(df) >= (self.ma_period + self.history_days):
-                    coin_data[symbol] = df
-                    valid_coins.append(symbol)
-                    
-                    # Обновляем кеш полными данными
-                    df_for_cache = df.reset_index()
-                    df_for_cache['date'] = df_for_cache['date'].dt.strftime('%Y-%m-%d %H:%M:%S')
-                    cache[cache_key] = {
-                        'data': df_for_cache.to_dict('records'),
-                        'updated': datetime.now().isoformat()
-                    }
-                    
-                    self.logger.info(f"{progress} ✓ API: {symbol} ({len(df)} дней)")
-                else:
-                    failed_coins.append(symbol)
-                    self.logger.error(f"{progress} ✗ ОШИБКА: {symbol} - недостаточно данных")
+            # Сохраняем кеш после каждого пакета
+            self.save_cache(cache)
+            self.logger.info(f"Пакет {batch_start//batch_size + 1} завершен. Загружено: {len(valid_coins)}, ошибок: {len(failed_coins)}")
+            
+            # Пауза между пакетами для снижения нагрузки на API
+            if batch_end < len(coins):
+                time.sleep(1)
         
         # Логируем результаты загрузки
         success_count = len(valid_coins)
