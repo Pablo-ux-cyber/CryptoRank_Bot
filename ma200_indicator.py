@@ -253,9 +253,11 @@ class MA200Indicator:
                         continue
             
             if not valid_coins:
-                self.logger.warning("Нет валидных данных в кеше для исторического анализа")
+                self.logger.warning("Нет валидных данных в кеше для исторического анализа - переходим к полной загрузке")
+                # Не возвращаем None, а продолжаем с полной загрузкой
                 return None
             
+            # Есть валидные данные в кеше - используем их для расчета
             # Рассчитываем процент монет выше MA200 для каждого дня
             for i in range(self.history_days):
                 current_date = end_date - timedelta(days=self.history_days - 1 - i)
