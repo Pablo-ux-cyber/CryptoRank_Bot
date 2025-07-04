@@ -516,6 +516,19 @@ class SensorTowerScheduler:
             logger.error(f"Error getting Fear & Greed Index: {str(e)}")
             return None
     
+    def get_market_breadth_data(self):
+        """
+        Get current Market Breadth Indicator data for testing/manual triggering
+        
+        Returns:
+            dict: Market Breadth Indicator data or None in case of error
+        """
+        try:
+            return self.market_breadth_indicator.get_market_breadth_indicator()
+        except Exception as e:
+            logger.error(f"Error getting Market Breadth Indicator: {str(e)}")
+            return None
+    
     def get_current_altseason_index(self):
         """
         Get current Altcoin Season Index data for testing/manual triggering

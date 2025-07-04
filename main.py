@@ -12,6 +12,7 @@ load_dotenv()
 
 from logger import logger
 from scheduler import SensorTowerScheduler
+from chart_generator import ChartGenerator
 from config import APP_ID, SCHEDULE_HOUR, SCHEDULE_MINUTE, TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from history_api import HistoryAPI
 from routes.history_routes import history_bp
@@ -55,6 +56,7 @@ app.register_blueprint(altseason_bp)
 
 # Инициализируем глобальные переменные
 scheduler = None
+chart_generator = None
 last_scrape_data = None
 last_scrape_time = None
 last_fear_greed_data = None
@@ -521,14 +523,83 @@ def set_manual_rank():
         logger.error(f"Error setting manual rank: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/market-breadth-chart')
+def market_breadth_chart():
+    """Generate and return Market Breadth Indicator chart"""
+    global chart_generator
+    
+    try:
+        # Initialize chart generator if not available
+        if chart_generator is None:
+            chart_generator = ChartGenerator()
+        
+        # Create sample Market Breadth data for demonstration
+        from datetime import datetime
+        
+        sample_data = {
+            'breadth_percentage': 42.0,
+            'above_ma200_count': 21,
+            'total_analyzed': 50,
+            'market_condition': 'Bearish',
+            'timestamp': datetime.now(),
+            'analysis_details': {
+                'bullish_count': 21,
+                'bearish_count': 29,
+                'neutral_count': 0
+            }
+        }
+        
+        # Generate chart with sample data
+        chart_base64 = chart_generator.create_market_breadth_chart(sample_data)
+        
+        if chart_base64:
+            return f'''
+            <html>
+            <head>
+                <title>Market Breadth Indicator Chart</title>
+                <link href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css" rel="stylesheet">
+            </head>
+            <body>
+                <div class="container mt-4">
+                    <h1 class="mb-4">Market Breadth Indicator Chart</h1>
+                    <div class="text-center">
+                        <img src="data:image/png;base64,{chart_base64}" class="img-fluid" alt="Market Breadth Chart">
+                    </div>
+                    <div class="mt-4">
+                        <p><strong>Breadth Percentage:</strong> {sample_data['breadth_percentage']:.1f}%</p>
+                        <p><strong>Coins Above MA200:</strong> {sample_data['above_ma200_count']}</p>
+                        <p><strong>Total Analyzed:</strong> {sample_data['total_analyzed']}</p>
+                        <p><strong>Market Condition:</strong> {sample_data['market_condition']}</p>
+                        <p><strong>Timestamp:</strong> {sample_data['timestamp'].strftime('%Y-%m-%d %H:%M:%S UTC')}</p>
+                        <p><em>Note: This is a demonstration chart with sample data. Live data is used in scheduled messages.</em></p>
+                    </div>
+                    <div class="mt-4">
+                        <a href="/" class="btn btn-primary">Back to Dashboard</a>
+                        <a href="/test-market-breadth" class="btn btn-secondary">Test Live Data</a>
+                    </div>
+                </div>
+            </body>
+            </html>
+            '''
+        else:
+            return jsonify({"status": "error", "message": "Failed to generate chart"}), 500
+            
+    except Exception as e:
+        logger.error(f"Error generating Market Breadth chart: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)
 
-# Initialize scheduler at startup - for both direct run and gunicorn
+# Initialize scheduler and chart generator at startup
 scheduler_thread = threading.Thread(target=start_scheduler_thread)
 scheduler_thread.daemon = True
 scheduler_thread.start()
 logger.info("Starting scheduler at app initialization")
+
+# Initialize chart generator
+chart_generator = ChartGenerator()
+logger.info("Chart generator initialized")
 
 if __name__ == "__main__":
     # Run the Flask app when called directly
