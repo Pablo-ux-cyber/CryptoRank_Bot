@@ -504,23 +504,6 @@ def test_chart():
         # Создаем ссылку на график  
         chart_url = f"https://{request.host}/chart-view"
         
-        # Получаем данные для подписи
-        if scheduler.market_breadth:
-            market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
-            if market_breadth_data:
-                # Переводим условия на английский
-                condition_map = {
-                    "Перекупленность": "Overbought",
-                    "Перепроданность": "Oversold", 
-                    "Нейтральная зона": "Neutral"
-                }
-                english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-                caption = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
-            else:
-                caption = "Market by 200MA: 🟡 Neutral: 50.0%"
-        else:
-            caption = "Market by 200MA: 🟡 Neutral: 50.0%"
-        
         # Загружаем график на внешний сервис (Imgur/Telegraph)
         try:
             from image_uploader import image_uploader
@@ -532,8 +515,22 @@ def test_chart():
                 external_url = image_uploader.upload_chart(png_data)
                 
                 if external_url:
-                    # Отправляем ссылку встроенную в статус
-                    message = f"[{caption}]({external_url})"
+                    # Получаем данные для подписи
+                    if scheduler.market_breadth:
+                        market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
+                        if market_breadth_data:
+                            # Переводим условия на английский
+                            condition_map = {
+                                "Перекупленность": "Overbought",
+                                "Перепроданность": "Oversold", 
+                                "Нейтральная зона": "Neutral"
+                            }
+                            english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                            message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({external_url}): {market_breadth_data['current_value']:.1f}%"
+                        else:
+                            message = f"Market by 200MA: 🟡 [Neutral]({external_url}): 50.0%"
+                    else:
+                        message = f"Market by 200MA: 🟡 [Neutral]({external_url}): 50.0%"
                     
                     if scheduler.telegram_bot.send_message(message):
                         flash("✅ Chart uploaded and link sent to Telegram successfully", "success")
