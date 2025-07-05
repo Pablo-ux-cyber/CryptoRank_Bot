@@ -130,6 +130,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Chart Preview in Telegram**: Implemented PNG chart delivery that opens directly in Telegram chat instead of requiring external links
 - **Fast Chart Generation**: Created optimized chart creation using matplotlib with 30 coins and 1-year period for reliable Telegram delivery
 - **Direct Chat Viewing**: Users now see market breadth charts as images within Telegram conversation for immediate analysis
+- **Server Privacy Protection**: Removed all external URLs from Telegram messages to protect server location and maintain security
+- **Embedded Image Delivery**: Charts are now generated locally and sent as binary PNG files, eliminating need for any public links
+- **Zero URL Exposure**: Complete privacy solution - no server addresses visible to Telegram users while maintaining full chart functionality
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

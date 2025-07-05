@@ -287,25 +287,31 @@ class SensorTowerScheduler:
             else:
                 logger.info("Altcoin Season Index данные недоступны")
             
-            # Добавляем ссылку на график к основному сообщению
+            # Отправляем основное сообщение
+            if not self.telegram_bot.send_message(combined_message):
+                logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
+                return False
+                
+            # Отправляем график как встроенное изображение (без ссылок на сервер)
             try:
-                # Создаем ссылку на график
-                chart_url = "https://89570994-1faf-4430-9046-75d67078f252-00-s6f04tuxdmc.riker.replit.dev/chart-view"
+                from main import create_quick_chart
                 
-                # Добавляем ссылку на график к основному сообщению
-                chart_message = f"\n\n📈 Chart: {chart_url}"
-                extended_message = combined_message + chart_message
-                
-                # Отправляем единое сообщение со ссылкой на график
-                if not self.telegram_bot.send_message(extended_message):
-                    logger.error("Не удалось отправить сообщение со ссылкой на график в Telegram.")
-                    return False
-                
-                logger.info("Сообщение со ссылкой на график успешно отправлено в Telegram")
+                png_data = create_quick_chart()
+                if png_data:
+                    if market_breadth_data and 'signal' in market_breadth_data:
+                        chart_caption = f"📊 Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                    else:
+                        chart_caption = "📊 Market Analysis Chart\n% Of Cryptocurrencies Above 200-Day Moving Average"
+                    
+                    if self.telegram_bot.send_photo(png_data, caption=chart_caption):
+                        logger.info("График успешно отправлен в Telegram как встроенное изображение")
+                    else:
+                        logger.error("Не удалось отправить график в Telegram")
+                else:
+                    logger.error("Не удалось создать PNG данные графика")
                     
             except Exception as e:
-                logger.error(f"Ошибка при отправке ссылки на график: {str(e)}")
-                return False
+                logger.error(f"Ошибка при отправке графика: {str(e)}")
             
             logger.info("Комбинированное сообщение успешно отправлено")
             return True
