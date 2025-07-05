@@ -1370,7 +1370,7 @@ def create_plotly_chart_from_web_api():
     """
     try:
         # Симулируем запрос к API веб-интерфейса
-        from flask import current_app
+        from flask import current_app, request as flask_request
         with current_app.test_request_context(
             method='POST',
             json={'top_n': 50, 'ma_period': 200, 'history_days': 1095}
@@ -1378,41 +1378,59 @@ def create_plotly_chart_from_web_api():
             # Вызываем ТОЧНО ТУ ЖЕ функцию что используется в веб-интерфейсе
             response = run_market_analysis_plotly()
             
+            # Получаем JSON данные из ответа
             if hasattr(response, 'get_json'):
                 data = response.get_json()
+            elif hasattr(response, 'json'):
+                data = response.json
             else:
+                # Если это уже dict, используем напрямую
                 data = response
                 
-            if data and data.get('status') == 'success' and 'plotly_data' in data:
-                import plotly.graph_objects as go
-                import plotly.io as pio
-                
-                # Создаем график из данных веб-интерфейса
-                fig = go.Figure(
-                    data=data['plotly_data'],
-                    layout=data['layout']
-                )
-                
-                # Конвертируем в PNG
-                try:
-                    img_bytes = pio.to_image(
-                        fig, 
-                        format='png',
-                        width=1200,
-                        height=700,
-                        scale=2
+            logger.info(f"Получены данные из веб-API: {type(data)}")
+            
+            if data and isinstance(data, dict) and data.get('status') == 'success':
+                # Проверяем наличие plotly_data
+                if 'plotly_data' in data and data['plotly_data']:
+                    import plotly.graph_objects as go
+                    import plotly.io as pio
+                    
+                    plotly_data = data['plotly_data']
+                    layout = data.get('layout', {})
+                    
+                    logger.info(f"Создаем график Plotly с {len(plotly_data.get('data', []))} наборами данных")
+                    
+                    # Создаем график из данных веб-интерфейса
+                    fig = go.Figure(
+                        data=plotly_data.get('data', []),
+                        layout=layout
                     )
-                    logger.info("График создан из веб-интерфейса API")
-                    return img_bytes
-                except Exception as plotly_error:
-                    logger.error(f"Ошибка конвертации Plotly в PNG: {plotly_error}")
+                    
+                    # Конвертируем в PNG
+                    try:
+                        img_bytes = pio.to_image(
+                            fig, 
+                            format='png',
+                            width=1200,
+                            height=700,
+                            scale=2
+                        )
+                        logger.info("График создан из веб-интерфейса API через Plotly")
+                        return img_bytes
+                    except Exception as plotly_error:
+                        logger.error(f"Ошибка конвертации Plotly в PNG: {plotly_error}")
+                        return None
+                else:
+                    logger.error(f"Нет plotly_data в ответе. Доступные ключи: {list(data.keys())}")
                     return None
             else:
-                logger.error("Не удалось получить данные из веб-интерфейса API")
+                logger.error(f"Неверный формат данных: {data}")
                 return None
                 
     except Exception as e:
         logger.error(f"Ошибка создания графика из веб-API: {str(e)}")
+        import traceback
+        logger.error(f"Полная ошибка: {traceback.format_exc()}")
         return None
 
 # Set up signal handler for graceful shutdown
