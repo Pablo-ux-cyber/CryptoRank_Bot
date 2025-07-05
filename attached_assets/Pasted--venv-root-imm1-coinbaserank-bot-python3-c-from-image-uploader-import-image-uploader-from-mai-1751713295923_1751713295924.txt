@@ -1,0 +1,132 @@
+(venv) root@imm1:~/coinbaserank_bot# python3 -c "
+from image_uploader import image_uploader
+from main import create_quick_chart
+# Создать тестовый график
+png_data = create_quick_chart()
+if png_data:
+    url = image_uploader.upload_chart(png_data)
+    print(f'График загружен: {url}')
+else:
+    print('Ошибка создания графика')
+"
+2025-07-05 13:59:51,220 - sensortower_bot - INFO - Initialized Altcoin Season Index module with top 50 coins, 30d period
+2025-07-05 13:59:51,221 - sensortower_bot - INFO - Thresholds: Strong=0.75, Moderate=0.5, Weak=0.25
+2025-07-05 13:59:51,227 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла истории: 379
+2025-07-05 13:59:51,233 - sensortower_bot - INFO - Starting scheduler at app initialization
+2025-07-05 13:59:51,784 - sensortower_bot - INFO - Telegram bot initialized successfully
+2025-07-05 13:59:51,785 - sensortower_bot - INFO - Initialized Altcoin Season Index module with top 50 coins, 30d period
+2025-07-05 13:59:51,785 - sensortower_bot - INFO - Thresholds: Strong=0.75, Moderate=0.5, Weak=0.25
+2025-07-05 13:59:51,786 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+INFO:sensortower_bot:Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-07-05 13:59:51,787 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 281
+INFO:sensortower_bot:Загружен предыдущий рейтинг из файла: 281
+2025-07-05 13:59:51,787 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+INFO:sensortower_bot:Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-07-05 13:59:51,788 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+ERROR:sensortower_bot:Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-05 13:59:51,788 - sensortower_bot - ERROR - Failed to start the scheduler
+ERROR:sensortower_bot:Failed to start the scheduler
+INFO:matplotlib.font_manager:generated new fontManager
+2025-07-05 13:59:52,702 - sensortower_bot - INFO - Создаем быстрый график...
+INFO:sensortower_bot:Создаем быстрый график...
+INFO:crypto_analyzer_cryptocompare:Получено 30 топ монет
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для BTC (BTC) (1/30)
+INFO:data_cache:Данные для BTC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для BTC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для ETH (ETH) (2/30)
+INFO:data_cache:Данные для ETH загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для ETH загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для BNB (BNB) (3/30)
+INFO:data_cache:Данные для BNB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для BNB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для SOL (SOL) (4/30)
+INFO:data_cache:Данные для SOL загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для SOL загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для XRP (XRP) (5/30)
+INFO:data_cache:Данные для XRP загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для XRP загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для DOGE (DOGE) (6/30)
+INFO:data_cache:Данные для DOGE загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для DOGE загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для TON (TON) (7/30)
+INFO:data_cache:Данные для TON загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для TON загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для ADA (ADA) (8/30)
+INFO:data_cache:Данные для ADA загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для ADA загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для SHIB (SHIB) (9/30)
+INFO:data_cache:Данные для SHIB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для SHIB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для AVAX (AVAX) (10/30)
+INFO:data_cache:Данные для AVAX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для AVAX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для TRX (TRX) (11/30)
+INFO:data_cache:Данные для TRX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для TRX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для DOT (DOT) (12/30)
+INFO:data_cache:Данные для DOT загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для DOT загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для LINK (LINK) (13/30)
+INFO:data_cache:Данные для LINK загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для LINK загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для BCH (BCH) (14/30)
+INFO:data_cache:Данные для BCH загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для BCH загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для NEAR (NEAR) (15/30)
+INFO:data_cache:Данные для NEAR загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для NEAR загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для MATIC (MATIC) (16/30)
+INFO:data_cache:Данные для MATIC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для MATIC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для ICP (ICP) (17/30)
+INFO:data_cache:Данные для ICP загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для ICP загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для UNI (UNI) (18/30)
+INFO:data_cache:Данные для UNI загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для UNI загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для LTC (LTC) (19/30)
+INFO:data_cache:Данные для LTC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для LTC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для ETC (ETC) (20/30)
+INFO:data_cache:Данные для ETC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для ETC загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для APT (APT) (21/30)
+INFO:data_cache:Данные для APT загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для APT загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для STX (STX) (22/30)
+INFO:data_cache:Данные для STX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для STX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для CRO (CRO) (23/30)
+INFO:data_cache:Данные для CRO загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для CRO загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для ATOM (ATOM) (24/30)
+INFO:data_cache:Данные для ATOM загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для ATOM загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для OKB (OKB) (25/30)
+INFO:data_cache:Данные для OKB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для OKB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для FIL (FIL) (26/30)
+INFO:data_cache:Данные для FIL загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для FIL загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для ARB (ARB) (27/30)
+INFO:data_cache:Данные для ARB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для ARB загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для IMX (IMX) (28/30)
+INFO:data_cache:Данные для IMX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для IMX загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для VET (VET) (29/30)
+INFO:data_cache:Данные для VET загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для VET загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загрузка данных для HBAR (HBAR) (30/30)
+INFO:data_cache:Данные для HBAR загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Данные для HBAR загружены из кеша
+INFO:crypto_analyzer_cryptocompare:Загружены данные для 30 из 30 монет
+INFO:crypto_analyzer_cryptocompare:Рассчитан индикатор для 1096 дней
+2025-07-05 13:59:53,800 - sensortower_bot - INFO - Рассчитан индикатор для 1096 дней
+INFO:sensortower_bot:Рассчитан индикатор для 1096 дней
+2025-07-05 13:59:54,440 - sensortower_bot - INFO - Быстрый график создан успешно
+INFO:sensortower_bot:Быстрый график создан успешно
+INFO:image_uploader:Image uploaded successfully to Catbox: https://files.catbox.moe/5mlsdl.png
+INFO:image_uploader:Image uploaded successfully: https://files.catbox.moe/5mlsdl.png
+График загружен: https://files.catbox.moe/5mlsdl.png
+(venv) root@imm1:~/coinbaserank_bot# 
