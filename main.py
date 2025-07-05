@@ -1644,6 +1644,18 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
                 ha='right')
         
+        # Добавляем пояснительную аннотацию
+        explanation_text = (
+            "80%+ = Market too hot\n"
+            "20%- = Buying opportunity\n"
+            "Shows how many coins are above 200-day average"
+        )
+        ax2.text(0.02, 0.02, explanation_text, transform=ax2.transAxes, 
+                fontsize=9, color='#2C3E50', alpha=0.8,
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='#F8F9FA', alpha=0.95, 
+                         edgecolor='#BDC3C7', linewidth=1),
+                verticalalignment='bottom')
+        
         # Заголовок точно как в веб-интерфейсе
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=16, fontweight='bold', pad=20)
@@ -1825,6 +1837,18 @@ def create_quick_chart():
                 fontsize=11, fontweight='600', color='#747D8C', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
                 ha='right')
+        
+        # Добавляем пояснительную аннотацию
+        explanation_text = (
+            "80%+ = Market too hot\n"
+            "20%- = Buying opportunity\n"
+            "Shows how many coins are above 200-day average"
+        )
+        ax2.text(0.02, 0.02, explanation_text, transform=ax2.transAxes, 
+                fontsize=9, color='#2C3E50', alpha=0.8,
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='#F8F9FA', alpha=0.95, 
+                         edgecolor='#BDC3C7', linewidth=1),
+                verticalalignment='bottom')
         
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=14, fontweight='bold')
