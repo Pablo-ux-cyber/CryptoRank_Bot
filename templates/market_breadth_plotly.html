@@ -46,10 +46,26 @@
             color: white;
         }
         .plotly-container {
-            background: var(--bs-gray-900);
-            border-radius: 0.5rem;
+            background: #ffffff;
+            border: 1px solid #e1e5e9;
+            border-radius: 8px;
             padding: 1rem;
             margin: 1rem 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .chart-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #e1e5e9;
+            margin: -1rem -1rem 1rem -1rem;
+            padding: 1rem;
+            border-radius: 8px 8px 0 0;
+        }
+        
+        .chart-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
         }
     </style>
 </head>
@@ -182,11 +198,12 @@
 
                     <!-- График -->
                     <div class="card shadow-sm mb-4">
-                        <div class="card-header">
-                            <h4 class="mb-0">📈 График анализа рынка</h4>
-                        </div>
-                        <div class="card-body">
-                            <div id="plotlyChart" class="plotly-container"></div>
+                        <div class="card-body p-0">
+                            <div id="plotlyChart" class="plotly-container">
+                                <div class="chart-header">
+                                    <h5 class="chart-title">📈 Market Breadth Analysis</h5>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -333,49 +350,117 @@
         function createPlotlyChart(plotlyData) {
             const plotDiv = document.getElementById('plotlyChart');
             
-            // Создаем subplot как в вашем коде
+            // Современный TradingView стиль
             const fig = {
                 data: plotlyData.data,
                 layout: {
                     title: '',
                     showlegend: true,
                     hovermode: 'x unified',
-                    template: 'plotly_dark',
-                    paper_bgcolor: 'rgba(0,0,0,0)',
-                    plot_bgcolor: 'rgba(0,0,0,0)',
-                    height: 800,
+                    // Современная светлая тема
+                    paper_bgcolor: '#ffffff',
+                    plot_bgcolor: '#ffffff',
+                    height: 700,
+                    margin: {t: 60, r: 60, b: 60, l: 80},
+                    font: {
+                        family: 'Inter, "Segoe UI", Roboto, sans-serif',
+                        size: 12,
+                        color: '#2c3e50'
+                    },
                     grid: {
                         rows: 2,
                         columns: 1,
                         pattern: 'independent',
-                        roworder: 'top to bottom'
+                        roworder: 'top to bottom',
+                        ygap: 0.05
                     },
                     annotations: plotlyData.annotations,
                     shapes: plotlyData.shapes,
+                    
+                    // Bitcoin график (верх)
                     xaxis: {
                         domain: [0, 1],
-                        anchor: 'y'
+                        anchor: 'y',
+                        showgrid: true,
+                        gridcolor: '#f0f0f0',
+                        gridwidth: 1,
+                        zeroline: false,
+                        tickfont: {size: 11, color: '#666'},
+                        title: {
+                            font: {size: 12, color: '#2c3e50', family: 'Inter'}
+                        }
                     },
+                    
+                    // Индикатор график (низ)
                     xaxis2: {
                         domain: [0, 1],
                         anchor: 'y2',
-                        title: 'Дата'
+                        title: {
+                            text: 'Date',
+                            font: {size: 12, color: '#2c3e50', family: 'Inter'}
+                        },
+                        showgrid: true,
+                        gridcolor: '#f0f0f0',
+                        gridwidth: 1,
+                        zeroline: false,
+                        tickfont: {size: 11, color: '#666'}
                     },
+                    
+                    // Bitcoin ось Y
                     yaxis: {
-                        domain: [0.6, 1],
+                        domain: [0.55, 1],
                         anchor: 'x',
-                        title: 'Цена Bitcoin (USD)'
+                        title: {
+                            text: 'Bitcoin Price (USD)',
+                            font: {size: 12, color: '#2c3e50', family: 'Inter'}
+                        },
+                        showgrid: true,
+                        gridcolor: '#f0f0f0',
+                        gridwidth: 1,
+                        zeroline: false,
+                        tickfont: {size: 11, color: '#666'},
+                        tickformat: '$,.0f'
                     },
+                    
+                    // Индикатор ось Y
                     yaxis2: {
-                        domain: [0, 0.4],
+                        domain: [0, 0.45],
                         anchor: 'x2',
-                        title: 'Процент монет выше MA (%)',
-                        range: [0, 100]
+                        title: {
+                            text: 'Market Breadth (%)',
+                            font: {size: 12, color: '#2c3e50', family: 'Inter'}
+                        },
+                        range: [0, 100],
+                        showgrid: true,
+                        gridcolor: '#f0f0f0',
+                        gridwidth: 1,
+                        zeroline: false,
+                        tickfont: {size: 11, color: '#666'},
+                        ticksuffix: '%'
+                    },
+                    
+                    legend: {
+                        x: 0,
+                        y: 1.05,
+                        orientation: 'h',
+                        bgcolor: 'rgba(255,255,255,0.8)',
+                        bordercolor: '#e1e5e9',
+                        borderwidth: 1,
+                        font: {size: 11, family: 'Inter'}
                     }
                 },
                 config: {
                     responsive: true,
-                    displayModeBar: true
+                    displayModeBar: true,
+                    modeBarButtonsToRemove: ['pan2d', 'lasso2d', 'select2d'],
+                    displaylogo: false,
+                    toImageButtonOptions: {
+                        format: 'png',
+                        filename: 'market_breadth_analysis',
+                        height: 700,
+                        width: 1200,
+                        scale: 2
+                    }
                 }
             };
             

@@ -710,8 +710,8 @@ def run_market_analysis_plotly():
                     'y': btc_data['price'].tolist(),
                     'mode': 'lines',
                     'name': 'Bitcoin',
-                    'line': {'color': '#F7931A', 'width': 2},
-                    'hovertemplate': '<b>%{x}</b><br>Цена BTC: $%{y:,.0f}<extra></extra>',
+                    'line': {'color': '#FF6B35', 'width': 3},
+                    'hovertemplate': '<b>%{x}</b><br>BTC Price: $%{y:,.0f}<extra></extra>',
                     'yaxis': 'y'
                 })
         
@@ -721,63 +721,63 @@ def run_market_analysis_plotly():
             'x': indicator_data_reset['date'].dt.strftime('%Y-%m-%d').tolist() if 'date' in indicator_data_reset.columns else [str(d)[:10] for d in indicator_data_reset.index],
             'y': indicator_data_reset['percentage'].tolist(),
             'mode': 'lines',
-            'name': 'Индикатор ширины',
-            'line': {'color': '#1f77b4', 'width': 2},
-            'hovertemplate': '<b>%{x}</b><br>Процент: %{y:.1f}%<extra></extra>',
+            'name': 'Market Breadth',
+            'line': {'color': '#2563EB', 'width': 3},
+            'hovertemplate': '<b>%{x}</b><br>Above MA: %{y:.1f}%<extra></extra>',
             'yaxis': 'y2'
         })
         
         # Линии уровней для индикатора
         shapes.extend([
-            # Линия 80%
+            # Линия 80% - перекупленность  
             {
                 'type': 'line',
                 'x0': 0, 'x1': 1,
                 'y0': 80, 'y1': 80,
                 'xref': 'paper', 'yref': 'y2',
-                'line': {'color': 'red', 'width': 1, 'dash': 'dash'}
+                'line': {'color': '#EF4444', 'width': 1.5, 'dash': 'dash'}
             },
-            # Линия 20%
+            # Линия 20% - перепроданность
             {
                 'type': 'line',
                 'x0': 0, 'x1': 1,
                 'y0': 20, 'y1': 20,
                 'xref': 'paper', 'yref': 'y2',
-                'line': {'color': 'green', 'width': 1, 'dash': 'dash'}
+                'line': {'color': '#10B981', 'width': 1.5, 'dash': 'dash'}
             },
-            # Линия 50%
+            # Линия 50% - нейтральная зона
             {
                 'type': 'line',
                 'x0': 0, 'x1': 1,
                 'y0': 50, 'y1': 50,
                 'xref': 'paper', 'yref': 'y2',
-                'line': {'color': 'gray', 'width': 1, 'dash': 'dot'}
+                'line': {'color': '#9CA3AF', 'width': 1, 'dash': 'dot'}
             },
-            # Зона перекупленности
+            # Зона перекупленности (красная)
             {
                 'type': 'rect',
                 'x0': 0, 'x1': 1,
                 'y0': 80, 'y1': 100,
                 'xref': 'paper', 'yref': 'y2',
-                'fillcolor': 'red', 'opacity': 0.1,
+                'fillcolor': '#FEF2F2', 'opacity': 0.7,
                 'layer': 'below', 'line': {'width': 0}
             },
-            # Зона перепроданности
+            # Зона перепроданности (зеленая) 
             {
                 'type': 'rect',
                 'x0': 0, 'x1': 1,
                 'y0': 0, 'y1': 20,
                 'xref': 'paper', 'yref': 'y2',
-                'fillcolor': 'green', 'opacity': 0.1,
+                'fillcolor': '#F0FDF4', 'opacity': 0.7,
                 'layer': 'below', 'line': {'width': 0}
             },
-            # Нейтральная зона
+            # Нейтральная зона (серая)
             {
                 'type': 'rect',
                 'x0': 0, 'x1': 1,
                 'y0': 20, 'y1': 80,
                 'xref': 'paper', 'yref': 'y2',
-                'fillcolor': 'gray', 'opacity': 0.05,
+                'fillcolor': '#F9FAFB', 'opacity': 0.5,
                 'layer': 'below', 'line': {'width': 0}
             }
         ])
