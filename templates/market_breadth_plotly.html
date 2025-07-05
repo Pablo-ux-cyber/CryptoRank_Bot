@@ -269,15 +269,46 @@
                         width: 1400,
                         scale: 2
                     }).then(function(dataURL) {
+                        // Проверяем что dataURL начинается с правильного префикса
+                        if (!dataURL.startsWith('data:image/png;base64,')) {
+                            dataURL = 'data:image/png;base64,' + dataURL;
+                        }
+                        
                         const link = document.createElement('a');
                         link.download = 'market_breadth_analysis.png';
                         link.href = dataURL;
+                        link.setAttribute('type', 'image/png');
+                        
+                        // Принудительно устанавливаем MIME-тип
                         document.body.appendChild(link);
                         link.click();
-                        document.body.removeChild(link);
+                        
+                        // Небольшая задержка перед удалением
+                        setTimeout(() => {
+                            document.body.removeChild(link);
+                        }, 100);
                     }).catch(function(error) {
                         console.error('Альтернативный метод экспорта также не сработал:', error);
-                        alert('Не удалось экспортировать график. Попробуйте использовать кнопку камеры в панели инструментов графика.');
+                        
+                        // Третий метод: через Canvas и Blob
+                        try {
+                            html2canvas(plotDiv).then(function(canvas) {
+                                canvas.toBlob(function(blob) {
+                                    const url = URL.createObjectURL(blob);
+                                    const link = document.createElement('a');
+                                    link.download = 'market_breadth_analysis.png';
+                                    link.href = url;
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                    URL.revokeObjectURL(url);
+                                }, 'image/png');
+                            }).catch(function() {
+                                alert('Все методы экспорта не работают. Используйте встроенную кнопку камеры в графике или сделайте скриншот.');
+                            });
+                        } catch (e) {
+                            alert('Используйте встроенную кнопку камеры в панели инструментов графика.');
+                        }
                     });
                 } catch (e) {
                     console.error('Критическая ошибка экспорта:', e);
