@@ -501,8 +501,8 @@ def test_chart():
             flash("❌ Telegram bot not available", "danger")
             return redirect(url_for('index'))
         
-        # Создаем скриншот веб-интерфейса
-        chart_image = create_web_ui_chart_screenshot()
+        # Используем существующий эндпоинт веб-интерфейса для создания PNG
+        chart_image = create_chart_from_web_endpoint()
         
         if chart_image:
             # Получаем данные для подписи
@@ -1223,69 +1223,287 @@ def create_market_chart_screenshot():
 
 def create_web_ui_chart_screenshot():
     """
-    Создает скриншот веб-интерфейса с помощью Selenium
+    Создает график с точными параметрами веб-интерфейса
     """
     try:
-        from selenium import webdriver
-        from selenium.webdriver.chrome.options import Options
-        from selenium.webdriver.chrome.service import Service
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        import time
-        import io
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        import pandas as pd
+        import plotly.graph_objects as go
+        import plotly.io as pio
+        from datetime import datetime, timedelta
+        import numpy as np
         
-        # Настройка Chrome для headless режима
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--window-size=1400,900")
-        chrome_options.add_argument("--disable-extensions")
-        chrome_options.add_argument("--disable-plugins")
-        chrome_options.add_argument("--disable-images")
+        logger.info("Создание графика с параметрами веб-интерфейса...")
         
-        # Создаем драйвер
-        driver = webdriver.Chrome(options=chrome_options)
+        # ТОЧНО ТЕ ЖЕ параметры что в веб-интерфейсе
+        top_n = 50
+        ma_period = 200
+        history_days = 1095  # 3 года
         
+        # Инициализация
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение данных
+        top_coins = analyzer.get_top_coins(top_n)
+        if not top_coins:
+            logger.error("Не удалось получить топ монеты")
+            return None
+            
+        # Загружаем достаточно данных для расчета
+        total_days_needed = ma_period + history_days + 100
+        historical_data = analyzer.load_historical_data(top_coins, total_days_needed)
+        
+        if not historical_data:
+            logger.error("Не удалось загрузить исторические данные")
+            return None
+        
+        # Расчет индикатора
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            logger.error("Не удалось рассчитать индикатор")
+            return None
+        
+        logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
+        
+        # Получение данных Bitcoin для верхнего графика
+        btc_data = None
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            
+            # Фильтрация по тому же периоду
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=history_days)
+            btc_data = btc_data[
+                (btc_data['date'].dt.date >= start_date) & 
+                (btc_data['date'].dt.date <= end_date)
+            ].sort_values('date')
+        
+        # Создание ТОЧНО ТАКОГО ЖЕ графика как в веб-интерфейсе
+        fig = go.Figure()
+        
+        # Bitcoin график (верхний)
+        if btc_data is not None and not btc_data.empty:
+            fig.add_trace(go.Scatter(
+                x=btc_data['date'],
+                y=btc_data['price'],
+                mode='lines',
+                name='Bitcoin',
+                line=dict(color='#FF6B35', width=2),
+                yaxis='y1'
+            ))
+        
+        # Market breadth график (нижний)
+        indicator_filtered = indicator_data.tail(history_days)
+        dates = pd.to_datetime(indicator_filtered.index)
+        
+        fig.add_trace(go.Scatter(
+            x=dates,
+            y=indicator_filtered['percentage'],
+            mode='lines',
+            name='% Of Cryptocurrencies Above 200-Day Moving Average',
+            line=dict(color='#2563EB', width=2),
+            yaxis='y2'
+        ))
+        
+        # Layout точно как в веб-интерфейсе
+        fig.update_layout(
+            title=dict(
+                text='',
+                x=0.5,
+                font=dict(size=16, color='#2D3748')
+            ),
+            showlegend=True,
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=60, r=60, t=80, b=120),
+            height=700,
+            width=1200,
+            font=dict(family="Arial, sans-serif", size=12, color='#4A5568'),
+            
+            # Двойная ось Y
+            yaxis=dict(
+                title='Bitcoin Price (USD)',
+                side='left',
+                titlefont=dict(color='#FF6B35'),
+                tickfont=dict(color='#FF6B35'),
+                domain=[0.55, 1],
+                showgrid=True,
+                gridcolor='#E2E8F0',
+                gridwidth=1
+            ),
+            yaxis2=dict(
+                title='Percentage (%)',
+                side='left',
+                titlefont=dict(color='#2563EB'),
+                tickfont=dict(color='#2563EB'),
+                domain=[0, 0.45],
+                range=[0, 100],
+                showgrid=True,
+                gridcolor='#E2E8F0',
+                gridwidth=1
+            ),
+            xaxis=dict(
+                title='Date',
+                showgrid=True,
+                gridcolor='#E2E8F0',
+                gridwidth=1,
+                domain=[0, 1]
+            ),
+            legend=dict(
+                x=0.02,
+                y=0.98,
+                bgcolor='rgba(255,255,255,0.8)',
+                bordercolor='#CBD5E0',
+                borderwidth=1
+            )
+        )
+        
+        # Добавляем зоны на нижний график
+        fig.add_hline(y=80, line=dict(color='#FCA5A5', width=1, dash='dash'), yref='y2')
+        fig.add_hline(y=50, line=dict(color='#9CA3AF', width=1, dash='dash'), yref='y2')
+        fig.add_hline(y=20, line=dict(color='#86EFAC', width=1, dash='dash'), yref='y2')
+        
+        # Добавляем цветные зоны
+        fig.add_hrect(y0=80, y1=100, fillcolor='#FEF2F2', opacity=0.3, yref='y2')
+        fig.add_hrect(y0=20, y1=80, fillcolor='#F9FAFB', opacity=0.2, yref='y2')
+        fig.add_hrect(y0=0, y1=20, fillcolor='#F0FDF4', opacity=0.3, yref='y2')
+        
+        # Конвертация в PNG
         try:
-            # Переходим на страницу анализа
-            driver.get("http://localhost:5000/market-breadth-plotly")
-            
-            # Ждем загрузки страницы
-            WebDriverWait(driver, 20).until(
-                EC.presence_of_element_located((By.CLASS_NAME, "analysis-controls"))
+            img_bytes = pio.to_image(
+                fig, 
+                format='png',
+                width=1200,
+                height=700,
+                scale=2
             )
-            
-            # Нажимаем кнопку "Start Analysis"
-            start_button = WebDriverWait(driver, 10).until(
-                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Start Analysis')]"))
-            )
-            start_button.click()
-            
-            # Ждем появления графика
-            WebDriverWait(driver, 60).until(
-                EC.presence_of_element_located((By.ID, "plotlyChart"))
-            )
-            
-            # Дополнительная пауза для полной загрузки графика
-            time.sleep(5)
-            
-            # Находим элемент с графиком
-            chart_element = driver.find_element(By.ID, "plotlyChart")
-            
-            # Делаем скриншот конкретного элемента
-            screenshot = chart_element.screenshot_as_png
-            
-            logger.info("Скриншот графика из веб-интерфейса создан")
-            return screenshot
-            
-        finally:
-            driver.quit()
+            logger.info("График создан через Plotly успешно")
+            return img_bytes
+        except Exception as plotly_error:
+            logger.error(f"Ошибка конвертации Plotly в PNG: {plotly_error}")
+            # Fallback на matplotlib
+            return create_matplotlib_fallback_chart(indicator_data, btc_data, history_days)
             
     except Exception as e:
-        logger.error(f"Ошибка создания скриншота веб-интерфейса: {str(e)}")
+        logger.error(f"Ошибка создания графика: {str(e)}")
+        import traceback
+        logger.error(f"Полная ошибка: {traceback.format_exc()}")
+        return None
+
+def create_matplotlib_fallback_chart(indicator_data, btc_data, history_days):
+    """
+    Fallback функция для создания графика через matplotlib
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from io import BytesIO
+        
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+        fig.patch.set_facecolor('white')
+        
+        # Bitcoin график
+        if btc_data is not None and not btc_data.empty:
+            ax1.plot(btc_data['date'], btc_data['price'], 
+                    color='#FF6B35', linewidth=2, label='Bitcoin')
+            ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold', color='#2D3748')
+            ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12, color='#4A5568')
+            ax1.grid(True, alpha=0.3, color='#E2E8F0')
+        
+        # Market breadth график
+        indicator_filtered = indicator_data.tail(history_days)
+        dates = pd.to_datetime(indicator_filtered.index)
+        
+        ax2.plot(dates, indicator_filtered['percentage'], 
+                color='#2563EB', linewidth=2)
+        
+        # Зоны
+        ax2.axhspan(80, 100, alpha=0.3, color='#FEF2F2')
+        ax2.axhspan(0, 20, alpha=0.3, color='#F0FDF4')
+        ax2.axhspan(20, 80, alpha=0.2, color='#F9FAFB')
+        
+        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                     fontsize=14, fontweight='bold', color='#2D3748')
+        ax2.set_ylabel('Percentage (%)', fontsize=12, color='#4A5568')
+        ax2.set_xlabel('Date', fontsize=12, color='#4A5568')
+        ax2.set_ylim(0, 100)
+        ax2.grid(True, alpha=0.3, color='#E2E8F0')
+        
+        plt.tight_layout()
+        
+        # Сохранение
+        img_buffer = BytesIO()
+        plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
+                   facecolor='white', edgecolor='none')
+        img_buffer.seek(0)
+        img_bytes = img_buffer.getvalue()
+        plt.close(fig)
+        
+        logger.info("График создан через matplotlib fallback")
+        return img_bytes
+        
+    except Exception as e:
+        logger.error(f"Ошибка создания matplotlib fallback: {str(e)}")
+        return None
+
+def create_chart_from_web_endpoint():
+    """
+    Создает график используя существующий веб-эндпоинт для загрузки PNG
+    """
+    try:
+        import requests
+        import time
+        
+        logger.info("Создаем график через веб-эндпоинт...")
+        
+        # Сначала запускаем анализ
+        analysis_url = "http://localhost:5000/api/run-market-analysis-plotly"
+        analysis_data = {
+            'top_n': 50,
+            'ma_period': 200,
+            'history_days': 1095
+        }
+        
+        # Запускаем анализ
+        response = requests.post(analysis_url, json=analysis_data, timeout=120)
+        if response.status_code != 200:
+            logger.error(f"Ошибка анализа: {response.status_code}")
+            return None
+        
+        # Небольшая пауза для завершения анализа
+        time.sleep(2)
+        
+        # Теперь скачиваем PNG
+        png_url = "http://localhost:5000/api/download-chart-png"
+        png_params = {
+            'top_n': 50,
+            'ma_period': 200,
+            'history_days': 1095
+        }
+        
+        png_response = requests.get(png_url, params=png_params, timeout=60)
+        if png_response.status_code != 200:
+            logger.error(f"Ошибка загрузки PNG: {png_response.status_code}")
+            return None
+        
+        # Проверяем что получили PNG
+        if png_response.headers.get('content-type') == 'image/png':
+            logger.info("График успешно получен через веб-эндпоинт")
+            return png_response.content
+        else:
+            logger.error(f"Неверный тип контента: {png_response.headers.get('content-type')}")
+            return None
+            
+    except Exception as e:
+        logger.error(f"Ошибка создания графика через веб-эндпоинт: {str(e)}")
         return None
 
 # Set up signal handler for graceful shutdown
