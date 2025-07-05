@@ -287,28 +287,31 @@ class SensorTowerScheduler:
             else:
                 logger.info("Altcoin Season Index данные недоступны")
             
-            # Добавляем короткую ссылку на график (скрывает адрес сервера)
+            # Отправляем основное сообщение
+            if not self.telegram_bot.send_message(combined_message):
+                logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
+                return False
+                
+            # Отправляем график как встроенное изображение (полностью скрывает сервер)
             try:
-                from url_shortener import url_shortener
+                from main import create_quick_chart
                 
-                # Создаем короткую ссылку
-                server_host = "89570994-1faf-4430-9046-75d67078f252-00-s6f04tuxdmc.riker.replit.dev"
-                short_url = url_shortener.create_chart_short_url(server_host)
-                
-                # Добавляем короткую ссылку к основному сообщению
-                chart_message = f"\n\n📈 Chart: {short_url}"
-                extended_message = combined_message + chart_message
-                
-                # Отправляем единое сообщение с короткой ссылкой
-                if not self.telegram_bot.send_message(extended_message):
-                    logger.error("Не удалось отправить сообщение с короткой ссылкой в Telegram.")
-                    return False
-                
-                logger.info(f"Сообщение с короткой ссылкой успешно отправлено: {short_url}")
+                png_data = create_quick_chart()
+                if png_data:
+                    if market_breadth_data and 'signal' in market_breadth_data:
+                        chart_caption = f"📊 Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                    else:
+                        chart_caption = "📊 Market Analysis Chart\n% Of Cryptocurrencies Above 200-Day Moving Average"
+                    
+                    if self.telegram_bot.send_photo(png_data, caption=chart_caption):
+                        logger.info("График успешно отправлен как встроенное изображение")
+                    else:
+                        logger.error("Не удалось отправить график как встроенное изображение")
+                else:
+                    logger.error("Не удалось создать PNG данные графика")
                     
             except Exception as e:
-                logger.error(f"Ошибка при отправке короткой ссылки: {str(e)}")
-                return False
+                logger.error(f"Ошибка при отправке встроенного графика: {str(e)}")
             
             logger.info("Комбинированное сообщение успешно отправлено")
             return True

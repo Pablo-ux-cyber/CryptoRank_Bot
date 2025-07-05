@@ -514,21 +514,16 @@ def test_chart():
         else:
             caption = "📊 Market Breadth Analysis Test"
         
-        # Создаем короткую ссылку на график (скрывает адрес сервера)
+        # Отправляем график как встроенное изображение (полностью скрывает сервер)
         try:
-            from url_shortener import url_shortener
-            
-            # Создаем короткую ссылку
-            short_url = url_shortener.create_chart_short_url(request.host)
-            
-            # Отправляем сообщение с короткой ссылкой
-            message = f"{caption}\n\n📈 Chart: {short_url}"
-            
-            if scheduler.telegram_bot.send_message(message):
-                flash("✅ Chart link sent to Telegram successfully", "success")
+            png_data = create_quick_chart()
+            if png_data:
+                if scheduler.telegram_bot.send_photo(png_data, caption=caption):
+                    flash("✅ Chart sent to Telegram successfully", "success")
+                else:
+                    flash("❌ Failed to send chart to Telegram", "danger")
             else:
-                flash("❌ Failed to send chart link to Telegram", "danger")
-                
+                flash("❌ Failed to generate chart", "danger")
         except Exception as e:
             flash(f"❌ Error: {str(e)}", "danger")
             
