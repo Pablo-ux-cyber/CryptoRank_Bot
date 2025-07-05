@@ -75,7 +75,7 @@
             <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
-            <h4 id="loadingText">Получение списка топ криптовалют...</h4>
+            <h4 id="loadingText">Getting top cryptocurrencies list...</h4>
             <div class="progress" style="width: 400px; margin-top: 1rem;">
                 <div class="progress-bar progress-bar-striped progress-bar-animated" 
                      id="loadingProgress" role="progressbar" style="width: 0%"></div>
@@ -90,29 +90,29 @@
             <div class="col-md-3">
                 <div class="card">
                     <div class="card-header">
-                        <h5 class="mb-0">⚙️ Настройки анализа</h5>
+                        <h5 class="mb-0">⚙️ Analysis Settings</h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label for="topNSlider" class="form-label">Количество топ монет: <span id="topNValue">50</span></label>
+                            <label for="topNSlider" class="form-label">Top coins count: <span id="topNValue">50</span></label>
                             <input type="range" class="form-range" min="10" max="100" step="5" value="50" 
                                    id="topNSlider" oninput="updateSliderValue('topN', this.value)">
                         </div>
                         <div class="mb-3">
-                            <label for="maPeriodSlider" class="form-label">Период MA: <span id="maPeriodValue">200</span></label>
+                            <label for="maPeriodSlider" class="form-label">MA Period: <span id="maPeriodValue">200</span></label>
                             <input type="range" class="form-range" min="50" max="300" step="10" value="200" 
                                    id="maPeriodSlider" oninput="updateSliderValue('maPeriod', this.value)">
                         </div>
                         <div class="mb-3">
-                            <label for="historyDaysSlider" class="form-label">Дней истории: <span id="historyDaysValue">1095</span></label>
+                            <label for="historyDaysSlider" class="form-label">History days: <span id="historyDaysValue">1095</span></label>
                             <input type="range" class="form-range" min="180" max="1460" step="30" value="1095" 
                                    id="historyDaysSlider" oninput="updateSliderValue('historyDays', this.value)">
                         </div>
                         <button class="btn btn-primary btn-lg w-100 mb-3" onclick="startAnalysis()">
-                            🚀 Запустить анализ
+                            🚀 Start Analysis
                         </button>
                         <button class="btn btn-outline-secondary w-100 mb-2" onclick="downloadChart()" id="downloadBtn" style="display: none;">
-                            📷 Скачать PNG
+                            📷 Download PNG
                         </button>
                         
                         {% if breadth_data and breadth_data.cache_info %}
@@ -147,8 +147,8 @@
             <!-- Основной контент -->
             <div class="col-md-9">
                 <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h1>📊 Индикатор ширины криптовалютного рынка</h1>
-                    <a href="/" class="btn btn-outline-secondary">← Назад к Dashboard</a>
+                    <h1>📊 Cryptocurrency Market Breadth Indicator</h1>
+                    <a href="/" class="btn btn-outline-secondary">← Back to Dashboard</a>
                 </div>
 
                 <!-- Результаты анализа -->
@@ -159,36 +159,36 @@
                             <div class="card metric-card">
                                 <div class="card-body text-center">
                                     <div class="signal-icon" id="signalIcon">🟡</div>
-                                    <h5 class="card-title">Текущий индикатор</h5>
+                                    <h5 class="card-title">Current Indicator</h5>
                                     <h3 id="currentValueText">0%</h3>
-                                    <small class="text-muted" id="conditionText">Готов к анализу</small>
+                                    <small class="text-muted" id="conditionText">Ready for analysis</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card metric-card">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title">Выше MA200</h5>
+                                    <h5 class="card-title">Above MA200</h5>
                                     <h3 class="text-success" id="coinsAboveText">N/A</h3>
-                                    <small class="text-muted">из <span id="totalCoinsText">N/A</span> монет</small>
+                                    <small class="text-muted">of <span id="totalCoinsText">N/A</span> coins</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card metric-card">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title">Среднее</h5>
+                                    <h5 class="card-title">Average</h5>
                                     <h3 class="text-info" id="avgValueText">N/A</h3>
-                                    <small class="text-muted">Историческое</small>
+                                    <small class="text-muted">Historical</small>
                                 </div>
                             </div>
                         </div>
                         <div class="col-md-3">
                             <div class="card metric-card">
                                 <div class="card-body text-center">
-                                    <h5 class="card-title">Диапазон</h5>
+                                    <h5 class="card-title">Range</h5>
                                     <h3 class="text-warning" id="rangeText">N/A</h3>
-                                    <small class="text-muted">Мин - Макс</small>
+                                    <small class="text-muted">Min - Max</small>
                                 </div>
                             </div>
                         </div>
@@ -213,11 +213,11 @@
                     <!-- Таблица корреляций -->
                     <div class="card shadow-sm">
                         <div class="card-header">
-                            <h4 class="mb-0">🔗 Корреляция с Bitcoin</h4>
+                            <h4 class="mb-0">🔗 Correlation with Bitcoin</h4>
                         </div>
                         <div class="card-body">
                             <div id="correlationTable">
-                                <p class="text-muted">Таблица корреляций будет доступна после анализа</p>
+                                <p class="text-muted">Correlation table will be available after analysis</p>
                             </div>
                         </div>
                     </div>
@@ -228,9 +228,9 @@
                     <div class="card shadow-sm mb-4 breadth-card">
                         <div class="card-body text-center py-5">
                             <div class="signal-icon mb-3">📊</div>
-                            <h3>Анализатор готов к работе</h3>
-                            <p class="text-muted">Настройте параметры в боковой панели и нажмите "Запустить анализ"</p>
-                            <p class="small text-muted">Система использует ваш точный алгоритм с Plotly графиками</p>
+                            <h3>Analyzer ready to work</h3>
+                            <p class="text-muted">Configure parameters in the sidebar and click "Start Analysis"</p>
+                            <p class="small text-muted">System uses your exact algorithm with Plotly charts</p>
                         </div>
                     </div>
                 </div>
@@ -325,13 +325,13 @@
             loadingOverlay.style.display = 'flex';
             
             const steps = [
-                'Получение списка топ криптовалют...',
-                'Загрузка исторических данных...',
-                'Расчет скользящих средних...',
-                'Анализ ширины рынка...',
-                'Построение графиков...',
-                'Расчет корреляций...',
-                'Генерация результатов...'
+                'Getting top cryptocurrencies list...',
+                'Loading historical data...',
+                'Calculating moving averages...',
+                'Analyzing market breadth...',
+                'Building charts...',
+                'Calculating correlations...',
+                'Generating results...'
             ];
             
             let currentStep = 0;
@@ -369,12 +369,12 @@
                     updatePageData(data.data);
                     showResults();
                 } else {
-                    alert('Ошибка: ' + data.message);
+                    alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
                 loadingOverlay.style.display = 'none';
-                alert('Ошибка: ' + error.message);
+                alert('Error: ' + error.message);
             });
         }
         
