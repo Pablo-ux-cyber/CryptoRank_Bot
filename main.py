@@ -527,14 +527,20 @@ def test_chart():
 
 @app.route('/chart-view')
 def chart_view():
-    """Dedicated page for viewing the market breadth chart"""
+    """Direct PNG chart for Telegram links"""
     try:
-        # Используем существующий эндпоинт market-breadth для отображения графика
-        return redirect(url_for('market_breadth'))
+        # Создаем PNG график напрямую
+        chart_image = create_chart_from_web_endpoint()
+        
+        if chart_image:
+            from flask import Response
+            return Response(chart_image, mimetype='image/png')
+        else:
+            return "❌ Failed to generate chart", 500
         
     except Exception as e:
-        logger.error(f"Error in chart view: {str(e)}")
-        return f"❌ Error loading chart: {str(e)}", 500
+        logger.error(f"Error generating PNG chart: {str(e)}")
+        return f"❌ Error: {str(e)}", 500
 
 @app.route('/market-breadth')
 def market_breadth():
