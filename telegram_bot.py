@@ -109,11 +109,11 @@ class TelegramBot:
                 chat_type = "канал" if chat_id.startswith('@') else "группа"
                 
                 try:
-                    # Всегда отправляем без форматирования, чтобы сохранить эмодзи
+                    # Отправляем с Markdown форматированием для ссылок
                     await self.bot.send_message(
                         chat_id=chat_id,
                         text=message,
-                        parse_mode=None,
+                        parse_mode='Markdown',
                         disable_web_page_preview=True
                     )
                     logger.info(f"Сообщение отправлено в Telegram {chat_type}")
