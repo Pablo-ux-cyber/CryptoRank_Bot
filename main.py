@@ -1456,54 +1456,197 @@ def create_matplotlib_fallback_chart(indicator_data, btc_data, history_days):
 
 def create_chart_from_web_endpoint():
     """
-    Создает график используя существующий веб-эндпоинт для загрузки PNG
+    Создает график используя уже существующие данные из планировщика
     """
     try:
-        import requests
-        import time
+        logger.info("Создаем график из данных планировщика...")
         
-        logger.info("Создаем график через веб-эндпоинт...")
+        # Используем данные из планировщика, если они есть
+        if scheduler and scheduler.market_breadth:
+            # Получаем данные market breadth
+            market_data = scheduler.market_breadth.get_market_breadth_data()
+            if market_data and 'indicator_data' in market_data:
+                logger.info("Создаем график из данных планировщика")
+                return create_matplotlib_chart_from_data(market_data)
         
-        # Сначала запускаем анализ
-        analysis_url = "http://localhost:5000/api/run-market-analysis-plotly"
-        analysis_data = {
-            'top_n': 50,
-            'ma_period': 200,
-            'history_days': 1095
-        }
-        
-        # Запускаем анализ
-        response = requests.post(analysis_url, json=analysis_data, timeout=120)
-        if response.status_code != 200:
-            logger.error(f"Ошибка анализа: {response.status_code}")
-            return None
-        
-        # Небольшая пауза для завершения анализа
-        time.sleep(2)
-        
-        # Теперь скачиваем PNG
-        png_url = "http://localhost:5000/api/download-chart-png"
-        png_params = {
-            'top_n': 50,
-            'ma_period': 200,
-            'history_days': 1095
-        }
-        
-        png_response = requests.get(png_url, params=png_params, timeout=60)
-        if png_response.status_code != 200:
-            logger.error(f"Ошибка загрузки PNG: {png_response.status_code}")
-            return None
-        
-        # Проверяем что получили PNG
-        if png_response.headers.get('content-type') == 'image/png':
-            logger.info("График успешно получен через веб-эндпоинт")
-            return png_response.content
-        else:
-            logger.error(f"Неверный тип контента: {png_response.headers.get('content-type')}")
-            return None
+        # Fallback - создаем новые данные быстро
+        logger.info("Создаем новые данные с уменьшенным периодом...")
+        return create_quick_chart()
             
     except Exception as e:
-        logger.error(f"Ошибка создания графика через веб-эндпоинт: {str(e)}")
+        logger.error(f"Ошибка создания графика: {str(e)}")
+        return None
+
+def create_quick_chart():
+    """
+    Создает график с сокращенным периодом для быстрой отправки
+    """
+    try:
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from io import BytesIO
+        from datetime import datetime, timedelta
+        
+        logger.info("Создаем быстрый график...")
+        
+        # Сокращенные параметры для быстрой работы
+        top_n = 30  # Меньше монет
+        ma_period = 200
+        history_days = 365  # 1 год вместо 3
+        
+        # Инициализация
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение данных
+        top_coins = analyzer.get_top_coins(top_n)
+        if not top_coins:
+            logger.error("Не удалось получить топ монеты")
+            return None
+            
+        # Загружаем меньше данных
+        total_days_needed = ma_period + history_days + 50
+        historical_data = analyzer.load_historical_data(top_coins, total_days_needed)
+        
+        if not historical_data:
+            logger.error("Не удалось загрузить исторические данные")
+            return None
+        
+        # Расчет индикатора
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            logger.error("Не удалось рассчитать индикатор")
+            return None
+        
+        logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
+        
+        # Создание графика через matplotlib (быстрее)
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        fig.patch.set_facecolor('white')
+        
+        # Bitcoin график
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            
+            # Фильтрация по периоду
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=history_days)
+            btc_filtered = btc_data[
+                (btc_data['date'].dt.date >= start_date) & 
+                (btc_data['date'].dt.date <= end_date)
+            ].sort_values('date')
+            
+            if not btc_filtered.empty:
+                ax1.plot(btc_filtered['date'], btc_filtered['price'], 
+                        color='#FF6B35', linewidth=2, label='Bitcoin')
+                ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold')
+                ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12)
+                ax1.grid(True, alpha=0.3)
+        
+        # Market breadth график
+        indicator_filtered = indicator_data.tail(history_days)
+        dates = pd.to_datetime(indicator_filtered.index)
+        
+        ax2.plot(dates, indicator_filtered['percentage'], 
+                color='#2563EB', linewidth=2)
+        
+        # Зоны
+        ax2.axhspan(80, 100, alpha=0.3, color='#FFE4E1', label='Overbought (80%+)')
+        ax2.axhspan(0, 20, alpha=0.3, color='#F0FFF0', label='Oversold (20%-)')
+        ax2.axhspan(20, 80, alpha=0.1, color='#F5F5F5', label='Neutral Zone')
+        
+        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                     fontsize=14, fontweight='bold')
+        ax2.set_ylabel('Percentage (%)', fontsize=12)
+        ax2.set_xlabel('Date', fontsize=12)
+        ax2.set_ylim(0, 100)
+        ax2.grid(True, alpha=0.3)
+        
+        # Форматирование дат
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        
+        plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
+                    fontsize=16, fontweight='bold', y=0.98)
+        plt.tight_layout()
+        
+        # Сохранение
+        img_buffer = BytesIO()
+        plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
+                   facecolor='white', edgecolor='none')
+        img_buffer.seek(0)
+        img_bytes = img_buffer.getvalue()
+        plt.close(fig)
+        
+        logger.info("Быстрый график создан успешно")
+        return img_bytes
+        
+    except Exception as e:
+        logger.error(f"Ошибка создания быстрого графика: {str(e)}")
+        import traceback
+        logger.error(f"Полная ошибка: {traceback.format_exc()}")
+        return None
+
+def create_matplotlib_chart_from_data(market_data):
+    """
+    Создает график из готовых данных планировщика
+    """
+    try:
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from io import BytesIO
+        import pandas as pd
+        
+        logger.info("Создаем график из данных планировщика")
+        
+        indicator_data = market_data['indicator_data']
+        
+        # Создание графика
+        fig, ax = plt.subplots(1, 1, figsize=(12, 6))
+        fig.patch.set_facecolor('white')
+        
+        # Market breadth график
+        dates = pd.to_datetime(indicator_data.index)
+        
+        ax.plot(dates, indicator_data['percentage'], 
+                color='#2563EB', linewidth=2)
+        
+        # Зоны
+        ax.axhspan(80, 100, alpha=0.3, color='#FFE4E1')
+        ax.axhspan(0, 20, alpha=0.3, color='#F0FFF0')
+        ax.axhspan(20, 80, alpha=0.1, color='#F5F5F5')
+        
+        ax.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                     fontsize=14, fontweight='bold')
+        ax.set_ylabel('Percentage (%)', fontsize=12)
+        ax.set_xlabel('Date', fontsize=12)
+        ax.set_ylim(0, 100)
+        ax.grid(True, alpha=0.3)
+        
+        plt.tight_layout()
+        
+        # Сохранение
+        img_buffer = BytesIO()
+        plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
+                   facecolor='white', edgecolor='none')
+        img_buffer.seek(0)
+        img_bytes = img_buffer.getvalue()
+        plt.close(fig)
+        
+        logger.info("График из данных планировщика создан")
+        return img_bytes
+        
+    except Exception as e:
+        logger.error(f"Ошибка создания графика из данных: {str(e)}")
         return None
 
 # Set up signal handler for graceful shutdown

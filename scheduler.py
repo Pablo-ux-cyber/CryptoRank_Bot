@@ -294,8 +294,8 @@ class SensorTowerScheduler:
             
             # Создаем и отправляем график рынка
             try:
-                from main import create_web_ui_chart_screenshot
-                chart_image = create_web_ui_chart_screenshot()
+                from main import create_chart_from_web_endpoint
+                chart_image = create_chart_from_web_endpoint()
                 
                 if chart_image:
                     # Создаем подпись для графика
