@@ -1259,14 +1259,11 @@ def create_market_chart_screenshot():
                 ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
                 ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
                 
+            # Заголовок с описанием под ним
+            ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average\n80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
+                         fontsize=12, fontweight='bold', pad=20)
+            
             plt.tight_layout()
-            
-            # Правильное размещение описания под заголовком
-            plt.suptitle('% Of Cryptocurrencies Above 200-Day Moving Average\n80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                        fontsize=12, fontweight='bold', y=0.95)
-            
-            # Убираем заголовок с ax2, так как теперь используем suptitle
-            ax2.set_title('')
             
             # Сохранение в BytesIO
             img_buffer = BytesIO()
@@ -1671,15 +1668,12 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         
 
         
+        # Заголовок с описанием под ним
+        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average\n80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
+                     fontsize=12, fontweight='bold', pad=20)
+        
         # Финальное оформление
         plt.tight_layout()
-        
-        # Правильное размещение описания под заголовком
-        plt.suptitle('% Of Cryptocurrencies Above 200-Day Moving Average\n80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                    fontsize=12, fontweight='bold', y=0.95)
-        
-        # Убираем заголовок с ax2, так как теперь используем suptitle
-        ax2.set_title('')
         plt.subplots_adjust(top=0.94, hspace=0.3)
         
         # Сохранение в высоком качестве
