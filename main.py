@@ -1250,13 +1250,7 @@ def create_market_chart_screenshot():
                 ax2.axhline(y=50, color='gray', linestyle=':', alpha=0.5, label='Neutral (50%)')
                 ax2.axhline(y=20, color='green', linestyle='--', alpha=0.7, label='Oversold (20%)')
                 
-                # Заголовок с подзаголовком
-                ax2.text(0.5, 1.08, '% Of Cryptocurrencies Above 200-Day Moving Average', 
-                        transform=ax2.transAxes, fontsize=14, fontweight='bold', 
-                        ha='center', va='bottom')
-                ax2.text(0.5, 1.02, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                        transform=ax2.transAxes, fontsize=9, ha='center', va='bottom', 
-                        color='#666666', style='italic')
+                ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', fontsize=14, fontweight='bold', pad=20)
                 ax2.set_ylabel('Percentage (%)')
                 ax2.grid(True, alpha=0.3)
                 ax2.set_ylim(0, 100)
@@ -1265,8 +1259,12 @@ def create_market_chart_screenshot():
                 ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
                 ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
                 
+            # Добавляем описание под заголовком
+            fig.text(0.5, 0.47, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
+                    fontsize=9, ha='center', va='center', 
+                    color='#666666', style='italic')
+                    
             plt.tight_layout()
-            plt.suptitle('Cryptocurrency Market Analysis', fontsize=16, fontweight='bold', y=0.98)
             
             # Сохранение в BytesIO
             img_buffer = BytesIO()
@@ -1491,13 +1489,8 @@ def create_matplotlib_fallback_chart(indicator_data, btc_data, history_days):
         ax2.axhspan(0, 20, alpha=0.3, color='#F0FDF4')
         ax2.axhspan(20, 80, alpha=0.2, color='#F9FAFB')
         
-        # Заголовок с подзаголовком
-        ax2.text(0.5, 1.08, '% Of Cryptocurrencies Above 200-Day Moving Average', 
-                transform=ax2.transAxes, fontsize=14, fontweight='bold', color='#2D3748',
-                ha='center', va='bottom')
-        ax2.text(0.5, 1.02, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                transform=ax2.transAxes, fontsize=9, ha='center', va='bottom', 
-                color='#666666', style='italic')
+        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                     fontsize=14, fontweight='bold', color='#2D3748', pad=20)
         ax2.set_ylabel('Percentage (%)', fontsize=12, color='#4A5568')
         ax2.set_xlabel('Date', fontsize=12, color='#4A5568')
         ax2.set_ylim(0, 100)
@@ -1655,20 +1648,8 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
                 ha='right')
         
-        # Добавляем пояснительную аннотацию
-        explanation_text = (
-            "80%+ = Market too hot\n"
-            "20%- = Buying opportunity\n"
-            "Shows how many coins are above 200-day average"
-        )
-        
-        # Заголовок с подзаголовком
-        ax2.text(0.5, 1.08, '% Of Cryptocurrencies Above 200-Day Moving Average', 
-                transform=ax2.transAxes, fontsize=16, fontweight='bold',
-                ha='center', va='bottom')
-        ax2.text(0.5, 1.02, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                transform=ax2.transAxes, fontsize=9, ha='center', va='bottom', 
-                color='#666666', style='italic')
+        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                     fontsize=16, fontweight='bold', pad=20)
         ax2.set_ylabel('Percentage (%)', fontsize=13)
         ax2.set_xlabel('Date', fontsize=13)
         ax2.set_ylim(0, 100)
@@ -1687,6 +1668,11 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8, edgecolor='gray'))
         
 
+        
+        # Добавляем описание под заголовком
+        plt.figtext(0.5, 0.47, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
+                   fontsize=9, ha='center', va='center', 
+                   color='#666666', style='italic')
         
         # Финальное оформление
         plt.tight_layout()
