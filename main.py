@@ -900,19 +900,7 @@ def run_market_analysis_plotly():
                 'xanchor': 'right',
                 'font': {'size': 10}
             },
-            {
-                'x': 0.05, 'y': 90,
-                'xref': 'paper', 'yref': 'y2',
-                'text': '<b>80%+ = Market too hot</b><br><b>20%- = Buying opportunity</b><br>Shows how many coins are above 200-day average',
-                'showarrow': False,
-                'xanchor': 'left',
-                'yanchor': 'top',
-                'font': {'size': 11, 'color': '#2c3e50'},
-                'bgcolor': 'rgba(255,255,255,0.95)',
-                'bordercolor': '#2563EB',
-                'borderwidth': 2,
-                'borderpad': 10
-            }
+
         ])
         
         # Расчет корреляций (ваш код)
@@ -1832,18 +1820,8 @@ def create_quick_chart():
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
                 ha='left')
         
-        # Добавляем пояснительную аннотацию
-        explanation_text = (
-            "80%+ = Market too hot\n"
-            "20%- = Buying opportunity\n"
-            "Shows how many coins are above 200-day average"
-        )
-        
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=14, fontweight='bold', pad=20)
-        ax2.text(0.5, 0.96, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                transform=ax2.transAxes, fontsize=9, ha='center', va='top', 
-                color='#666666', style='italic')
         ax2.set_ylabel('Percentage (%)', fontsize=12)
         ax2.set_xlabel('Date', fontsize=12)
         ax2.set_ylim(0, 100)
@@ -1922,9 +1900,6 @@ def create_matplotlib_chart_from_data(market_data):
         ax.text(0.5, 1.08, '% Of Cryptocurrencies Above 200-Day Moving Average', 
                transform=ax.transAxes, fontsize=14, fontweight='bold',
                ha='center', va='bottom')
-        ax.text(0.5, 1.02, '80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-               transform=ax.transAxes, fontsize=9, ha='center', va='bottom', 
-               color='#666666', style='italic')
         ax.set_ylabel('Percentage (%)', fontsize=12)
         ax.set_xlabel('Date', fontsize=12)
         ax.set_ylim(0, 100)
