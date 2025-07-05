@@ -1650,11 +1650,6 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
             "20%- = Buying opportunity\n"
             "Shows how many coins are above 200-day average"
         )
-        ax2.text(0.02, 0.98, explanation_text, transform=ax2.transAxes, 
-                fontsize=9, color='#2C3E50', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='#F8F9FA', alpha=0.95, 
-                         edgecolor='#BDC3C7', linewidth=1),
-                verticalalignment='top')
         
         # Заголовок точно как в веб-интерфейсе
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
@@ -1678,9 +1673,16 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         
 
         
-        # Финальное оформление
+        # Добавляем пояснение под графиком
+        explanation_text = "📊 80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average"
+        fig.text(0.5, 0.02, explanation_text, ha='center', va='bottom', 
+                fontsize=10, color='#2C3E50', alpha=0.8,
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='#F8F9FA', alpha=0.95, 
+                         edgecolor='#BDC3C7', linewidth=1))
+        
+        # Финальное оформление с дополнительным пространством снизу
         plt.tight_layout()
-        plt.subplots_adjust(top=0.94, hspace=0.3)
+        plt.subplots_adjust(top=0.94, bottom=0.12, hspace=0.3)
         
         # Сохранение в высоком качестве
         img_buffer = BytesIO()
@@ -1844,11 +1846,6 @@ def create_quick_chart():
             "20%- = Buying opportunity\n"
             "Shows how many coins are above 200-day average"
         )
-        ax2.text(0.02, 0.98, explanation_text, transform=ax2.transAxes, 
-                fontsize=9, color='#2C3E50', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='#F8F9FA', alpha=0.95, 
-                         edgecolor='#BDC3C7', linewidth=1),
-                verticalalignment='top')
         
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=14, fontweight='bold')
@@ -1878,7 +1875,15 @@ def create_quick_chart():
             ax2.tick_params(axis='x', rotation=45)
         
 
+        # Добавляем пояснение под графиком
+        explanation_text = "📊 80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average"
+        fig.text(0.5, 0.02, explanation_text, ha='center', va='bottom', 
+                fontsize=10, color='#2C3E50', alpha=0.8,
+                bbox=dict(boxstyle='round,pad=0.5', facecolor='#F8F9FA', alpha=0.95, 
+                         edgecolor='#BDC3C7', linewidth=1))
+        
         plt.tight_layout()
+        plt.subplots_adjust(bottom=0.12)
         
         # Сохранение
         img_buffer = BytesIO()
