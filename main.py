@@ -995,7 +995,7 @@ def create_market_chart_screenshot():
         # Параметры анализа
         top_n = 50
         ma_period = 200
-        history_days = 365  # 1 год для Telegram графика
+        history_days = 1095  # 3 года для Telegram графика
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1035,14 +1035,40 @@ def create_market_chart_screenshot():
         # График Bitcoin (верхний)
         if 'BTC' in historical_data:
             btc_data = historical_data['BTC'].copy()
+            logger.info(f"BTC data columns: {btc_data.columns.tolist()}")
+            logger.info(f"BTC data shape: {btc_data.shape}")
+            
+            # Проверяем наличие нужных колонок
+            if 'date' not in btc_data.columns:
+                btc_data.reset_index(inplace=True)
+            
             btc_data['date'] = pd.to_datetime(btc_data['date'])
+            
+            # Определяем правильное название колонки с ценой
+            price_column = 'close'
+            if 'close' not in btc_data.columns:
+                # Попробуем найти альтернативные названия
+                possible_names = ['Close', 'price', 'Price', 'last', 'Last']
+                for name in possible_names:
+                    if name in btc_data.columns:
+                        price_column = name
+                        break
+                else:
+                    # Если не нашли, используем первую числовую колонку
+                    numeric_cols = btc_data.select_dtypes(include=[float, int]).columns
+                    if len(numeric_cols) > 0:
+                        price_column = numeric_cols[0]
+                    else:
+                        logger.error(f"Не найдена колонка с ценой Bitcoin: {btc_data.columns.tolist()}")
+                        return None
+            
             # Фильтрация по периоду анализа
             btc_recent = btc_data.tail(history_days)
             
             fig.add_trace(
                 go.Scatter(
                     x=btc_recent['date'],
-                    y=btc_recent['close'],
+                    y=btc_recent[price_column],
                     name='Bitcoin',
                     line=dict(color='#f7931a', width=2),
                     showlegend=False
@@ -1051,10 +1077,31 @@ def create_market_chart_screenshot():
             )
         
         # График индикатора (нижний)
+        logger.info(f"Indicator data columns: {indicator_data.columns.tolist()}")
+        logger.info(f"Indicator data shape: {indicator_data.shape}")
+        
+        # Определяем правильное название колонки с индикатором
+        breadth_column = 'percentage_above_ma'
+        if 'percentage_above_ma' not in indicator_data.columns:
+            # Попробуем найти альтернативные названия
+            possible_names = ['market_breadth', 'breadth', 'percentage', 'above_ma']
+            for name in possible_names:
+                if name in indicator_data.columns:
+                    breadth_column = name
+                    break
+            else:
+                # Если не нашли, используем первую числовую колонку
+                numeric_cols = indicator_data.select_dtypes(include=[float, int]).columns
+                if len(numeric_cols) > 0:
+                    breadth_column = numeric_cols[0]
+                else:
+                    logger.error(f"Не найдена колонка с индикатором: {indicator_data.columns.tolist()}")
+                    return None
+        
         fig.add_trace(
             go.Scatter(
                 x=pd.to_datetime(indicator_data.index),
-                y=indicator_data['market_breadth'],
+                y=indicator_data[breadth_column],
                 name='Market Breadth',
                 line=dict(color='#2563EB', width=2),
                 showlegend=False
@@ -1094,17 +1141,81 @@ def create_market_chart_screenshot():
             showgrid=True
         )
         
-        # Создание PNG изображения
-        img_bytes = pio.to_image(
-            fig, 
-            format='png',
-            width=800,
-            height=600,
-            scale=2  # Высокое разрешение
-        )
-        
-        logger.info("График для Telegram успешно создан")
-        return img_bytes
+        # Создание PNG изображения с fallback на matplotlib
+        try:
+            img_bytes = pio.to_image(
+                fig, 
+                format='png',
+                width=800,
+                height=600,
+                scale=2  # Высокое разрешение
+            )
+            logger.info("График для Telegram успешно создан через Kaleido")
+            return img_bytes
+        except Exception as kaleido_error:
+            logger.warning(f"Kaleido не работает: {str(kaleido_error)}, пробуем matplotlib")
+            
+            # Fallback на matplotlib
+            import matplotlib.pyplot as plt
+            import matplotlib.dates as mdates
+            from io import BytesIO
+            
+            # Создаем график с matplotlib
+            fig_mpl, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+            
+            # График Bitcoin (верхний)
+            if 'BTC' in historical_data:
+                btc_data = historical_data['BTC'].copy()
+                if 'date' not in btc_data.columns:
+                    btc_data.reset_index(inplace=True)
+                btc_data['date'] = pd.to_datetime(btc_data['date'])
+                
+                # Определяем правильное название колонки с ценой
+                price_column = 'price' if 'price' in btc_data.columns else 'close'
+                if price_column not in btc_data.columns:
+                    numeric_cols = btc_data.select_dtypes(include=[float, int]).columns
+                    if len(numeric_cols) > 0:
+                        price_column = numeric_cols[0]
+                
+                btc_recent = btc_data.tail(history_days)
+                ax1.plot(btc_recent['date'], btc_recent[price_column], 
+                        color='#f7931a', linewidth=2, label='Bitcoin')
+                ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold')
+                ax1.grid(True, alpha=0.3)
+                ax1.set_ylabel('Price (USD)')
+                
+            # График индикатора (нижний)
+            breadth_column = 'percentage'
+            if breadth_column in indicator_data.columns:
+                ax2.plot(pd.to_datetime(indicator_data.index), indicator_data[breadth_column],
+                        color='#2563EB', linewidth=2, label='Market Breadth')
+                
+                # Горизонтальные линии
+                ax2.axhline(y=80, color='red', linestyle='--', alpha=0.7, label='Overbought (80%)')
+                ax2.axhline(y=50, color='gray', linestyle=':', alpha=0.5, label='Neutral (50%)')
+                ax2.axhline(y=20, color='green', linestyle='--', alpha=0.7, label='Oversold (20%)')
+                
+                ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', fontsize=14, fontweight='bold')
+                ax2.set_ylabel('Percentage (%)')
+                ax2.grid(True, alpha=0.3)
+                ax2.set_ylim(0, 100)
+                
+                # Форматирование дат
+                ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+                ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+                
+            plt.tight_layout()
+            plt.suptitle('Cryptocurrency Market Analysis', fontsize=16, fontweight='bold', y=0.98)
+            
+            # Сохранение в BytesIO
+            img_buffer = BytesIO()
+            plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight')
+            img_buffer.seek(0)
+            img_bytes = img_buffer.getvalue()
+            plt.close(fig_mpl)
+            
+            logger.info("График для Telegram успешно создан через matplotlib")
+            return img_bytes
         
     except Exception as e:
         logger.error(f"Ошибка создания скриншота графика: {str(e)}")

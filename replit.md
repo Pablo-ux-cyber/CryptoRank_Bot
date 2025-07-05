@@ -115,6 +115,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Visual Market Reports**: System now generates and sends Plotly chart images alongside text data for comprehensive market analysis
 - **Chart Screenshot Function**: Created automatic PNG generation from interactive Plotly charts for Telegram delivery
 - **Enhanced Message Format**: Telegram messages now include both text indicators and visual chart data for complete market picture
+- **3-Year Historical Analysis**: Updated chart screenshot function to display 3 years of market data instead of 1 year for comprehensive historical context
+- **Robust Chart Generation**: Implemented dual-engine chart creation with Plotly/Kaleido primary and matplotlib fallback for reliable PNG generation
+- **Telegram Chart Testing**: Added "Test Chart to Telegram" functionality working successfully with automatic fallback to matplotlib when system dependencies unavailable
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
