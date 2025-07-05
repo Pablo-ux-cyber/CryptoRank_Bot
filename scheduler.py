@@ -294,11 +294,8 @@ class SensorTowerScheduler:
             
             # Создаем и отправляем график рынка
             try:
-                from main import create_plotly_chart_from_web_api, create_web_ui_chart_screenshot
-                chart_image = create_plotly_chart_from_web_api()
-                if not chart_image:
-                    # Fallback на старую функцию
-                    chart_image = create_web_ui_chart_screenshot()
+                from main import create_web_ui_chart_screenshot
+                chart_image = create_web_ui_chart_screenshot()
                 
                 if chart_image:
                     # Создаем подпись для графика

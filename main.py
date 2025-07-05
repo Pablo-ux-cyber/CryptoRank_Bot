@@ -501,11 +501,8 @@ def test_chart():
             flash("❌ Telegram bot not available", "danger")
             return redirect(url_for('index'))
         
-        # Создаем график, вызывая точно ту же функцию что в веб-интерфейсе
-        chart_image = create_plotly_chart_from_web_api()
-        if not chart_image:
-            # Fallback на старую функцию
-            chart_image = create_web_ui_chart_screenshot()
+        # Создаем скриншот веб-интерфейса
+        chart_image = create_web_ui_chart_screenshot()
         
         if chart_image:
             # Получаем данные для подписи
