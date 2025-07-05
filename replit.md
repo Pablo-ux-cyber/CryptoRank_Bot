@@ -137,7 +137,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Professional Typography**: Used font-weight 600 and improved spacing with right-aligned labels for cleaner, modern appearance
 - **Subtitle Chart Explanation**: Moved educational explanation from chart area to subtitle position under main chart title "% Of Cryptocurrencies Above 200-Day Moving Average" with smaller font (9px) in italic gray text
 - **Clean Chart Layout**: Removed all explanatory text from charts leaving only main title "% Of Cryptocurrencies Above 200-Day Moving Average" for cleaner appearance
-- **Optimized Telegram Messages**: Updated message format to show only status (Oversold/Overbought/Neutral) in English with percentage and chart link embedded as markdown link, removing "Market Breadth Analysis Test" header and separate chart line
+- **Optimized Telegram Messages**: Final format "Market by 200MA: {emoji} {Status}: {percentage}%" with chart link embedded as markdown, completely removing headers and separate chart lines for maximum conciseness
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

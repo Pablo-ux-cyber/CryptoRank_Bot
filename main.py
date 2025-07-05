@@ -515,11 +515,11 @@ def test_chart():
                     "Нейтральная зона": "Neutral"
                 }
                 english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-                caption = f"{market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
+                caption = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
             else:
-                caption = "🟡 Neutral: 50.0%"
+                caption = "Market by 200MA: 🟡 Neutral: 50.0%"
         else:
-            caption = "🟡 Neutral: 50.0%"
+            caption = "Market by 200MA: 🟡 Neutral: 50.0%"
         
         # Загружаем график на внешний сервис (Imgur/Telegraph)
         try:
