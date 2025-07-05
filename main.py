@@ -1618,28 +1618,31 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         ax2.plot(dates, indicator_filtered['percentage'], 
                 color='#2563EB', linewidth=2.5, label='Market Breadth')
         
-        # Цветные зоны с более выделенными цветами
-        ax2.axhspan(80, 100, alpha=0.4, color='#FFB6C1', label='Overbought Zone (80%+)')
-        ax2.axhspan(0, 20, alpha=0.4, color='#98FB98', label='Oversold Zone (20%-)')
-        ax2.axhspan(20, 80, alpha=0.2, color='#F5F5F5', label='Neutral Zone (20%-80%)')
+        # Современные зоны с градиентными цветами
+        ax2.axhspan(80, 100, alpha=0.15, color='#FF4757', label='Overbought Zone')
+        ax2.axhspan(0, 20, alpha=0.15, color='#2ED573', label='Oversold Zone')
+        ax2.axhspan(20, 80, alpha=0.05, color='#57606F', label='Neutral Zone')
         
-        # Горизонтальные линии
-        ax2.axhline(y=80, color='#FF6B6B', linestyle='--', alpha=0.7, linewidth=1)
-        ax2.axhline(y=50, color='#666666', linestyle='-', alpha=0.5, linewidth=1)
-        ax2.axhline(y=20, color='#4ECDC4', linestyle='--', alpha=0.7, linewidth=1)
+        # Пунктирные линии для границ зон
+        ax2.axhline(y=80, color='#FF3742', linestyle='--', alpha=0.8, linewidth=2)
+        ax2.axhline(y=20, color='#26C059', linestyle='--', alpha=0.8, linewidth=2)
+        ax2.axhline(y=50, color='#747D8C', linestyle='-', alpha=0.4, linewidth=1)
         
-        # Добавляем текстовые подписи зон
-        ax2.text(0.02, 90, 'ПЕРЕКУПЛЕННОСТЬ', transform=ax2.get_yaxis_transform(), 
-                fontsize=10, fontweight='bold', color='#CC5500', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        # Современные текстовые подписи на английском
+        ax2.text(0.98, 90, 'OVERBOUGHT', transform=ax2.get_yaxis_transform(), 
+                fontsize=11, fontweight='600', color='#FF3742', alpha=0.9,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#FF3742', linewidth=1),
+                ha='right')
         
-        ax2.text(0.02, 10, 'ПЕРЕПРОДАННОСТЬ', transform=ax2.get_yaxis_transform(), 
-                fontsize=10, fontweight='bold', color='#228B22', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax2.text(0.98, 10, 'OVERSOLD', transform=ax2.get_yaxis_transform(), 
+                fontsize=11, fontweight='600', color='#26C059', alpha=0.9,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#26C059', linewidth=1),
+                ha='right')
         
-        ax2.text(0.02, 50, 'НЕЙТРАЛЬНАЯ ЗОНА', transform=ax2.get_yaxis_transform(), 
-                fontsize=10, fontweight='bold', color='#696969', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax2.text(0.98, 50, 'NEUTRAL', transform=ax2.get_yaxis_transform(), 
+                fontsize=11, fontweight='600', color='#747D8C', alpha=0.9,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
+                ha='right')
         
         # Заголовок точно как в веб-интерфейсе
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
@@ -1797,23 +1800,31 @@ def create_quick_chart():
         ax2.plot(dates, indicator_filtered[breadth_column], 
                 color='#2563EB', linewidth=2)
         
-        # Зоны с более выделенными цветами
-        ax2.axhspan(80, 100, alpha=0.4, color='#FFB6C1', label='Overbought (80%+)')
-        ax2.axhspan(0, 20, alpha=0.4, color='#98FB98', label='Oversold (20%-)')
-        ax2.axhspan(20, 80, alpha=0.2, color='#F5F5F5', label='Neutral Zone')
+        # Современные зоны с градиентными цветами
+        ax2.axhspan(80, 100, alpha=0.15, color='#FF4757', label='Overbought Zone')
+        ax2.axhspan(0, 20, alpha=0.15, color='#2ED573', label='Oversold Zone')
+        ax2.axhspan(20, 80, alpha=0.05, color='#57606F', label='Neutral Zone')
         
-        # Добавляем текстовые подписи зон
-        ax2.text(0.02, 90, 'ПЕРЕКУПЛЕННОСТЬ', transform=ax2.get_yaxis_transform(), 
-                fontsize=10, fontweight='bold', color='#CC5500', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        # Пунктирные линии для границ зон
+        ax2.axhline(y=80, color='#FF3742', linestyle='--', alpha=0.8, linewidth=2)
+        ax2.axhline(y=20, color='#26C059', linestyle='--', alpha=0.8, linewidth=2)
+        ax2.axhline(y=50, color='#747D8C', linestyle='-', alpha=0.4, linewidth=1)
         
-        ax2.text(0.02, 10, 'ПЕРЕПРОДАННОСТЬ', transform=ax2.get_yaxis_transform(), 
-                fontsize=10, fontweight='bold', color='#228B22', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        # Современные текстовые подписи на английском
+        ax2.text(0.98, 90, 'OVERBOUGHT', transform=ax2.get_yaxis_transform(), 
+                fontsize=11, fontweight='600', color='#FF3742', alpha=0.9,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#FF3742', linewidth=1),
+                ha='right')
         
-        ax2.text(0.02, 50, 'НЕЙТРАЛЬНАЯ ЗОНА', transform=ax2.get_yaxis_transform(), 
-                fontsize=10, fontweight='bold', color='#696969', alpha=0.8,
-                bbox=dict(boxstyle='round,pad=0.3', facecolor='white', alpha=0.8))
+        ax2.text(0.98, 10, 'OVERSOLD', transform=ax2.get_yaxis_transform(), 
+                fontsize=11, fontweight='600', color='#26C059', alpha=0.9,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#26C059', linewidth=1),
+                ha='right')
+        
+        ax2.text(0.98, 50, 'NEUTRAL', transform=ax2.get_yaxis_transform(), 
+                fontsize=11, fontweight='600', color='#747D8C', alpha=0.9,
+                bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
+                ha='right')
         
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=14, fontweight='bold')
