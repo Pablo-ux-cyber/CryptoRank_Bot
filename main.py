@@ -787,7 +787,7 @@ def run_market_analysis_plotly():
             {
                 'x': 1, 'y': 80,
                 'xref': 'paper', 'yref': 'y2',
-                'text': 'Перекупленность (80%)',
+                'text': 'Overbought (80%)',
                 'showarrow': False,
                 'xanchor': 'right',
                 'font': {'size': 10}
@@ -795,7 +795,7 @@ def run_market_analysis_plotly():
             {
                 'x': 1, 'y': 20,
                 'xref': 'paper', 'yref': 'y2',
-                'text': 'Перепроданность (20%)',
+                'text': 'Oversold (20%)',
                 'showarrow': False,
                 'xanchor': 'right',
                 'font': {'size': 10}
@@ -803,7 +803,7 @@ def run_market_analysis_plotly():
             {
                 'x': 1, 'y': 50,
                 'xref': 'paper', 'yref': 'y2',
-                'text': 'Нейтральная зона (50%)',
+                'text': 'Neutral Zone (50%)',
                 'showarrow': False,
                 'xanchor': 'right',
                 'font': {'size': 10}

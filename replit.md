@@ -108,6 +108,8 @@ The system follows a modular, event-driven architecture with separate components
 - **User's Algorithm**: Direct implementation of user's crypto_analyzer_cryptocompare.py and data_cache.py
 - **Modern TradingView Style**: Updated chart design with light theme, professional colors, and clean interface
 - **Extended Analysis Period**: Default analysis period increased to 3 years (1095 days) for comprehensive market insights
+- **Full English Interface**: Complete translation of web interface from Russian to English including all buttons, labels, chart titles, annotations (Overbought/Oversold/Neutral Zone), loading messages, and error alerts
+- **Professional Chart Titles**: Updated market breadth chart title to "% Of Cryptocurrencies Above 200-Day Moving Average" matching professional financial terminology
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
