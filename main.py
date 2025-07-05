@@ -811,15 +811,15 @@ def run_market_analysis_plotly():
             {
                 'x': 0.05, 'y': 90,
                 'xref': 'paper', 'yref': 'y2',
-                'text': '<b>Market Breadth Indicator</b><br>Shows % of cryptocurrencies above 200-day MA<br>Higher values = stronger market',
+                'text': '<b>80%+ = Market too hot</b><br><b>20%- = Buying opportunity</b><br>Shows how many coins are above 200-day average',
                 'showarrow': False,
                 'xanchor': 'left',
                 'yanchor': 'top',
-                'font': {'size': 10, 'color': '#2c3e50'},
-                'bgcolor': 'rgba(255,255,255,0.9)',
+                'font': {'size': 11, 'color': '#2c3e50'},
+                'bgcolor': 'rgba(255,255,255,0.95)',
                 'bordercolor': '#2563EB',
                 'borderwidth': 2,
-                'borderpad': 8
+                'borderpad': 10
             }
         ])
         
