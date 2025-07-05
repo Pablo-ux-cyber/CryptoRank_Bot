@@ -292,24 +292,23 @@ class SensorTowerScheduler:
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
                 return False
             
-            # Создаем и отправляем график рынка
+            # Отправляем ссылку на график рынка
             try:
-                from main import create_chart_from_web_endpoint
-                chart_image = create_chart_from_web_endpoint()
+                # Создаем ссылку на график
+                chart_url = "https://89570994-1faf-4430-9046-75d67078f252-00-s6f04tuxdmc.riker.replit.dev/chart-view"
                 
-                if chart_image:
-                    # Создаем подпись для графика
-                    chart_caption = f"📊 Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                    
-                    if self.telegram_bot.send_photo(chart_image, caption=chart_caption):
-                        logger.info("График рынка успешно отправлен в Telegram")
-                    else:
-                        logger.error("Не удалось отправить график рынка в Telegram")
+                # Добавляем ссылку на график к сообщению
+                chart_message = f"\n\n📈 View Interactive Chart: {chart_url}"
+                extended_message = combined_message + chart_message
+                
+                # Отправляем обновленное сообщение со ссылкой
+                if self.telegram_bot.send_message(extended_message):
+                    logger.info("Ссылка на график успешно отправлена в Telegram")
                 else:
-                    logger.warning("Не удалось создать график для отправки в Telegram")
+                    logger.error("Не удалось отправить ссылку на график в Telegram")
                     
             except Exception as e:
-                logger.error(f"Ошибка при создании или отправке графика: {str(e)}")
+                logger.error(f"Ошибка при отправке ссылки на график: {str(e)}")
             
             logger.info("Комбинированное сообщение успешно отправлено")
             return True

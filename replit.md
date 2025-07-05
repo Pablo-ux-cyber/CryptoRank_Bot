@@ -123,6 +123,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Fast Chart Generation Solution**: Replaced web endpoint chart generation with optimized `create_chart_from_web_endpoint()` function that creates charts using local data processing instead of HTTP requests
 - **Telegram Chart Success**: Implemented working chart delivery system using matplotlib with 1-year data fallback (365 days) to ensure reliable chart generation and delivery to Telegram
 - **Reliable Chart Pipeline**: Created dual-approach system: uses existing scheduler data when available, otherwise generates new charts with reduced complexity for guaranteed delivery
+- **Chart Link Delivery**: Replaced chart image attachments with URL links to reduce message size and provide access to full interactive web interface
+- **Unified Chart Access**: Created `/chart-view` endpoint that redirects to main market breadth interface, ensuring users see the complete interactive chart with all features
+- **Link-Based Telegram Integration**: Updated both test function and scheduler to send chart links instead of image files, providing better user experience and faster message delivery
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

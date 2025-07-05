@@ -495,38 +495,46 @@ def set_manual_rank():
 
 @app.route('/test-chart')
 def test_chart():
-    """Test sending chart to Telegram"""
+    """Test sending chart link to Telegram"""
     try:
         if not scheduler or not scheduler.telegram_bot:
             flash("❌ Telegram bot not available", "danger")
             return redirect(url_for('index'))
         
-        # Используем существующий эндпоинт веб-интерфейса для создания PNG
-        chart_image = create_chart_from_web_endpoint()
+        # Создаем ссылку на график
+        chart_url = f"https://{request.host}/chart-view"
         
-        if chart_image:
-            # Получаем данные для подписи
-            if scheduler.market_breadth:
-                market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
-                if market_breadth_data:
-                    chart_caption = f"📊 Test Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                else:
-                    chart_caption = "📊 Test Market Analysis Chart"
+        # Получаем данные для сообщения
+        if scheduler.market_breadth:
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
+            if market_breadth_data:
+                message = f"📊 Market Breadth Analysis Test\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%\n\n📈 View Chart: {chart_url}"
             else:
-                chart_caption = "📊 Test Market Analysis Chart"
-            
-            # Отправляем график
-            if scheduler.telegram_bot.send_photo(chart_image, caption=chart_caption):
-                flash("✅ Chart sent successfully to Telegram!", "success")
-            else:
-                flash("❌ Failed to send chart to Telegram", "danger")
+                message = f"📊 Market Breadth Analysis Test\n\n📈 View Chart: {chart_url}"
         else:
-            flash("❌ Failed to create chart", "danger")
+            message = f"📊 Market Breadth Analysis Test\n\n📈 View Chart: {chart_url}"
+        
+        # Отправляем сообщение со ссылкой
+        if scheduler.telegram_bot.send_message(message):
+            flash("✅ Chart link sent successfully to Telegram!", "success")
+        else:
+            flash("❌ Failed to send chart link to Telegram", "danger")
             
     except Exception as e:
-        flash(f"❌ Error sending chart: {str(e)}", "danger")
+        flash(f"❌ Error sending chart link: {str(e)}", "danger")
         
     return redirect(url_for('index'))
+
+@app.route('/chart-view')
+def chart_view():
+    """Dedicated page for viewing the market breadth chart"""
+    try:
+        # Используем существующий эндпоинт market-breadth для отображения графика
+        return redirect(url_for('market_breadth'))
+        
+    except Exception as e:
+        logger.error(f"Error in chart view: {str(e)}")
+        return f"❌ Error loading chart: {str(e)}", 500
 
 @app.route('/market-breadth')
 def market_breadth():
