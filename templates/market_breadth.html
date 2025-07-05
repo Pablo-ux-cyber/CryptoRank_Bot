@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Breadth Indicator - SensorTower Bot</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .breadth-card {
             border-left: 4px solid var(--bs-info);
@@ -104,6 +105,15 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">Market Breadth History</h4>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="breadthChart" width="400" height="200"></canvas>
                     </div>
                 </div>
 
@@ -244,7 +254,101 @@
             if (totalCoinsElement && totalCoinsElement.textContent.includes('out of')) {
                 totalCoinsElement.textContent = 'out of ' + (breadthData.total_coins || 'N/A') + ' coins';
             }
+            
+            // Обновляем график если есть исторические данные
+            if (breadthData.historical_data && window.breadthChart) {
+                updateChart(breadthData.historical_data);
+            }
         }
+
+        // Инициализация графика
+        let breadthChart;
+        
+        function initChart() {
+            const ctx = document.getElementById('breadthChart').getContext('2d');
+            
+            // Генерируем демонстрационные данные за последние 30 дней
+            const labels = [];
+            const data = [];
+            const now = new Date();
+            
+            for (let i = 29; i >= 0; i--) {
+                const date = new Date(now);
+                date.setDate(date.getDate() - i);
+                labels.push(date.toLocaleDateString('ru-RU', { month: 'short', day: 'numeric' }));
+                // Симулируем данные с трендом и волатильностью
+                data.push(Math.random() * 40 + 30 + Math.sin(i / 5) * 15);
+            }
+            
+            breadthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Market Breadth %',
+                        data: data,
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#adb5bd'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#adb5bd',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            backgroundColor: '#0d6efd'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateChart(historicalData) {
+            if (breadthChart && historicalData) {
+                breadthChart.data.labels = historicalData.labels;
+                breadthChart.data.datasets[0].data = historicalData.values;
+                breadthChart.update();
+            }
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+        });
     </script>
 </body>
 </html>

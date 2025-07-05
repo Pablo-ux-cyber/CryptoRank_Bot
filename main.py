@@ -493,7 +493,12 @@ def set_manual_rank():
 
 @app.route('/market-breadth')
 def market_breadth():
-    """Display Market Breadth Indicator page"""
+    """Display Market Breadth Streamlit redirect page"""
+    return render_template('market_breadth_redirect.html')
+
+@app.route('/market-breadth-legacy')
+def market_breadth_legacy():
+    """Display legacy Market Breadth Indicator page"""
     try:
         # Создаем простую заглушку данных для быстрого отображения
         breadth_data = {
