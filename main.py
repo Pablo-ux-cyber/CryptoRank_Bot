@@ -3,6 +3,8 @@ import signal
 import sys
 import threading
 import os
+import io
+import base64
 from datetime import datetime, timedelta
 from flask import Flask, render_template, jsonify, redirect, url_for, flash, request, send_file
 
@@ -491,6 +493,41 @@ def set_manual_rank():
         logger.error(f"Error setting manual rank: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/test-chart')
+def test_chart():
+    """Test sending chart to Telegram"""
+    try:
+        if not scheduler or not scheduler.telegram_bot:
+            flash("❌ Telegram bot not available", "danger")
+            return redirect(url_for('index'))
+        
+        # Создаем график
+        chart_image = create_market_chart_screenshot()
+        
+        if chart_image:
+            # Получаем данные для подписи
+            if scheduler.market_breadth:
+                market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
+                if market_breadth_data:
+                    chart_caption = f"📊 Test Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                else:
+                    chart_caption = "📊 Test Market Analysis Chart"
+            else:
+                chart_caption = "📊 Test Market Analysis Chart"
+            
+            # Отправляем график
+            if scheduler.telegram_bot.send_photo(chart_image, caption=chart_caption):
+                flash("✅ Chart sent successfully to Telegram!", "success")
+            else:
+                flash("❌ Failed to send chart to Telegram", "danger")
+        else:
+            flash("❌ Failed to create chart", "danger")
+            
+    except Exception as e:
+        flash(f"❌ Error sending chart: {str(e)}", "danger")
+        
+    return redirect(url_for('index'))
+
 @app.route('/market-breadth')
 def market_breadth():
     """Market Breadth Analysis - ваш точный интерфейс"""
@@ -935,6 +972,143 @@ def market_breadth_refresh():
     except Exception as e:
         logger.error(f"Error refreshing market breadth data: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
+
+def create_market_chart_screenshot():
+    """
+    Создает скриншот графика рынка для отправки в Telegram
+    
+    Returns:
+        bytes: PNG изображение графика или None в случае ошибки
+    """
+    try:
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+        import plotly.io as pio
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        import pandas as pd
+        
+        # Инициализация
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Параметры анализа
+        top_n = 50
+        ma_period = 200
+        history_days = 365  # 1 год для Telegram графика
+        
+        # Получение данных
+        top_coins = analyzer.get_top_coins(top_n)
+        if not top_coins:
+            logger.error("Не удалось получить список топ монет для скриншота")
+            return None
+        
+        # Загрузка исторических данных
+        historical_data = analyzer.load_historical_data(
+            top_coins, 
+            ma_period + history_days + 100
+        )
+        
+        if not historical_data:
+            logger.error("Не удалось загрузить исторические данные для скриншота")
+            return None
+        
+        # Расчет индикатора
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            logger.error("Не удалось рассчитать индикатор для скриншота")
+            return None
+        
+        # Создание упрощенного графика для Telegram
+        fig = make_subplots(
+            rows=2, cols=1,
+            subplot_titles=('Bitcoin Price (USD)', '% Of Cryptocurrencies Above 200-Day Moving Average'),
+            vertical_spacing=0.08,
+            row_heights=[0.6, 0.4]
+        )
+        
+        # График Bitcoin (верхний)
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            # Фильтрация по периоду анализа
+            btc_recent = btc_data.tail(history_days)
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=btc_recent['date'],
+                    y=btc_recent['close'],
+                    name='Bitcoin',
+                    line=dict(color='#f7931a', width=2),
+                    showlegend=False
+                ),
+                row=1, col=1
+            )
+        
+        # График индикатора (нижний)
+        fig.add_trace(
+            go.Scatter(
+                x=pd.to_datetime(indicator_data.index),
+                y=indicator_data['market_breadth'],
+                name='Market Breadth',
+                line=dict(color='#2563EB', width=2),
+                showlegend=False
+            ),
+            row=2, col=1
+        )
+        
+        # Горизонтальные линии для зон
+        fig.add_hline(y=80, line_dash="dash", line_color="red", opacity=0.7, row=2, col=1)
+        fig.add_hline(y=50, line_dash="dot", line_color="gray", opacity=0.5, row=2, col=1)
+        fig.add_hline(y=20, line_dash="dash", line_color="green", opacity=0.7, row=2, col=1)
+        
+        # Настройка макета
+        fig.update_layout(
+            title={
+                'text': 'Cryptocurrency Market Analysis',
+                'x': 0.5,
+                'font': {'size': 20, 'color': '#2c3e50'}
+            },
+            height=600,
+            width=800,
+            font=dict(family="Arial", size=12),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=50, r=50, t=80, b=50)
+        )
+        
+        # Настройка осей
+        fig.update_xaxes(
+            gridcolor='lightgray',
+            gridwidth=0.5,
+            showgrid=True
+        )
+        fig.update_yaxes(
+            gridcolor='lightgray',
+            gridwidth=0.5,
+            showgrid=True
+        )
+        
+        # Создание PNG изображения
+        img_bytes = pio.to_image(
+            fig, 
+            format='png',
+            width=800,
+            height=600,
+            scale=2  # Высокое разрешение
+        )
+        
+        logger.info("График для Telegram успешно создан")
+        return img_bytes
+        
+    except Exception as e:
+        logger.error(f"Ошибка создания скриншота графика: {str(e)}")
+        return None
 
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)

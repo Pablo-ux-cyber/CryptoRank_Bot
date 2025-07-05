@@ -292,6 +292,25 @@ class SensorTowerScheduler:
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
                 return False
             
+            # Создаем и отправляем график рынка
+            try:
+                from main import create_market_chart_screenshot
+                chart_image = create_market_chart_screenshot()
+                
+                if chart_image:
+                    # Создаем подпись для графика
+                    chart_caption = f"📊 Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                    
+                    if self.telegram_bot.send_photo(chart_image, caption=chart_caption):
+                        logger.info("График рынка успешно отправлен в Telegram")
+                    else:
+                        logger.error("Не удалось отправить график рынка в Telegram")
+                else:
+                    logger.warning("Не удалось создать график для отправки в Telegram")
+                    
+            except Exception as e:
+                logger.error(f"Ошибка при создании или отправке графика: {str(e)}")
+            
             logger.info("Комбинированное сообщение успешно отправлено")
             return True
             

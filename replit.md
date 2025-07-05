@@ -111,6 +111,10 @@ The system follows a modular, event-driven architecture with separate components
 - **Full English Interface**: Complete translation of web interface from Russian to English including all buttons, labels, chart titles, annotations (Overbought/Oversold/Neutral Zone), loading messages, and error alerts
 - **Professional Chart Titles**: Updated market breadth chart title to "% Of Cryptocurrencies Above 200-Day Moving Average" matching professional financial terminology
 - **Embedded Chart Explanation**: Added informative annotation directly in the chart explaining the indicator purpose and interpretation, displayed in a bordered box within the graph area for immediate user understanding
+- **Telegram Chart Integration**: Added market breadth indicator data to daily Telegram messages with automated chart screenshots
+- **Visual Market Reports**: System now generates and sends Plotly chart images alongside text data for comprehensive market analysis
+- **Chart Screenshot Function**: Created automatic PNG generation from interactive Plotly charts for Telegram delivery
+- **Enhanced Message Format**: Telegram messages now include both text indicators and visual chart data for complete market picture
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

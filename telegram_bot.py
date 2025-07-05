@@ -1,4 +1,6 @@
 import asyncio
+import io
+import base64
 from telegram import Bot
 from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
 from logger import logger
@@ -188,4 +190,52 @@ class TelegramBot:
             return loop.run_until_complete(_test_async())
         except Exception as e:
             logger.error(f"Error in async execution: {str(e)}")
+            return False
+    
+    def send_photo(self, image_data, caption=None):
+        """
+        Отправить изображение в указанный канал/группу Telegram
+        
+        Args:
+            image_data (bytes): Данные изображения в формате bytes
+            caption (str, optional): Подпись к изображению
+            
+        Returns:
+            bool: True если изображение отправлено успешно, иначе False
+        """
+        async def _send_photo_async():
+            if not self.bot:
+                logger.error("Telegram bot not initialized")
+                return False
+                
+            try:
+                chat_id = self.channel_id
+                
+                # Создаем объект файла из байтов
+                photo_file = io.BytesIO(image_data)
+                photo_file.name = 'market_chart.png'
+                
+                await self.bot.send_photo(
+                    chat_id=chat_id,
+                    photo=photo_file,
+                    caption=caption,
+                    parse_mode=None
+                )
+                logger.info(f"Изображение отправлено в Telegram")
+                return True
+                    
+            except Exception as e:
+                logger.error(f"Ошибка отправки изображения в Telegram: {str(e)}")
+                return False
+
+        # Запустить асинхронную функцию в существующем или новом event loop
+        loop = self._get_event_loop()
+        if not loop:
+            logger.error("Не удалось получить event loop для отправки изображения")
+            return False
+            
+        try:
+            return loop.run_until_complete(_send_photo_async())
+        except Exception as e:
+            logger.error(f"Ошибка в асинхронном выполнении отправки изображения: {str(e)}")
             return False
