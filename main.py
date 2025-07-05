@@ -518,7 +518,7 @@ def test_chart():
         try:
             from image_uploader import image_uploader
             
-            # Создаем PNG график
+            # Создаем PNG график (быстрый и рабочий)
             png_data = create_quick_chart()
             if png_data:
                 # Загружаем на внешний сервис
@@ -1844,6 +1844,161 @@ def create_matplotlib_chart_from_data(market_data):
         
     except Exception as e:
         logger.error(f"Ошибка создания графика из данных: {str(e)}")
+        return None
+
+def create_web_interface_chart():
+    """
+    Создает график точно как в веб-интерфейсе с Plotly и конвертирует в PNG
+    """
+    try:
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+        import pandas as pd
+        
+        # Точно такие же параметры как в веб-интерфейсе
+        top_n = 47
+        ma_period = 200
+        history_days = 1095  # 3 года
+        
+        # Инициализация
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение топ монет и исключение стейблкоинов
+        coins = analyzer.get_top_coins(limit=50)
+        if not coins:
+            logger.error("Не удалось получить список монет")
+            return None
+        
+        excluded_stablecoins = ['USDT', 'USDC', 'DAI']
+        filtered_coins = [coin for coin in coins if coin['symbol'] not in excluded_stablecoins][:top_n]
+        
+        logger.info(f"Анализируем {len(filtered_coins)} криптовалют за {history_days} дней")
+        
+        # Загрузка данных
+        total_days_needed = ma_period + history_days + 50
+        historical_data = analyzer.load_historical_data(filtered_coins, total_days_needed)
+        
+        if not historical_data:
+            logger.error("Не удалось загрузить исторические данные")
+            return None
+        
+        # Расчет индикатора
+        indicator_data = analyzer.calculate_market_breadth(historical_data, ma_period, history_days)
+        
+        if indicator_data is None or indicator_data.empty:
+            logger.error("Не удалось рассчитать индикатор ширины рынка")
+            return None
+        
+        # Создание subplot как в веб-интерфейсе
+        fig = make_subplots(
+            rows=2, cols=1,
+            shared_xaxes=True,
+            vertical_spacing=0.1,
+            subplot_titles=('Bitcoin Price (USD)', '% Of Cryptocurrencies Above 200-Day Moving Average'),
+            row_heights=[0.4, 0.6]
+        )
+        
+        # График Bitcoin (верхний)
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            if 'date' not in btc_data.columns:
+                btc_data = btc_data.reset_index()
+                if 'timestamp' in btc_data.columns:
+                    btc_data['date'] = pd.to_datetime(btc_data['timestamp'])
+                else:
+                    btc_data['date'] = pd.to_datetime(btc_data.index)
+            
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            
+            # Определяем колонку с ценой
+            price_column = 'close'
+            if 'close' not in btc_data.columns:
+                possible_names = ['Close', 'price', 'Price', 'last', 'Last']
+                for name in possible_names:
+                    if name in btc_data.columns:
+                        price_column = name
+                        break
+                else:
+                    numeric_cols = btc_data.select_dtypes(include=[float, int]).columns
+                    if len(numeric_cols) > 0:
+                        price_column = numeric_cols[0]
+            
+            # Фильтрация по периоду анализа
+            btc_recent = btc_data.tail(history_days)
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=btc_recent['date'],
+                    y=btc_recent[price_column],
+                    name='Bitcoin',
+                    line=dict(color='#f7931a', width=2),
+                    showlegend=False
+                ),
+                row=1, col=1
+            )
+        
+        # График индикатора (нижний)
+        breadth_column = 'percentage_above_ma'
+        if 'percentage_above_ma' not in indicator_data.columns:
+            possible_names = ['market_breadth', 'breadth', 'percentage', 'above_ma']
+            for name in possible_names:
+                if name in indicator_data.columns:
+                    breadth_column = name
+                    break
+            else:
+                numeric_cols = indicator_data.select_dtypes(include=[float, int]).columns
+                if len(numeric_cols) > 0:
+                    breadth_column = numeric_cols[0]
+        
+        fig.add_trace(
+            go.Scatter(
+                x=pd.to_datetime(indicator_data.index),
+                y=indicator_data[breadth_column],
+                name='Market Breadth',
+                line=dict(color='#2563EB', width=2),
+                showlegend=False
+            ),
+            row=2, col=1
+        )
+        
+        # Горизонтальные линии для зон
+        for y_val, color, label in [(80, "red", "Overbought"), (50, "gray", "Neutral"), (20, "green", "Oversold")]:
+            fig.add_hline(y=y_val, line_dash="dash", line_color=color, opacity=0.7, 
+                         annotation_text=f"{label} Zone", row=2, col=1)
+        
+        # Настройка макета точно как в веб-интерфейсе
+        fig.update_layout(
+            title={
+                'text': '% Of Cryptocurrencies Above 200-Day Moving Average',
+                'x': 0.5,
+                'font': {'size': 20, 'color': '#2c3e50'}
+            },
+            height=700,
+            width=1000,
+            font=dict(family="Arial", size=12),
+            plot_bgcolor='white',
+            paper_bgcolor='white',
+            margin=dict(l=60, r=60, t=100, b=60)
+        )
+        
+        # Настройка осей
+        fig.update_xaxes(gridcolor='lightgray', gridwidth=0.5, showgrid=True)
+        fig.update_yaxes(gridcolor='lightgray', gridwidth=0.5, showgrid=True)
+        
+        # Попытка создать PNG через Plotly
+        try:
+            img_bytes = fig.to_image(format="png", width=1000, height=700, scale=1)
+            logger.info("График создан через Plotly успешно")
+            return img_bytes
+        except Exception as e:
+            logger.warning(f"Plotly недоступен, используем matplotlib fallback: {str(e)}")
+            return create_matplotlib_fallback_chart(indicator_data, historical_data.get('BTC'), history_days)
+        
+    except Exception as e:
+        logger.error(f"Ошибка при создании веб-интерфейс графика: {str(e)}")
         return None
 
 # Set up signal handler for graceful shutdown
