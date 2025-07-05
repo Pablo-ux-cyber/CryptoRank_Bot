@@ -21,13 +21,13 @@ class CryptoAnalyzer:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Список топ криптовалют (символы)
+        # Список топ криптовалют (символы) - исключены стейблкоины USDT, USDC, DAI
         self.top_cryptos = [
-            'BTC', 'ETH', 'USDT', 'BNB', 'SOL', 'USDC', 'XRP', 'DOGE', 'TON', 'ADA',
-            'SHIB', 'AVAX', 'TRX', 'DOT', 'LINK', 'BCH', 'NEAR', 'MATIC', 'ICP', 'UNI',
-            'LTC', 'DAI', 'ETC', 'APT', 'STX', 'CRO', 'ATOM', 'OKB', 'FIL', 'ARB',
-            'IMX', 'VET', 'HBAR', 'MNT', 'OP', 'RNDR', 'GRT', 'ALGO', 'FLOW', 'MANA',
-            'SAND', 'XMR', 'THETA', 'EGLD', 'AXS', 'AAVE', 'FTM', 'XTZ', 'RUNE', 'KAVA'
+            'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'DOGE', 'TON', 'ADA', 'SHIB', 'AVAX',
+            'TRX', 'DOT', 'LINK', 'BCH', 'NEAR', 'MATIC', 'ICP', 'UNI', 'LTC', 'ETC',
+            'APT', 'STX', 'CRO', 'ATOM', 'OKB', 'FIL', 'ARB', 'IMX', 'VET', 'HBAR',
+            'MNT', 'OP', 'RNDR', 'GRT', 'ALGO', 'FLOW', 'MANA', 'SAND', 'XMR', 'THETA',
+            'EGLD', 'AXS', 'AAVE', 'FTM', 'XTZ', 'RUNE', 'KAVA', 'INJ', 'PEPE', 'WIF'
         ]
     
     def _make_request(self, url: str, params: dict = None) -> Optional[dict]:

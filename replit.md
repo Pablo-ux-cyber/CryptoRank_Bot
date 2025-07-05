@@ -98,6 +98,15 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Recent Changes
 
+### July 05, 2025
+- **Market Breadth Integration**: Fully integrated user's Streamlit code into Flask web interface
+- **Plotly Visualization**: Created dual-panel charts with Bitcoin price and market breadth indicator
+- **Correlation Analysis**: Added correlation table with Bitcoin for all analyzed cryptocurrencies
+- **Real-time Analysis**: System analyzes 47 cryptocurrencies (50 minus 3 stablecoins) with 6-hour data caching
+- **Stablecoin Exclusion**: Removed USDT, USDC, DAI from analysis for more accurate market dynamics
+- **Interactive Controls**: Configurable parameters for top coins count, MA period, and history days
+- **User's Algorithm**: Direct implementation of user's crypto_analyzer_cryptocompare.py and data_cache.py
+
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
 - **Automatic Latest Date Detection**: Bot finds entry with most recent date and uses corresponding rank
