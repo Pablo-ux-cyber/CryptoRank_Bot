@@ -14,6 +14,44 @@ class ImageUploader:
     def __init__(self):
         pass
     
+    def upload_to_catbox(self, image_data):
+        """
+        Загружает изображение на catbox.moe
+        
+        Args:
+            image_data (bytes): PNG данные изображения
+            
+        Returns:
+            str or None: URL изображения или None в случае ошибки
+        """
+        try:
+            url = "https://catbox.moe/user/api.php"
+            
+            # Catbox принимает файл напрямую
+            files = {
+                'fileToUpload': ('chart.png', image_data, 'image/png')
+            }
+            
+            data = {
+                'reqtype': 'fileupload'
+            }
+            
+            response = requests.post(url, files=files, data=data, timeout=30)
+            
+            if response.status_code == 200:
+                # Catbox возвращает прямую ссылку на файл
+                catbox_url = response.text.strip()
+                if catbox_url.startswith('https://files.catbox.moe/'):
+                    logger.info(f"Image uploaded successfully to Catbox: {catbox_url}")
+                    return catbox_url
+            
+            logger.error(f"Catbox upload failed: {response.text}")
+            return None
+            
+        except Exception as e:
+            logger.error(f"Error uploading to Catbox: {str(e)}")
+            return None
+    
     def upload_to_imgur_anonymous(self, image_data):
         """
         Загружает изображение на imgur.com анонимно (без API ключа)
@@ -164,8 +202,9 @@ class ImageUploader:
         Returns:
             str or None: URL изображения или None если все сервисы недоступны
         """
-        # Пробуем разные сервисы по очереди
+        # Пробуем разные сервисы по очереди (Catbox первым)
         services = [
+            self.upload_to_catbox,
             self.upload_to_imgur_anonymous,
             self.upload_to_telegra_ph,
             self.upload_to_0x0,
