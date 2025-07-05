@@ -493,8 +493,123 @@ def set_manual_rank():
 
 @app.route('/market-breadth')
 def market_breadth():
-    """Display Market Breadth Streamlit redirect page"""
-    return render_template('market_breadth_redirect.html')
+    """Market Breadth Analysis using your exact code"""
+    try:
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        import pandas as pd
+        
+        # Инициализация компонентов (ваш код)
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение данных для демонстрации (упрощенная версия)
+        breadth_data = {
+            'signal': '📊',
+            'condition': 'Analysis Ready',
+            'description': 'Market breadth analyzer is initialized and ready. Click "Start Analysis" to begin.',
+            'current_value': 0,
+            'timestamp': 'Ready to start',
+            'coins_above_ma': 'N/A',
+            'total_coins': '50',
+            'cache_info': cache.get_cache_info()
+        }
+        
+        return render_template('market_breadth_analysis.html', breadth_data=breadth_data)
+        
+    except Exception as e:
+        logger.error(f"Error initializing market breadth: {str(e)}")
+        return render_template('market_breadth_analysis.html', 
+                             breadth_data=None, error=str(e))
+
+@app.route('/api/run-market-analysis', methods=['POST'])
+def run_market_analysis():
+    """Запуск полного анализа рынка"""
+    try:
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        
+        # Получение параметров из запроса
+        data = request.get_json() or {}
+        top_n = data.get('top_n', 50)
+        ma_period = data.get('ma_period', 200) 
+        history_days = data.get('history_days', 365)
+        
+        # Инициализация
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение топ монет (ваш код)
+        top_coins = analyzer.get_top_coins(top_n)
+        if not top_coins:
+            return jsonify({"status": "error", "message": "Не удалось получить список топ монет"})
+        
+        # Загрузка исторических данных
+        historical_data = analyzer.load_historical_data(
+            top_coins, 
+            ma_period + history_days + 100
+        )
+        
+        if not historical_data:
+            return jsonify({"status": "error", "message": "Не удалось загрузить исторические данные"})
+        
+        # Расчет индикатора (ваш код)
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            return jsonify({"status": "error", "message": "Не удалось рассчитать индикатор"})
+        
+        # Получение сводной информации
+        summary = analyzer.get_market_summary(indicator_data)
+        current_value = summary.get('current_value', 0)
+        
+        # Определение рыночного сигнала (ваш код)
+        if current_value >= 80:
+            signal = "🔴"
+            condition = "Перекупленность"
+            description = "Большинство монет выше MA200, возможна коррекция"
+        elif current_value <= 20:
+            signal = "🟢" 
+            condition = "Перепроданность"
+            description = "Большинство монет ниже MA200, возможен отскок"
+        else:
+            signal = "🟡"
+            condition = "Нейтральная зона"
+            description = "Рынок в состоянии равновесия"
+        
+        # Подготовка данных для графика
+        last_30_dates = indicator_data.index[-30:]
+        chart_data = {
+            'labels': [str(d).split(' ')[0] for d in last_30_dates],
+            'values': indicator_data['percentage'].tail(30).tolist()
+        }
+        
+        result = {
+            'status': 'success',
+            'data': {
+                'signal': signal,
+                'condition': condition,
+                'description': description,
+                'current_value': current_value,
+                'timestamp': str(indicator_data.index[-1]).split(' ')[0],
+                'coins_above_ma': summary.get('coins_above_ma', 'N/A'),
+                'total_coins': len(top_coins),
+                'avg_value': summary.get('avg_value', 0),
+                'max_value': summary.get('max_value', 0),
+                'min_value': summary.get('min_value', 0),
+                'chart_data': chart_data
+            }
+        }
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error in market analysis: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/market-breadth-legacy')
 def market_breadth_legacy():

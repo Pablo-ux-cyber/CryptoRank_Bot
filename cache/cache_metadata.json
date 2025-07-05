@@ -1,38 +1,38 @@
 {
   "BTC": {
-    "timestamp": "2025-07-05T07:10:05.086272",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:21:59.506631",
+    "days": 660,
+    "records": 661
   },
   "ETH": {
-    "timestamp": "2025-07-05T07:10:06.337875",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:00.387227",
+    "days": 660,
+    "records": 661
   },
   "USDT": {
-    "timestamp": "2025-07-05T07:10:07.271020",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:01.384822",
+    "days": 660,
+    "records": 661
   },
   "BNB": {
-    "timestamp": "2025-07-05T07:10:08.382389",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:02.323908",
+    "days": 660,
+    "records": 661
   },
   "SOL": {
-    "timestamp": "2025-07-05T07:10:09.109443",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:03.319520",
+    "days": 660,
+    "records": 661
   },
   "USDC": {
-    "timestamp": "2025-07-05T07:10:09.834650",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:04.299930",
+    "days": 660,
+    "records": 661
   },
   "XRP": {
-    "timestamp": "2025-07-05T07:10:10.551906",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:05.164899",
+    "days": 660,
+    "records": 661
   },
   "DOGE": {
     "timestamp": "2025-07-05T07:10:11.467568",

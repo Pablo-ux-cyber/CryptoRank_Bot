@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Breadth Indicator - SensorTower Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .breadth-card {
+            border-left: 4px solid var(--bs-info);
+        }
+        .signal-icon {
+            font-size: 3rem;
+            line-height: 1;
+        }
+        .progress-large {
+            height: 40px;
+            font-size: 1.1rem;
+        }
+        .metric-card {
+            background: var(--bs-gray-900);
+            border: 1px solid var(--bs-gray-700);
+        }
+        .analysis-controls {
+            background: var(--bs-gray-800);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 id="loadingText">Initializing analysis...</h4>
+            <div class="progress" style="width: 300px; margin-top: 1rem;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     id="loadingProgress" role="progressbar" style="width: 0%"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>📊 Индикатор ширины криптовалютного рынка</h1>
+                    <a href="/" class="btn btn-outline-secondary">← Back to Dashboard</a>
+                </div>
+
+                <div class="analysis-controls">
+                    <h5 class="mb-3">⚙️ Настройки анализа</h5>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="topNSlider" class="form-label">Количество топ монет: <span id="topNValue">50</span></label>
+                            <input type="range" class="form-range" min="10" max="100" step="5" value="50" 
+                                   id="topNSlider" oninput="updateSliderValue('topN', this.value)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="maPeriodSlider" class="form-label">Период MA: <span id="maPeriodValue">200</span></label>
+                            <input type="range" class="form-range" min="50" max="300" step="10" value="200" 
+                                   id="maPeriodSlider" oninput="updateSliderValue('maPeriod', this.value)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="historyDaysSlider" class="form-label">Дней истории: <span id="historyDaysValue">365</span></label>
+                            <input type="range" class="form-range" min="180" max="1460" step="30" value="365" 
+                                   id="historyDaysSlider" oninput="updateSliderValue('historyDays', this.value)">
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary btn-lg" onclick="startAnalysis()">
+                                🚀 Запустить анализ
+                            </button>
+                        </div>
+                        {% if breadth_data and breadth_data.cache_info %}
+                        <div class="col-md-6">
+                            <div class="small text-muted">
+                                💾 Кеш: {{ "%.1f"|format(breadth_data.cache_info.cache_size_mb) }} МБ, 
+                                {{ breadth_data.cache_info.cached_coins_count }} монет
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if breadth_data %}
+                <div class="card shadow-sm mb-4 breadth-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Current Market Breadth</h3>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshData()">
+                            <span id="refresh-text">Refresh Data</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-3 text-center">
+                                <div class="signal-icon" id="signalIcon">{{ breadth_data.signal }}</div>
+                                <h4 class="mt-2" id="conditionText">{{ breadth_data.condition }}</h4>
+                                <small class="text-muted" id="timestampText">{{ breadth_data.timestamp }}</small>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Breadth Index</span>
+                                        <strong id="currentValueText">{{ "%.1f"|format(breadth_data.current_value) }}%</strong>
+                                    </div>
+                                    <div class="progress progress-large">
+                                        <div class="progress-bar 
+                                            {% if breadth_data.current_value < 30 %}bg-danger
+                                            {% elif breadth_data.current_value < 50 %}bg-warning  
+                                            {% elif breadth_data.current_value < 70 %}bg-info
+                                            {% else %}bg-success{% endif %}"
+                                            id="progressBar"
+                                            role="progressbar" 
+                                            style="width: {{ breadth_data.current_value }}%;"
+                                            aria-valuenow="{{ breadth_data.current_value }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                            {{ "%.1f"|format(breadth_data.current_value) }}%
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <strong>Market Interpretation:</strong> <span id="descriptionText">{{ breadth_data.description }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4" id="metricsRow">
+                            <div class="col-md-3">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Above MA200</h5>
+                                        <h3 class="text-success" id="coinsAboveText">{{ breadth_data.coins_above_ma or 'N/A' }}</h3>
+                                        <small class="text-muted">out of <span id="totalCoinsText">{{ breadth_data.total_coins or 'N/A' }}</span> coins</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Average</h5>
+                                        <h3 class="text-info" id="avgValueText">N/A</h3>
+                                        <small class="text-muted">Historical Avg</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Maximum</h5>
+                                        <h3 class="text-success" id="maxValueText">N/A</h3>
+                                        <small class="text-muted">Peak Level</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Minimum</h5>
+                                        <h3 class="text-danger" id="minValueText">N/A</h3>
+                                        <small class="text-muted">Low Level</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h4 class="mb-0">Market Breadth History (Last 30 Days)</h4>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="breadthChart" height="100"></canvas>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h4 class="mb-0">Understanding Market Breadth</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>How it Works</h5>
+                                <p>The Market Breadth Indicator measures what percentage of top cryptocurrencies are trading above their 200-day moving average. This helps identify the overall health and direction of the crypto market.</p>
+                                
+                                <h5 class="mt-3">Signals</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-danger me-2">🔴</span>
+                                    <strong>Overbought (>80%):</strong> Most coins above MA200, possible correction
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-warning me-2">🟡</span>
+                                    <strong>Neutral (20-80%):</strong> Market equilibrium
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-success me-2">🟢</span>
+                                    <strong>Oversold (<20%):</strong> Most coins below MA200, possible bounce
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Key Features</h5>
+                                <ul>
+                                    <li><strong>Real-time Analysis:</strong> Uses live data from CryptoCompare API</li>
+                                    <li><strong>Customizable Parameters:</strong> Adjust coin count, MA period, and history</li>
+                                    <li><strong>Smart Caching:</strong> Optimized data loading and storage</li>
+                                    <li><strong>Historical Context:</strong> Compare current levels with past performance</li>
+                                </ul>
+                                
+                                <div class="alert alert-info mt-3">
+                                    <strong>Pro Tip:</strong> Use this indicator alongside other market metrics for comprehensive analysis. High breadth levels often coincide with market tops, while low levels may indicate buying opportunities.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="alert alert-danger">
+                    <h4>Error</h4>
+                    <p>{{ error }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let breadthChart;
+        
+        function updateSliderValue(type, value) {
+            document.getElementById(type + 'Value').textContent = value;
+        }
+        
+        function initChart() {
+            const ctx = document.getElementById('breadthChart').getContext('2d');
+            
+            breadthChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Market Breadth %',
+                        data: [],
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        pointRadius: 3,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#fff'
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            ticks: {
+                                color: '#adb5bd'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            ticks: {
+                                color: '#adb5bd',
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    elements: {
+                        point: {
+                            backgroundColor: '#0d6efd'
+                        }
+                    }
+                }
+            });
+        }
+        
+        function startAnalysis() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const loadingProgress = document.getElementById('loadingProgress');
+            
+            loadingOverlay.style.display = 'flex';
+            
+            const steps = [
+                'Получение списка топ криптовалют...',
+                'Загрузка исторических данных...',
+                'Расчет скользящих средних...',
+                'Анализ ширины рынка...',
+                'Генерация результатов...'
+            ];
+            
+            let currentStep = 0;
+            
+            function updateProgress() {
+                if (currentStep < steps.length) {
+                    loadingText.textContent = steps[currentStep];
+                    loadingProgress.style.width = ((currentStep + 1) / steps.length * 100) + '%';
+                    currentStep++;
+                    setTimeout(updateProgress, 1000);
+                }
+            }
+            
+            updateProgress();
+            
+            // Получение параметров
+            const params = {
+                top_n: parseInt(document.getElementById('topNSlider').value),
+                ma_period: parseInt(document.getElementById('maPeriodSlider').value),
+                history_days: parseInt(document.getElementById('historyDaysSlider').value)
+            };
+            
+            fetch('/api/run-market-analysis', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingOverlay.style.display = 'none';
+                
+                if (data.status === 'success') {
+                    updatePageData(data.data);
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(error => {
+                loadingOverlay.style.display = 'none';
+                alert('Error: ' + error.message);
+            });
+        }
+        
+        function updatePageData(data) {
+            // Обновление основных элементов
+            document.getElementById('signalIcon').textContent = data.signal;
+            document.getElementById('conditionText').textContent = data.condition;
+            document.getElementById('timestampText').textContent = data.timestamp;
+            document.getElementById('currentValueText').textContent = data.current_value.toFixed(1) + '%';
+            document.getElementById('descriptionText').textContent = data.description;
+            
+            // Обновление метрик
+            document.getElementById('coinsAboveText').textContent = data.coins_above_ma;
+            document.getElementById('totalCoinsText').textContent = data.total_coins;
+            document.getElementById('avgValueText').textContent = data.avg_value.toFixed(1) + '%';
+            document.getElementById('maxValueText').textContent = data.max_value.toFixed(1) + '%';
+            document.getElementById('minValueText').textContent = data.min_value.toFixed(1) + '%';
+            
+            // Обновление прогресс-бара
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = data.current_value + '%';
+            progressBar.textContent = data.current_value.toFixed(1) + '%';
+            
+            // Цвет прогресс-бара
+            progressBar.className = 'progress-bar ';
+            if (data.current_value < 30) {
+                progressBar.className += 'bg-danger';
+            } else if (data.current_value < 50) {
+                progressBar.className += 'bg-warning';
+            } else if (data.current_value < 70) {
+                progressBar.className += 'bg-info';
+            } else {
+                progressBar.className += 'bg-success';
+            }
+            
+            // Обновление графика
+            if (data.chart_data && breadthChart) {
+                breadthChart.data.labels = data.chart_data.labels;
+                breadthChart.data.datasets[0].data = data.chart_data.values;
+                breadthChart.update();
+            }
+        }
+        
+        function refreshData() {
+            startAnalysis(); // Просто повторяем анализ
+        }
+        
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            initChart();
+        });
+    </script>
+</body>
+</html>
