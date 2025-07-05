@@ -113,7 +113,8 @@ class TelegramBot:
                     await self.bot.send_message(
                         chat_id=chat_id,
                         text=message,
-                        parse_mode=None
+                        parse_mode=None,
+                        disable_web_page_preview=True
                     )
                     logger.info(f"Сообщение отправлено в Telegram {chat_type}")
                     return True
@@ -132,7 +133,8 @@ class TelegramBot:
                         await self.bot.send_message(
                             chat_id=chat_id,
                             text=clean_text,
-                            parse_mode=None
+                            parse_mode=None,
+                            disable_web_page_preview=True
                         )
                         logger.info(f"Сообщение отправлено в Telegram {chat_type} (очищенный текст)")
                         return True
