@@ -126,6 +126,10 @@ The system follows a modular, event-driven architecture with separate components
 - **Chart Link Delivery**: Replaced chart image attachments with URL links to reduce message size and provide access to full interactive web interface
 - **Unified Chart Access**: Created `/chart-view` endpoint that redirects to main market breadth interface, ensuring users see the complete interactive chart with all features
 - **Link-Based Telegram Integration**: Updated both test function and scheduler to send chart links instead of image files, providing better user experience and faster message delivery
+- **PNG Image Integration**: Added send_photo functionality to Telegram bot for direct image delivery in chat
+- **Chart Preview in Telegram**: Implemented PNG chart delivery that opens directly in Telegram chat instead of requiring external links
+- **Fast Chart Generation**: Created optimized chart creation using matplotlib with 30 coins and 1-year period for reliable Telegram delivery
+- **Direct Chat Viewing**: Users now see market breadth charts as images within Telegram conversation for immediate analysis
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

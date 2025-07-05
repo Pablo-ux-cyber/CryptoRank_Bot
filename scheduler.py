@@ -294,10 +294,10 @@ class SensorTowerScheduler:
             
             # Отправляем график как изображение
             try:
-                from main import create_web_ui_chart_screenshot
+                from main import create_quick_chart
                 
                 # Создаем PNG данные графика
-                png_data = create_web_ui_chart_screenshot()
+                png_data = create_quick_chart()
                 
                 if png_data:
                     # Создаем подпись для графика

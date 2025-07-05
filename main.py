@@ -516,7 +516,8 @@ def test_chart():
         
         # Генерируем PNG данные и отправляем как файл
         try:
-            png_data = create_web_ui_chart_screenshot()
+            # Используем функцию создания графика для Telegram
+            png_data = create_quick_chart()
             if png_data:
                 if scheduler.telegram_bot.send_photo(png_data, caption=caption):
                     flash("✅ Chart sent to Telegram successfully", "success")
