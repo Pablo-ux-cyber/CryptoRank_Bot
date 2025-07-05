@@ -1764,14 +1764,12 @@ def create_quick_chart():
         # Определяем правильное название колонки
         breadth_column = 'percentage_above_ma'
         if 'percentage_above_ma' not in indicator_filtered.columns:
-            # Ищем альтернативные названия колонок
-            possible_names = ['percentage', 'market_breadth', 'breadth', 'above_ma']
+            possible_names = ['market_breadth', 'breadth', 'percentage', 'above_ma']
             for name in possible_names:
                 if name in indicator_filtered.columns:
                     breadth_column = name
                     break
             else:
-                # Используем первую числовую колонку если не нашли подходящую
                 numeric_cols = indicator_filtered.select_dtypes(include=[float, int]).columns
                 if len(numeric_cols) > 0:
                     breadth_column = numeric_cols[0]
