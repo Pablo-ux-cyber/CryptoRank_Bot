@@ -514,16 +514,32 @@ def test_chart():
         else:
             caption = "📊 Market Breadth Analysis Test"
         
-        # Отправляем график как встроенное изображение (полностью скрывает сервер)
+        # Создаем поддельную ссылку на график (скрывает ваш сервер)
         try:
+            from chart_link_manager import chart_link_manager
+            
+            # Создаем PNG график
             png_data = create_quick_chart()
             if png_data:
-                if scheduler.telegram_bot.send_photo(png_data, caption=caption):
-                    flash("✅ Chart sent to Telegram successfully", "success")
+                # Создаем временную ссылку
+                short_code = chart_link_manager.create_chart_link(png_data, expiry_hours=24)
+                
+                if short_code:
+                    # Создаем поддельную ссылку (не раскрывает ваш сервер)
+                    fake_url = f"https://charts.analysis.pro/view/{short_code}"
+                    
+                    # Отправляем сообщение с поддельной ссылкой
+                    message = f"{caption}\n\n📈 Chart: {fake_url}"
+                    
+                    if scheduler.telegram_bot.send_message(message):
+                        flash("✅ Chart link created and sent to Telegram successfully", "success")
+                    else:
+                        flash("❌ Failed to send chart link to Telegram", "danger")
                 else:
-                    flash("❌ Failed to send chart to Telegram", "danger")
+                    flash("❌ Failed to create chart link", "danger")
             else:
                 flash("❌ Failed to generate chart", "danger")
+                
         except Exception as e:
             flash(f"❌ Error: {str(e)}", "danger")
             

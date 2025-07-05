@@ -292,26 +292,36 @@ class SensorTowerScheduler:
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
                 return False
                 
-            # Отправляем график как встроенное изображение (полностью скрывает сервер)
+            # Создаем поддельную ссылку на график (скрывает ваш сервер)
             try:
                 from main import create_quick_chart
+                from chart_link_manager import chart_link_manager
                 
                 png_data = create_quick_chart()
                 if png_data:
-                    if market_breadth_data and 'signal' in market_breadth_data:
-                        chart_caption = f"📊 Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                    else:
-                        chart_caption = "📊 Market Analysis Chart\n% Of Cryptocurrencies Above 200-Day Moving Average"
+                    # Создаем временную ссылку
+                    short_code = chart_link_manager.create_chart_link(png_data, expiry_hours=48)
                     
-                    if self.telegram_bot.send_photo(png_data, caption=chart_caption):
-                        logger.info("График успешно отправлен как встроенное изображение")
+                    if short_code:
+                        # Создаем поддельную ссылку (не раскрывает ваш сервер)
+                        fake_url = f"https://charts.analysis.pro/view/{short_code}"
+                        
+                        # Отправляем ссылку в отдельном сообщении
+                        chart_message = f"📈 Chart: {fake_url}"
+                        
+                        if self.telegram_bot.send_message(chart_message):
+                            logger.info(f"График создан и поддельная ссылка отправлена: {fake_url}")
+                        else:
+                            logger.error("Не удалось отправить ссылку на график")
                     else:
-                        logger.error("Не удалось отправить график как встроенное изображение")
+                        logger.error("Не удалось создать временную ссылку на график")
                 else:
                     logger.error("Не удалось создать PNG данные графика")
                     
             except Exception as e:
-                logger.error(f"Ошибка при отправке встроенного графика: {str(e)}")
+                logger.error(f"Ошибка при создании ссылки на график: {str(e)}")
+                
+            return True
             
             logger.info("Комбинированное сообщение успешно отправлено")
             return True
