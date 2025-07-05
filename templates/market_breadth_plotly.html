@@ -350,6 +350,9 @@
         function createPlotlyChart(plotlyData) {
             const plotDiv = document.getElementById('plotlyChart');
             
+            // Показываем индикатор что график загружается
+            plotDiv.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка графика...</span></div><p class="mt-2">Построение графика...</p></div>';
+            
             // Современный TradingView стиль
             const fig = {
                 data: plotlyData.data,
@@ -464,7 +467,12 @@
                 }
             };
             
-            Plotly.newPlot(plotDiv, fig.data, fig.layout, fig.config);
+            Plotly.newPlot(plotDiv, fig.data, fig.layout, fig.config).then(function() {
+                // График полностью отрисован
+                console.log('График Market Breadth успешно отрисован');
+                // Добавляем атрибут для тестирования
+                plotDiv.setAttribute('data-chart-ready', 'true');
+            });
         }
         
         function updateCorrelationTable(correlations) {
