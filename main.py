@@ -1725,11 +1725,21 @@ def create_quick_chart():
         
         logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
         
-        # Создание графика через matplotlib (быстрее)
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        # Создание ОДНОГО графика как в веб-интерфейсе
+        fig, ax = plt.subplots(1, 1, figsize=(16, 10))
         fig.patch.set_facecolor('white')
         
-        # Bitcoin график
+        # Создаем второй Y-axis для Bitcoin
+        ax2 = ax.twinx()
+        
+        # Market breadth график (синяя линия)
+        indicator_filtered = indicator_data.tail(history_days)
+        dates = pd.to_datetime(indicator_filtered.index)
+        
+        ax.plot(dates, indicator_filtered['percentage'], 
+                color='#2563EB', linewidth=2, label='% Of Cryptocurrencies Above 200-Day Moving Average')
+        
+        # Bitcoin график (оранжевая линия)
         if 'BTC' in historical_data:
             btc_data = historical_data['BTC'].copy()
             btc_data['date'] = pd.to_datetime(btc_data['date'])
@@ -1743,37 +1753,50 @@ def create_quick_chart():
             ].sort_values('date')
             
             if not btc_filtered.empty:
-                ax1.plot(btc_filtered['date'], btc_filtered['price'], 
+                ax2.plot(btc_filtered['date'], btc_filtered['price'], 
                         color='#FF6B35', linewidth=2, label='Bitcoin')
-                ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold')
-                ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12)
-                ax1.grid(True, alpha=0.3)
+                ax2.set_ylabel('Bitcoin Price (USD)', fontsize=12, color='#FF6B35')
+                ax2.tick_params(axis='y', labelcolor='#FF6B35')
         
-        # Market breadth график
-        indicator_filtered = indicator_data.tail(history_days)
-        dates = pd.to_datetime(indicator_filtered.index)
+        # Зоны как в веб-интерфейсе
+        ax.axhspan(80, 100, alpha=0.15, color='#FFE4E1')
+        ax.axhspan(0, 20, alpha=0.15, color='#F0FFF0')
+        ax.axhspan(20, 80, alpha=0.05, color='#F5F5F5')
         
-        ax2.plot(dates, indicator_filtered['percentage'], 
-                color='#2563EB', linewidth=2)
+        # Горизонтальные линии
+        ax.axhline(y=80, color='#E53E3E', linestyle='--', alpha=0.8, linewidth=1)
+        ax.axhline(y=50, color='#A0AEC0', linestyle=':', alpha=0.6, linewidth=1)
+        ax.axhline(y=20, color='#38A169', linestyle='--', alpha=0.8, linewidth=1)
         
-        # Зоны
-        ax2.axhspan(80, 100, alpha=0.3, color='#FFE4E1', label='Overbought (80%+)')
-        ax2.axhspan(0, 20, alpha=0.3, color='#F0FFF0', label='Oversold (20%-)')
-        ax2.axhspan(20, 80, alpha=0.1, color='#F5F5F5', label='Neutral Zone')
+        # Аннотации как в веб-интерфейсе
+        ax.text(0.02, 0.95, '80%+ = Market too hot\n20% = Buying opportunity\nShows how many coins are above 200-day average', 
+                transform=ax.transAxes, fontsize=10, verticalalignment='top',
+                bbox=dict(boxstyle="round,pad=0.3", facecolor='white', alpha=0.8, edgecolor='#E2E8F0'))
         
-        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
-                     fontsize=14, fontweight='bold')
-        ax2.set_ylabel('Percentage (%)', fontsize=12)
-        ax2.set_xlabel('Date', fontsize=12)
-        ax2.set_ylim(0, 100)
-        ax2.grid(True, alpha=0.3)
+        ax.text(0.98, 0.95, '—Overbought(80%)', transform=ax.transAxes, fontsize=10, 
+                verticalalignment='top', horizontalalignment='right', color='#E53E3E')
+        ax.text(0.98, 0.05, '—Oversold(20%)', transform=ax.transAxes, fontsize=10, 
+                verticalalignment='bottom', horizontalalignment='right', color='#38A169')
+        ax.text(0.98, 0.5, '—Neutral Zone (50%)', transform=ax.transAxes, fontsize=10, 
+                verticalalignment='center', horizontalalignment='right', color='#A0AEC0')
+        
+        # Настройки осей
+        ax.set_ylabel('% Of Cryptocurrencies Above 200-Day Moving Average', fontsize=12, color='#2563EB')
+        ax.set_xlabel('Date', fontsize=12)
+        ax.set_ylim(0, 100)
+        ax.grid(True, alpha=0.3, color='#E2E8F0')
+        ax.tick_params(axis='y', labelcolor='#2563EB')
+        
+        # Легенда как в веб-интерфейсе
+        lines1, labels1 = ax.get_legend_handles_labels()
+        lines2, labels2 = ax2.get_legend_handles_labels()
+        ax.legend(lines1 + lines2, labels1 + labels2, loc='upper left', frameon=True, 
+                 facecolor='white', edgecolor='#E2E8F0')
         
         # Форматирование дат
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+        ax.xaxis.set_major_locator(mdates.MonthLocator(interval=6))
         
-        plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
-                    fontsize=16, fontweight='bold', y=0.98)
         plt.tight_layout()
         
         # Сохранение
