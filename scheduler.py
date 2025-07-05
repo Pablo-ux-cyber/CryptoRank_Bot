@@ -292,23 +292,27 @@ class SensorTowerScheduler:
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
                 return False
             
-            # Отправляем ссылку на график рынка
+            # Отправляем график как изображение
             try:
-                # Создаем ссылку на график
-                chart_url = "https://89570994-1faf-4430-9046-75d67078f252-00-s6f04tuxdmc.riker.replit.dev/chart-view"
+                from main import create_web_ui_chart_screenshot
                 
-                # Добавляем ссылку на график к сообщению
-                chart_message = f"\n\n📈 View Interactive Chart: {chart_url}"
-                extended_message = combined_message + chart_message
+                # Создаем PNG данные графика
+                png_data = create_web_ui_chart_screenshot()
                 
-                # Отправляем обновленное сообщение со ссылкой
-                if self.telegram_bot.send_message(extended_message):
-                    logger.info("Ссылка на график успешно отправлена в Telegram")
+                if png_data:
+                    # Создаем подпись для графика
+                    chart_caption = f"📊 Market Analysis Chart\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                    
+                    # Отправляем график как изображение
+                    if self.telegram_bot.send_photo(png_data, caption=chart_caption):
+                        logger.info("График успешно отправлен в Telegram")
+                    else:
+                        logger.error("Не удалось отправить график в Telegram")
                 else:
-                    logger.error("Не удалось отправить ссылку на график в Telegram")
+                    logger.error("Не удалось создать PNG данные графика")
                     
             except Exception as e:
-                logger.error(f"Ошибка при отправке ссылки на график: {str(e)}")
+                logger.error(f"Ошибка при отправке графика: {str(e)}")
             
             logger.info("Комбинированное сообщение успешно отправлено")
             return True

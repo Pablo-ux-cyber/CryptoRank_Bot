@@ -239,3 +239,47 @@ class TelegramBot:
         except Exception as e:
             logger.error(f"Ошибка в асинхронном выполнении отправки изображения: {str(e)}")
             return False
+
+    def send_photo_url(self, photo_url, caption=None):
+        """
+        Отправить изображение по URL в указанный канал/группу Telegram
+        
+        Args:
+            photo_url (str): URL изображения
+            caption (str, optional): Подпись к изображению
+            
+        Returns:
+            bool: True если изображение отправлено успешно, иначе False
+        """
+        async def _send_photo_url_async():
+            if not self.bot:
+                logger.error("Telegram bot not initialized")
+                return False
+                
+            try:
+                chat_id = self.channel_id
+                
+                await self.bot.send_photo(
+                    chat_id=chat_id,
+                    photo=photo_url,
+                    caption=caption,
+                    parse_mode=None
+                )
+                logger.info(f"Изображение по URL отправлено в Telegram")
+                return True
+                    
+            except Exception as e:
+                logger.error(f"Ошибка отправки изображения по URL в Telegram: {str(e)}")
+                return False
+
+        # Запустить асинхронную функцию в существующем или новом event loop
+        loop = self._get_event_loop()
+        if not loop:
+            logger.error("Не удалось получить event loop для отправки изображения по URL")
+            return False
+            
+        try:
+            return loop.run_until_complete(_send_photo_url_async())
+        except Exception as e:
+            logger.error(f"Ошибка в асинхронном выполнении отправки изображения по URL: {str(e)}")
+            return False

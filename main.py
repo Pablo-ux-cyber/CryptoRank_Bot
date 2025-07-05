@@ -501,29 +501,36 @@ def test_chart():
             flash("❌ Telegram bot not available", "danger")
             return redirect(url_for('index'))
         
-        # Создаем ссылку на график
+        # Создаем ссылку на график  
         chart_url = f"https://{request.host}/chart-view"
         
-        # Получаем данные для сообщения
+        # Получаем данные для подписи
         if scheduler.market_breadth:
             market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
             if market_breadth_data:
-                message = f"📊 Market Breadth Analysis Test\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%\n\n📈 View Chart: {chart_url}"
+                caption = f"📊 Market Breadth Analysis Test\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
             else:
-                message = f"📊 Market Breadth Analysis Test\n\n📈 View Chart: {chart_url}"
+                caption = "📊 Market Breadth Analysis Test"
         else:
-            message = f"📊 Market Breadth Analysis Test\n\n📈 View Chart: {chart_url}"
+            caption = "📊 Market Breadth Analysis Test"
         
-        # Отправляем сообщение со ссылкой
-        if scheduler.telegram_bot.send_message(message):
-            flash("✅ Chart link sent successfully to Telegram!", "success")
-        else:
-            flash("❌ Failed to send chart link to Telegram", "danger")
+        # Генерируем PNG данные и отправляем как файл
+        try:
+            png_data = create_web_ui_chart_screenshot()
+            if png_data:
+                if scheduler.telegram_bot.send_photo(png_data, caption=caption):
+                    flash("✅ Chart sent to Telegram successfully", "success")
+                else:
+                    flash("❌ Failed to send chart to Telegram", "danger")
+            else:
+                flash("❌ Failed to generate chart", "danger")
+        except Exception as e:
+            flash(f"❌ Error: {str(e)}", "danger")
             
+        return redirect(url_for('index'))
     except Exception as e:
-        flash(f"❌ Error sending chart link: {str(e)}", "danger")
-        
-    return redirect(url_for('index'))
+        flash(f"❌ Error: {str(e)}", "danger")
+        return redirect(url_for('index'))
 
 @app.route('/chart-view')
 def chart_view():
