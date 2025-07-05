@@ -118,6 +118,8 @@ The system follows a modular, event-driven architecture with separate components
 - **3-Year Historical Analysis**: Updated chart screenshot function to display 3 years of market data instead of 1 year for comprehensive historical context
 - **Robust Chart Generation**: Implemented dual-engine chart creation with Plotly/Kaleido primary and matplotlib fallback for reliable PNG generation
 - **Telegram Chart Testing**: Added "Test Chart to Telegram" functionality working successfully with automatic fallback to matplotlib when system dependencies unavailable
+- **Chart Function Synchronization**: Updated Telegram chart generation to use `create_web_ui_chart_screenshot()` ensuring exact match with web interface display
+- **Scheduler Chart Integration**: Modified daily scheduler to use web-interface-matching chart function for consistent visual reports across all channels
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
