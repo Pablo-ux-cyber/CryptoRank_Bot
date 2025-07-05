@@ -135,7 +135,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Modern Chart Design**: Updated to contemporary style with English labels "OVERBOUGHT", "OVERSOLD", "NEUTRAL" positioned on the right side with colored borders and modern gradient colors
 - **Dashed Zone Lines**: Added prominent dashed lines (--) for zone boundaries at 80% and 20% levels with matching colors for better visual separation
 - **Professional Typography**: Used font-weight 600 and improved spacing with right-aligned labels for cleaner, modern appearance
-- **Educational Explanation**: Added bottom-left explanation box with "80%+ = Market too hot", "20%- = Buying opportunity", "Shows how many coins are above 200-day average" for user understanding
+- **Educational Explanation**: Added top-left explanation box with "80%+ = Market too hot", "20%- = Buying opportunity", "Shows how many coins are above 200-day average" positioned to avoid overlapping chart data
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
