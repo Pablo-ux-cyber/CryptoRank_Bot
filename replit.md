@@ -132,6 +132,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Fixed Date Processing**: Resolved 1970 date display issue by properly setting date index in market breadth calculations and improved date handling in chart generation functions
 - **Disabled Link Preview**: Added `disable_web_page_preview=True` parameter to Telegram API calls to completely disable automatic link preview while keeping links clickable
 - **Removed Chart Title**: Removed "Cryptocurrency Market Breadth Analysis" main title from chart screenshots for cleaner appearance
+- **Labeled Market Zones**: Added Russian text labels "ПЕРЕКУПЛЕННОСТЬ", "ПЕРЕПРОДАННОСТЬ", "НЕЙТРАЛЬНАЯ ЗОНА" directly on charts with colored highlighting and white background boxes for clear visibility
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
