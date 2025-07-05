@@ -111,6 +111,9 @@
                         <button class="btn btn-primary btn-lg w-100 mb-3" onclick="startAnalysis()">
                             🚀 Запустить анализ
                         </button>
+                        <button class="btn btn-outline-secondary w-100 mb-2" onclick="downloadChart()" id="downloadBtn" style="display: none;">
+                            📷 Скачать PNG
+                        </button>
                         
                         {% if breadth_data and breadth_data.cache_info %}
                         <div class="small text-muted">
@@ -238,6 +241,49 @@
     <script>
         function updateSliderValue(type, value) {
             document.getElementById(type + 'Value').textContent = value;
+        }
+
+        function downloadChart() {
+            const plotDiv = document.getElementById('plotlyChart');
+            if (!plotDiv || !plotDiv.hasAttribute('data-chart-ready')) {
+                alert('График еще не готов для экспорта. Пожалуйста, подождите.');
+                return;
+            }
+
+            // Используем встроенную функцию Plotly для экспорта в PNG
+            Plotly.downloadImage(plotDiv, {
+                format: 'png',
+                filename: 'market_breadth_analysis',
+                height: 800,
+                width: 1400,
+                scale: 2
+            }).catch(function(err) {
+                console.error('Ошибка экспорта PNG:', err);
+                
+                // Альтернативный метод: создаем canvas и конвертируем в PNG
+                try {
+                    const gd = plotDiv;
+                    Plotly.toImage(gd, {
+                        format: 'png',
+                        height: 800,
+                        width: 1400,
+                        scale: 2
+                    }).then(function(dataURL) {
+                        const link = document.createElement('a');
+                        link.download = 'market_breadth_analysis.png';
+                        link.href = dataURL;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }).catch(function(error) {
+                        console.error('Альтернативный метод экспорта также не сработал:', error);
+                        alert('Не удалось экспортировать график. Попробуйте использовать кнопку камеры в панели инструментов графика.');
+                    });
+                } catch (e) {
+                    console.error('Критическая ошибка экспорта:', e);
+                    alert('Ошибка экспорта. Используйте встроенную кнопку камеры в графике.');
+                }
+            });
         }
         
         function startAnalysis() {
@@ -460,10 +506,13 @@
                     toImageButtonOptions: {
                         format: 'png',
                         filename: 'market_breadth_analysis',
-                        height: 700,
-                        width: 1200,
+                        height: 800,
+                        width: 1400,
                         scale: 2
-                    }
+                    },
+                    // Дополнительные настройки для экспорта
+                    plotGlPixelRatio: 2,
+                    setBackground: 'opaque'
                 }
             };
             
@@ -472,6 +521,8 @@
                 console.log('График Market Breadth успешно отрисован');
                 // Добавляем атрибут для тестирования
                 plotDiv.setAttribute('data-chart-ready', 'true');
+                // Показываем кнопку скачивания
+                document.getElementById('downloadBtn').style.display = 'block';
             });
         }
         
