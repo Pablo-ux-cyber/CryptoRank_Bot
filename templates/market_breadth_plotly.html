@@ -435,8 +435,8 @@
         function createPlotlyChart(plotlyData) {
             const plotDiv = document.getElementById('plotlyChart');
             
-            // Показываем индикатор что график загружается
-            plotDiv.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка графика...</span></div><p class="mt-2">Построение графика...</p></div>';
+            // Очищаем контейнер полностью
+            plotDiv.innerHTML = '';
             
             // Современный TradingView стиль
             const fig = {
@@ -562,6 +562,14 @@
                 plotDiv.setAttribute('data-chart-ready', 'true');
                 // Показываем кнопку скачивания
                 document.getElementById('downloadBtn').style.display = 'block';
+                
+                // Удаляем любые оставшиеся индикаторы загрузки
+                const spinners = plotDiv.querySelectorAll('.spinner-border');
+                spinners.forEach(spinner => {
+                    if (spinner.parentElement) {
+                        spinner.parentElement.remove();
+                    }
+                });
             });
         }
         
