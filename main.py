@@ -554,6 +554,27 @@ def chart_view():
         logger.error(f"Error generating PNG chart: {str(e)}")
         return f"❌ Error: {str(e)}", 500
 
+@app.route('/s/<short_code>')
+def redirect_short_url(short_code):
+    """Перенаправляет короткие ссылки на оригинальные URL"""
+    try:
+        from url_shortener import url_shortener
+        
+        original_url = url_shortener.get_original_url(short_code)
+        if original_url:
+            # Если это локальный URL, преобразуем в полный
+            if original_url.startswith('/'):
+                original_url = f"https://{request.host}{original_url}"
+            elif 'localhost' in original_url:
+                original_url = original_url.replace('localhost:5000', request.host)
+            
+            return redirect(original_url)
+        else:
+            return "Short URL not found", 404
+            
+    except Exception as e:
+        return f"Error: {str(e)}", 500
+
 @app.route('/market-breadth')
 def market_breadth():
     """Market Breadth Analysis - ваш точный интерфейс"""

@@ -90,8 +90,26 @@ class URLShortener:
         Returns:
             str: Короткая ссылка
         """
-        chart_url = f"https://{server_host}/chart-view"
-        return self.shorten_url(chart_url)
+        chart_url = f"/chart-view"
+        short_code = self._generate_short_code(chart_url)
+        
+        # Проверяем, есть ли уже такой URL
+        for code, stored_url in self.urls.items():
+            if stored_url == chart_url:
+                return f"https://{server_host}/s/{code}"
+        
+        # Создаем новый короткий код
+        counter = 1
+        original_code = short_code
+        while short_code in self.urls:
+            short_code = f"{original_code}{counter}"
+            counter += 1
+        
+        # Сохраняем
+        self.urls[short_code] = chart_url
+        self._save_urls()
+        
+        return f"https://{server_host}/s/{short_code}"
 
 # Глобальный экземпляр для использования в приложении
 url_shortener = URLShortener()
