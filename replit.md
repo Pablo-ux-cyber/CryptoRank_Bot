@@ -138,6 +138,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Subtitle Chart Explanation**: Moved educational explanation from chart area to subtitle position under main chart title "% Of Cryptocurrencies Above 200-Day Moving Average" with smaller font (9px) in italic gray text
 - **Clean Chart Layout**: Removed all explanatory text from charts leaving only main title "% Of Cryptocurrencies Above 200-Day Moving Average" for cleaner appearance
 - **Optimized Telegram Messages**: Final format "Market by 200MA: {emoji} {Status}: {percentage}%" with chart link embedded as markdown, completely removing headers and separate chart lines for maximum conciseness
+- **Fixed Markdown Formatting**: Enabled Markdown parsing in telegram_bot.py to properly render clickable links in Telegram messages
+- **Daily Message Integration**: Market Breadth indicator now fully integrated into daily scheduler messages with proper format where only status (Oversold/Overbought/Neutral) is clickable and links to chart
+- **Complete Integration**: Market Breadth indicator successfully added to all daily Telegram messages alongside Coinbase rankings and Fear & Greed Index with consistent formatting and external chart links
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

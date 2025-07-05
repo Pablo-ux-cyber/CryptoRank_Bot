@@ -377,13 +377,54 @@ def test_message():
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
+        # Get Market Breadth data
+        market_breadth_data = None
+        if scheduler.market_breadth:
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
+        
         # Format individual messages (без Altcoin Season Index)
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
         fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
         
-        # Build combined message (только рейтинг и Fear & Greed)
+        # Build combined message (рейтинг, Fear & Greed, и Market Breadth)
         combined_message = rankings_message
         combined_message += "\n\n" + fear_greed_message
+        
+        # Add Market Breadth with chart link (same logic as in scheduler)
+        if market_breadth_data:
+            try:
+                png_data = create_quick_chart()
+                if png_data:
+                    from image_uploader import image_uploader
+                    external_url = image_uploader.upload_chart(png_data)
+                    if external_url:
+                        # Переводим условия на английский для ссылки
+                        condition_map = {
+                            "Перекупленность": "Overbought",
+                            "Перепроданность": "Oversold", 
+                            "Нейтральная зона": "Neutral"
+                        }
+                        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                        
+                        # Формируем сообщение со ссылкой встроенной в статус
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({external_url}): {market_breadth_data['current_value']:.1f}%"
+                        combined_message += f"\n\n{market_breadth_message}"
+                    else:
+                        # Fallback без ссылки
+                        market_breadth_message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
+                        if market_breadth_message:
+                            combined_message += f"\n\n{market_breadth_message}"
+                else:
+                    # Fallback без ссылки
+                    market_breadth_message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
+                    if market_breadth_message:
+                        combined_message += f"\n\n{market_breadth_message}"
+            except Exception as e:
+                logger.error(f"Ошибка при создании графика для test-message: {str(e)}")
+                # Fallback без ссылки
+                market_breadth_message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
+                if market_breadth_message:
+                    combined_message += f"\n\n{market_breadth_message}"
         
         # Send the message
         sent = scheduler.telegram_bot.send_message(combined_message)

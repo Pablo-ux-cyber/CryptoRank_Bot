@@ -271,12 +271,46 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные индикатора ширины рынка, если доступны
+            # Добавляем данные индикатора ширины рынка со ссылкой на график
             if market_breadth_data:
-                market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
-                if market_breadth_message:
-                    combined_message += f"\n\n{market_breadth_message}"
-                    logger.info(f"Добавлены данные ширины рынка в сообщение: {market_breadth_data['signal']} - {market_breadth_data['condition']}")
+                # Создаем график и загружаем на внешний сервис
+                try:
+                    from main import create_quick_chart
+                    from image_uploader import image_uploader
+                    
+                    png_data = create_quick_chart()
+                    if png_data:
+                        external_url = image_uploader.upload_chart(png_data)
+                        if external_url:
+                            # Переводим условия на английский для ссылки
+                            condition_map = {
+                                "Перекупленность": "Overbought",
+                                "Перепроданность": "Oversold", 
+                                "Нейтральная зона": "Neutral"
+                            }
+                            english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                            
+                            # Формируем сообщение со ссылкой встроенной в статус
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({external_url}): {market_breadth_data['current_value']:.1f}%"
+                            combined_message += f"\n\n{market_breadth_message}"
+                            logger.info(f"Добавлены данные ширины рынка с графиком: {market_breadth_data['signal']} - {market_breadth_data['condition']}")
+                        else:
+                            # Fallback без ссылки
+                            market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
+                            if market_breadth_message:
+                                combined_message += f"\n\n{market_breadth_message}"
+                    else:
+                        # Fallback без ссылки
+                        market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
+                        if market_breadth_message:
+                            combined_message += f"\n\n{market_breadth_message}"
+                            
+                except Exception as e:
+                    logger.error(f"Ошибка при создании графика для Market Breadth: {str(e)}")
+                    # Fallback без ссылки
+                    market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
+                    if market_breadth_message:
+                        combined_message += f"\n\n{market_breadth_message}"
             else:
                 logger.info("Данные индикатора ширины рынка недоступны")
             
@@ -287,36 +321,10 @@ class SensorTowerScheduler:
             else:
                 logger.info("Altcoin Season Index данные недоступны")
             
-            # Отправляем основное сообщение
+            # Отправляем основное сообщение (теперь включает встроенную ссылку на график)
             if not self.telegram_bot.send_message(combined_message):
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
                 return False
-                
-            # Загружаем график на внешний сервис (Imgur/Telegraph)
-            try:
-                from main import create_quick_chart
-                from image_uploader import image_uploader
-                
-                png_data = create_quick_chart()
-                if png_data:
-                    # Загружаем на внешний сервис
-                    external_url = image_uploader.upload_chart(png_data)
-                    
-                    if external_url:
-                        # Отправляем ссылку (preview отключен в telegram_bot.py)
-                        chart_message = f"📈 Chart: {external_url}"
-                        
-                        if self.telegram_bot.send_message(chart_message):
-                            logger.info(f"График загружен на внешний сервис и ссылка отправлена: {external_url}")
-                        else:
-                            logger.error("Не удалось отправить ссылку на график")
-                    else:
-                        logger.error("Не удалось загрузить график на внешний сервис")
-                else:
-                    logger.error("Не удалось создать PNG данные графика")
-                    
-            except Exception as e:
-                logger.error(f"Ошибка при загрузке графика на внешний сервис: {str(e)}")
                 
             return True
             
