@@ -1692,7 +1692,7 @@ def create_quick_chart():
         # Сокращенные параметры для быстрой работы
         top_n = 30  # Меньше монет
         ma_period = 200
-        history_days = 365  # 1 год вместо 3
+        history_days = 1095  # 3 года данных для графика
         
         # Инициализация
         cache = DataCache()
@@ -1749,11 +1749,36 @@ def create_quick_chart():
                 ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12)
                 ax1.grid(True, alpha=0.3)
         
-        # Market breadth график
+        # Market breadth график - исправляем обработку дат
         indicator_filtered = indicator_data.tail(history_days)
-        dates = pd.to_datetime(indicator_filtered.index)
         
-        ax2.plot(dates, indicator_filtered['percentage'], 
+        # Правильная обработка дат из индекса
+        try:
+            # Если индекс уже DatetimeIndex
+            dates = indicator_filtered.index
+            if not isinstance(dates, pd.DatetimeIndex):
+                dates = pd.to_datetime(dates)
+        except Exception as date_error:
+            logger.warning(f"Ошибка обработки дат: {date_error}")
+            # Используем числовой индекс как fallback
+            dates = range(len(indicator_filtered))
+        
+        # Определяем колонку с данными
+        breadth_column = 'percentage_above_ma'
+        if 'percentage_above_ma' not in indicator_filtered.columns:
+            # Пробуем разные возможные названия колонок
+            possible_names = ['percentage', 'market_breadth', 'breadth', 'above_ma']
+            for name in possible_names:
+                if name in indicator_filtered.columns:
+                    breadth_column = name
+                    break
+            else:
+                # Берем первую числовую колонку
+                numeric_cols = indicator_filtered.select_dtypes(include=[float, int]).columns
+                if len(numeric_cols) > 0:
+                    breadth_column = numeric_cols[0]
+        
+        ax2.plot(dates, indicator_filtered[breadth_column], 
                 color='#2563EB', linewidth=2)
         
         # Зоны
@@ -1768,9 +1793,14 @@ def create_quick_chart():
         ax2.set_ylim(0, 100)
         ax2.grid(True, alpha=0.3)
         
-        # Форматирование дат
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        # Форматирование дат - убираем неправильные даты
+        try:
+            ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+            ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+        except Exception as date_error:
+            logger.warning(f"Ошибка форматирования дат: {date_error}")
+            # Простое форматирование без сложных локаторов
+            ax2.tick_params(axis='x', rotation=45)
         
         plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
                     fontsize=16, fontweight='bold', y=0.98)

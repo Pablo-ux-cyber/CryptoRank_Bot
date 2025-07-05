@@ -223,6 +223,8 @@ class CryptoAnalyzer:
         result_df = pd.DataFrame(result)
         if not result_df.empty:
             result_df = result_df.sort_values('date')
+            # Устанавливаем дату как индекс для правильной работы с временными рядами
+            result_df = result_df.set_index('date')
         
         self.logger.info(f"Рассчитан индикатор для {len(result_df)} дней")
         return result_df

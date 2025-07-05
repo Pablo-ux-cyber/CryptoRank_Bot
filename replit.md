@@ -128,6 +128,8 @@ The system follows a modular, event-driven architecture with separate components
 - **Imgur Chart Hosting**: Charts are automatically uploaded to Imgur.com and shared as direct links in Telegram messages
 - **Complete Server Privacy**: Real server address remains completely hidden while providing functional chart links through external hosting
 - **Working Link Solution**: Users receive clickable chart links (`https://i.imgur.com/xxxxx.png`) that open charts directly without exposing server location
+- **Extended Historical Data**: Updated chart system to display 3 years (1095 days) of data instead of 1 year for comprehensive market analysis
+- **Fixed Date Processing**: Resolved 1970 date display issue by properly setting date index in market breadth calculations and improved date handling in chart generation functions
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
