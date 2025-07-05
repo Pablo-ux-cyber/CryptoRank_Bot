@@ -491,6 +491,48 @@ def set_manual_rank():
         logger.error(f"Error setting manual rank: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route('/market-breadth')
+def market_breadth():
+    """Display Market Breadth Indicator page"""
+    try:
+        # Get market breadth data
+        if scheduler and scheduler.market_breadth:
+            breadth_data = scheduler.market_breadth.get_market_breadth_data()
+        else:
+            # Fallback: create instance if scheduler not available
+            from market_breadth_indicator import MarketBreadthIndicator
+            market_breadth = MarketBreadthIndicator()
+            breadth_data = market_breadth.get_market_breadth_data()
+        
+        return render_template('market_breadth.html', breadth_data=breadth_data)
+    except Exception as e:
+        logger.error(f"Error loading market breadth page: {str(e)}")
+        return render_template('market_breadth.html', breadth_data=None, error=str(e))
+
+@app.route('/api/market-breadth-refresh', methods=['POST'])
+def market_breadth_refresh():
+    """Refresh market breadth data"""
+    try:
+        if scheduler and scheduler.market_breadth:
+            # Clear cache and get fresh data
+            scheduler.market_breadth.clear_cache()
+            breadth_data = scheduler.market_breadth.get_market_breadth_data()
+        else:
+            # Fallback: create instance if scheduler not available
+            from market_breadth_indicator import MarketBreadthIndicator
+            market_breadth = MarketBreadthIndicator()
+            market_breadth.clear_cache()
+            breadth_data = market_breadth.get_market_breadth_data()
+        
+        if breadth_data:
+            return jsonify({"status": "success", "message": "Market breadth data refreshed successfully"})
+        else:
+            return jsonify({"status": "error", "message": "Failed to refresh market breadth data"}), 500
+            
+    except Exception as e:
+        logger.error(f"Error refreshing market breadth data: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)
 

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Breadth Indicator - SensorTower Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <style>
+        .breadth-card {
+            border-left: 4px solid var(--bs-info);
+        }
+        .signal-icon {
+            font-size: 3rem;
+            line-height: 1;
+        }
+        .progress-large {
+            height: 40px;
+            font-size: 1.1rem;
+        }
+        .metric-card {
+            background: var(--bs-gray-900);
+            border: 1px solid var(--bs-gray-700);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>Market Breadth Indicator</h1>
+                    <a href="/" class="btn btn-outline-secondary">← Back to Dashboard</a>
+                </div>
+
+                {% if breadth_data %}
+                <div class="card shadow-sm mb-4 breadth-card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Current Market Breadth</h3>
+                        <button class="btn btn-sm btn-outline-primary" onclick="refreshData()">
+                            <span id="refresh-text">Refresh Data</span>
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-md-3 text-center">
+                                <div class="signal-icon">{{ breadth_data.signal }}</div>
+                                <h4 class="mt-2">{{ breadth_data.condition }}</h4>
+                                <small class="text-muted">{{ breadth_data.timestamp }}</small>
+                            </div>
+                            <div class="col-md-9">
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span>Breadth Index</span>
+                                        <strong>{{ "%.1f"|format(breadth_data.current_value) }}%</strong>
+                                    </div>
+                                    <div class="progress progress-large">
+                                        <div class="progress-bar 
+                                            {% if breadth_data.current_value < 30 %}bg-danger
+                                            {% elif breadth_data.current_value < 50 %}bg-warning  
+                                            {% elif breadth_data.current_value < 70 %}bg-info
+                                            {% else %}bg-success{% endif %}"
+                                            role="progressbar" 
+                                            style="width: {{ breadth_data.current_value }}%;"
+                                            aria-valuenow="{{ breadth_data.current_value }}" 
+                                            aria-valuemin="0" 
+                                            aria-valuemax="100">
+                                            {{ "%.1f"|format(breadth_data.current_value) }}%
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="alert alert-info">
+                                    <strong>Market Interpretation:</strong> {{ breadth_data.description }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Above MA200</h5>
+                                        <h3 class="text-success">{{ breadth_data.coins_above_ma or 'N/A' }}</h3>
+                                        <small class="text-muted">out of {{ breadth_data.total_coins or 'N/A' }} coins</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Analysis Period</h5>
+                                        <h3 class="text-info">200 Days</h3>
+                                        <small class="text-muted">Moving Average</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card metric-card">
+                                    <div class="card-body text-center">
+                                        <h5 class="card-title">Data Source</h5>
+                                        <h3 class="text-warning">CryptoCompare</h3>
+                                        <small class="text-muted">Real-time API</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <h4 class="mb-0">Understanding Market Breadth</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h5>How it Works</h5>
+                                <p>The Market Breadth Indicator measures what percentage of top cryptocurrencies are trading above their 200-day moving average. This helps identify the overall health and direction of the crypto market.</p>
+                                
+                                <h5 class="mt-3">Signals</h5>
+                                <div class="mb-2">
+                                    <span class="badge bg-danger me-2">🔴</span>
+                                    <strong>Weak Market (0-30%):</strong> Most coins below MA200, bearish conditions
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-warning me-2">🟡</span>
+                                    <strong>Mixed Market (30-50%):</strong> Market indecision, neutral conditions
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-info me-2">🔵</span>
+                                    <strong>Improving Market (50-70%):</strong> Majority of coins showing strength
+                                </div>
+                                <div class="mb-2">
+                                    <span class="badge bg-success me-2">🟢</span>
+                                    <strong>Strong Market (70%+):</strong> Most coins above MA200, bullish conditions
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <h5>Trading Implications</h5>
+                                <ul>
+                                    <li><strong>High Breadth (70%+):</strong> Generally favorable for altcoin investments</li>
+                                    <li><strong>Medium Breadth (30-70%):</strong> Selective approach, focus on individual coin analysis</li>
+                                    <li><strong>Low Breadth (0-30%):</strong> Defensive positioning, consider Bitcoin or stablecoins</li>
+                                </ul>
+                                
+                                <h5 class="mt-3">Technical Details</h5>
+                                <ul>
+                                    <li>Analyzes top 50 cryptocurrencies by market cap</li>
+                                    <li>Uses 200-day simple moving average as benchmark</li>
+                                    <li>Data updated in real-time from CryptoCompare API</li>
+                                    <li>Historical data cached for performance optimization</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="alert alert-warning">
+                    <h4>No Data Available</h4>
+                    <p>Market breadth data is currently unavailable. This could be due to:</p>
+                    <ul>
+                        <li>API rate limits or connectivity issues</li>
+                        <li>Insufficient historical data</li>
+                        <li>Data processing in progress</li>
+                    </ul>
+                    <button class="btn btn-warning" onclick="refreshData()">Try Refreshing</button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function refreshData() {
+            const refreshBtn = document.getElementById('refresh-text');
+            const originalText = refreshBtn.textContent;
+            refreshBtn.textContent = 'Loading...';
+            
+            fetch('/api/market-breadth-refresh', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload();
+                } else {
+                    alert('Error refreshing data: ' + data.message);
+                }
+            })
+            .catch(error => {
+                alert('Error refreshing data: ' + error.message);
+            })
+            .finally(() => {
+                refreshBtn.textContent = originalText;
+            });
+        }
+    </script>
+</body>
+</html>
