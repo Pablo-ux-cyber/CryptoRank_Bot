@@ -534,7 +534,7 @@ def run_market_analysis():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 365)
+        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
         
         # Инициализация
         cache = DataCache()
@@ -638,7 +638,7 @@ def run_market_analysis_plotly():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 365)
+        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
         
         # Инициализация
         cache = DataCache()

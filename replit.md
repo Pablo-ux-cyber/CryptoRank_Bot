@@ -106,6 +106,8 @@ The system follows a modular, event-driven architecture with separate components
 - **Stablecoin Exclusion**: Removed USDT, USDC, DAI from analysis for more accurate market dynamics
 - **Interactive Controls**: Configurable parameters for top coins count, MA period, and history days
 - **User's Algorithm**: Direct implementation of user's crypto_analyzer_cryptocompare.py and data_cache.py
+- **Modern TradingView Style**: Updated chart design with light theme, professional colors, and clean interface
+- **Extended Analysis Period**: Default analysis period increased to 3 years (1095 days) for comprehensive market insights
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
