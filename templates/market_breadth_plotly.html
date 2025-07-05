@@ -250,52 +250,69 @@
                 return;
             }
 
-            // Получаем данные графика из глобальной переменной
-            if (!window.currentChartData) {
-                alert('Данные графика недоступны. Запустите анализ заново.');
-                return;
-            }
-
-            // Отправляем запрос на сервер для генерации PNG
-            fetch('/download-chart-png', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    chartData: window.currentChartData
-                })
-            })
-            .then(response => {
-                if (response.ok) {
-                    return response.blob();
-                }
-                throw new Error('Ошибка сервера при генерации PNG');
-            })
-            .then(blob => {
-                // Создаем ссылку для скачивания
-                const url = URL.createObjectURL(blob);
+            // Используем Plotly.toImage для получения точного скриншота графика
+            Plotly.toImage(plotDiv, {
+                format: 'png',
+                width: 1400,
+                height: 800,
+                scale: 2
+            }).then(function(dataURL) {
+                // Создаем ссылку для скачивания с правильным MIME-типом
                 const link = document.createElement('a');
-                link.href = url;
                 link.download = 'market_breadth_analysis.png';
+                link.href = dataURL;
+                
+                // Добавляем атрибуты для корректного скачивания
+                link.setAttribute('type', 'image/png');
+                link.style.display = 'none';
+                
                 document.body.appendChild(link);
                 link.click();
-                document.body.removeChild(link);
-                URL.revokeObjectURL(url);
-            })
-            .catch(error => {
-                console.error('Ошибка при скачивании PNG:', error);
                 
-                // Fallback: пробуем Plotly метод
-                Plotly.downloadImage(plotDiv, {
-                    format: 'png',
-                    filename: 'market_breadth_analysis',
-                    height: 800,
-                    width: 1400,
-                    scale: 2
-                }).catch(function() {
-                    alert('Не удалось скачать PNG. Используйте кнопку камеры в панели инструментов графика.');
-                });
+                // Удаляем элемент после скачивания
+                setTimeout(() => {
+                    document.body.removeChild(link);
+                }, 100);
+                
+            }).catch(function(error) {
+                console.error('Ошибка при создании PNG:', error);
+                
+                // Альтернативный метод: используем html2canvas для скриншота элемента
+                if (typeof html2canvas !== 'undefined') {
+                    html2canvas(plotDiv, {
+                        backgroundColor: '#ffffff',
+                        scale: 2,
+                        useCORS: true
+                    }).then(function(canvas) {
+                        // Конвертируем canvas в blob
+                        canvas.toBlob(function(blob) {
+                            const url = URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.download = 'market_breadth_analysis.png';
+                            link.href = url;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                            URL.revokeObjectURL(url);
+                        }, 'image/png');
+                    }).catch(function() {
+                        // Последний метод: встроенная кнопка Plotly
+                        alert('Используйте кнопку камеры в панели инструментов графика для скачивания PNG.');
+                    });
+                } else {
+                    // Fallback: встроенная функция Plotly
+                    try {
+                        Plotly.downloadImage(plotDiv, {
+                            format: 'png',
+                            filename: 'market_breadth_analysis',
+                            height: 800,
+                            width: 1400,
+                            scale: 2
+                        });
+                    } catch (e) {
+                        alert('Используйте кнопку камеры в панели инструментов графика для скачивания PNG.');
+                    }
+                }
             });
         }
         

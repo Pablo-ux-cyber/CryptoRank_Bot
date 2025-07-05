@@ -899,71 +899,7 @@ def market_breadth_legacy():
         logger.error(f"Error loading market breadth page: {str(e)}")
         return render_template('market_breadth.html', breadth_data=None, error=str(e))
 
-@app.route('/download-chart-png', methods=['POST'])
-def download_chart_png():
-    """Endpoint для серверной генерации PNG графика"""
-    try:
-        import matplotlib
-        matplotlib.use('Agg')  # Используем backend без GUI
-        import matplotlib.pyplot as plt
-        import matplotlib.dates as mdates
-        from datetime import datetime
-        import io
-        
-        data = request.get_json()
-        if not data or 'chartData' not in data:
-            return jsonify({'error': 'No chart data provided'}), 400
-        
-        # Создаем PNG файл через matplotlib
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 8), sharex=True)
-        fig.patch.set_facecolor('white')
-        
-        # Извлекаем данные
-        chart_data = data['chartData']
-        dates = [datetime.fromisoformat(d.replace('Z', '+00:00')) for d in chart_data['dates']]
-        btc_prices = chart_data['btc_prices'] 
-        breadth_values = chart_data['breadth_values']
-        
-        # График Bitcoin
-        ax1.plot(dates, btc_prices, color='#f7931a', linewidth=2, label='Bitcoin Price')
-        ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12, fontweight='bold')
-        ax1.grid(True, alpha=0.3)
-        ax1.legend(fontsize=10)
-        ax1.set_title('Market Breadth Analysis', fontsize=16, fontweight='bold', pad=20)
-        
-        # График Market Breadth
-        ax2.plot(dates, breadth_values, color='#2E86AB', linewidth=2, label='Market Breadth')
-        ax2.axhline(y=0.5, color='gray', linestyle='--', alpha=0.7, label='Neutral (50%)')
-        ax2.set_ylabel('Market Breadth (%)', fontsize=12, fontweight='bold')
-        ax2.set_xlabel('Date', fontsize=12, fontweight='bold')
-        ax2.grid(True, alpha=0.3)
-        ax2.legend(fontsize=10)
-        
-        # Форматирование осей
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
-        plt.setp(ax2.xaxis.get_majorticklabels(), rotation=45)
-        
-        plt.tight_layout()
-        
-        # Сохраняем в память как PNG
-        img_buffer = io.BytesIO()
-        plt.savefig(img_buffer, format='png', dpi=300, bbox_inches='tight', 
-                   facecolor='white', edgecolor='none')
-        img_buffer.seek(0)
-        plt.close()
-        
-        # Отправляем как файл для скачивания
-        return send_file(
-            img_buffer,
-            as_attachment=True,
-            download_name='market_breadth_analysis.png',
-            mimetype='image/png'
-        )
-        
-    except Exception as e:
-        logger.error(f"Error generating PNG: {str(e)}")
-        return jsonify({'error': f'Failed to generate PNG: {str(e)}'}), 500
+
 
 @app.route('/api/market-breadth-refresh', methods=['POST'])
 def market_breadth_refresh():
