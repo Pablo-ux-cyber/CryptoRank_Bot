@@ -128,6 +128,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Imgur Chart Hosting**: Charts are automatically uploaded to Imgur.com and shared as direct links in Telegram messages
 - **Complete Server Privacy**: Real server address remains completely hidden while providing functional chart links through external hosting
 - **Working Link Solution**: Users receive clickable chart links (`https://i.imgur.com/xxxxx.png`) that open charts directly without exposing server location
+- **3-Year Chart Fix**: Resolved date synchronization issues between Bitcoin price and market breadth charts - both panels now display identical 3-year timeframes
+- **Enhanced Data Coverage**: Updated Telegram chart generation to use 47 cryptocurrencies with 3-year historical data (1095 days) for comprehensive market analysis
+- **Date Alignment Solution**: Fixed chart creation function to ensure Bitcoin price chart and market breadth indicator display the same date range with synchronized x-axis labels
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
