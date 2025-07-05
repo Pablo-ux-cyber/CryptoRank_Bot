@@ -1632,21 +1632,21 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         ax2.axhline(y=20, color='#26C059', linestyle='--', alpha=0.8, linewidth=2)
         ax2.axhline(y=50, color='#747D8C', linestyle='-', alpha=0.4, linewidth=1)
         
-        # Современные текстовые подписи на английском
-        ax2.text(0.98, 90, 'OVERBOUGHT', transform=ax2.get_yaxis_transform(), 
+        # Современные текстовые подписи на английском (слева от графика)
+        ax2.text(0.02, 90, 'OVERBOUGHT', transform=ax2.get_yaxis_transform(), 
                 fontsize=11, fontweight='600', color='#FF3742', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#FF3742', linewidth=1),
-                ha='right')
+                ha='left')
         
-        ax2.text(0.98, 10, 'OVERSOLD', transform=ax2.get_yaxis_transform(), 
+        ax2.text(0.02, 10, 'OVERSOLD', transform=ax2.get_yaxis_transform(), 
                 fontsize=11, fontweight='600', color='#26C059', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#26C059', linewidth=1),
-                ha='right')
+                ha='left')
         
-        ax2.text(0.98, 50, 'NEUTRAL', transform=ax2.get_yaxis_transform(), 
+        ax2.text(0.02, 50, 'NEUTRAL', transform=ax2.get_yaxis_transform(), 
                 fontsize=11, fontweight='600', color='#747D8C', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
-                ha='right')
+                ha='left')
         
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=16, fontweight='bold', pad=20)
@@ -1818,21 +1818,21 @@ def create_quick_chart():
         ax2.axhline(y=20, color='#26C059', linestyle='--', alpha=0.8, linewidth=2)
         ax2.axhline(y=50, color='#747D8C', linestyle='-', alpha=0.4, linewidth=1)
         
-        # Современные текстовые подписи на английском
-        ax2.text(0.98, 90, 'OVERBOUGHT', transform=ax2.get_yaxis_transform(), 
+        # Современные текстовые подписи на английском (слева от графика)
+        ax2.text(0.02, 90, 'OVERBOUGHT', transform=ax2.get_yaxis_transform(), 
                 fontsize=11, fontweight='600', color='#FF3742', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#FF3742', linewidth=1),
-                ha='right')
+                ha='left')
         
-        ax2.text(0.98, 10, 'OVERSOLD', transform=ax2.get_yaxis_transform(), 
+        ax2.text(0.02, 10, 'OVERSOLD', transform=ax2.get_yaxis_transform(), 
                 fontsize=11, fontweight='600', color='#26C059', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#26C059', linewidth=1),
-                ha='right')
+                ha='left')
         
-        ax2.text(0.98, 50, 'NEUTRAL', transform=ax2.get_yaxis_transform(), 
+        ax2.text(0.02, 50, 'NEUTRAL', transform=ax2.get_yaxis_transform(), 
                 fontsize=11, fontweight='600', color='#747D8C', alpha=0.9,
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='white', alpha=0.95, edgecolor='#747D8C', linewidth=1),
-                ha='right')
+                ha='left')
         
         # Добавляем пояснительную аннотацию
         explanation_text = (
