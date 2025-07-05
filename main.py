@@ -514,19 +514,16 @@ def test_chart():
         else:
             caption = "📊 Market Breadth Analysis Test"
         
-        # Генерируем PNG данные и отправляем как файл
-        try:
-            # Используем функцию создания графика для Telegram
-            png_data = create_quick_chart()
-            if png_data:
-                if scheduler.telegram_bot.send_photo(png_data, caption=caption):
-                    flash("✅ Chart sent to Telegram successfully", "success")
-                else:
-                    flash("❌ Failed to send chart to Telegram", "danger")
-            else:
-                flash("❌ Failed to generate chart", "danger")
-        except Exception as e:
-            flash(f"❌ Error: {str(e)}", "danger")
+        # Создаем ссылку на PNG график для Telegram
+        chart_url = f"https://{request.host}/chart-view"
+        
+        # Отправляем сообщение со ссылкой на PNG
+        message = f"{caption}\n\n📈 Chart: {chart_url}"
+        
+        if scheduler.telegram_bot.send_message(message):
+            flash("✅ Chart link sent to Telegram successfully", "success")
+        else:
+            flash("❌ Failed to send chart link to Telegram", "danger")
             
         return redirect(url_for('index'))
     except Exception as e:
