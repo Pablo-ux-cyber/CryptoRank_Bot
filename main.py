@@ -1456,25 +1456,167 @@ def create_matplotlib_fallback_chart(indicator_data, btc_data, history_days):
 
 def create_chart_from_web_endpoint():
     """
-    Создает график используя уже существующие данные из планировщика
+    Создает график точно как в веб-интерфейсе с 3-летними данными
     """
     try:
-        logger.info("Создаем график из данных планировщика...")
+        logger.info("Создаем график точно как в веб-интерфейсе...")
         
-        # Используем данные из планировщика, если они есть
-        if scheduler and scheduler.market_breadth:
-            # Получаем данные market breadth
-            market_data = scheduler.market_breadth.get_market_breadth_data()
-            if market_data and 'indicator_data' in market_data:
-                logger.info("Создаем график из данных планировщика")
-                return create_matplotlib_chart_from_data(market_data)
+        # Точные параметры веб-интерфейса
+        top_n = 50
+        ma_period = 200
+        history_days = 1095  # 3 года как в веб-интерфейсе
         
-        # Fallback - создаем новые данные быстро
-        logger.info("Создаем новые данные с уменьшенным периодом...")
-        return create_quick_chart()
+        # Создаем график с точными параметрами веб-интерфейса
+        return create_exact_web_interface_chart(top_n, ma_period, history_days)
             
     except Exception as e:
-        logger.error(f"Ошибка создания графика: {str(e)}")
+        logger.error(f"Ошибка создания графика веб-интерфейса: {str(e)}")
+        return None
+
+def create_exact_web_interface_chart(top_n, ma_period, history_days):
+    """
+    Создает график точно такой же как в веб-интерфейсе
+    """
+    try:
+        import plotly.graph_objects as go
+        from plotly.subplots import make_subplots
+        import pandas as pd
+        from datetime import datetime, timedelta
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        from io import BytesIO
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        
+        logger.info(f"Создаем точную копию веб-интерфейса: {top_n} монет, {ma_period}MA, {history_days} дней")
+        
+        # Инициализация точно как в веб-интерфейсе
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение данных
+        top_coins = analyzer.get_top_coins(top_n)
+        if not top_coins:
+            logger.error("Не удалось получить топ монеты")
+            return None
+        
+        # Исключаем стейблкоины как в веб-интерфейсе
+        stablecoins = ['USDT', 'USDC', 'DAI']
+        filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
+        logger.info(f"Отфильтровано {len(filtered_coins)} монет (исключены стейблкоины)")
+        
+        # Загружаем полные данные как в веб-интерфейсе
+        total_days_needed = ma_period + history_days + 100
+        historical_data = analyzer.load_historical_data(filtered_coins, total_days_needed)
+        
+        if not historical_data:
+            logger.error("Не удалось загрузить исторические данные")
+            return None
+        
+        # Расчет индикатора точно как в веб-интерфейсе
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            logger.error("Не удалось рассчитать индикатор")
+            return None
+            
+        logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
+        
+        # Создание двухпанельного графика как в веб-интерфейсе
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+        fig.patch.set_facecolor('white')
+        
+        # Bitcoin график (верхняя панель)
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            
+            # Фильтрация по точному периоду веб-интерфейса
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=history_days)
+            btc_filtered = btc_data[
+                (btc_data['date'].dt.date >= start_date) & 
+                (btc_data['date'].dt.date <= end_date)
+            ].sort_values('date')
+            
+            if not btc_filtered.empty:
+                ax1.plot(btc_filtered['date'], btc_filtered['price'], 
+                        color='#FF6B35', linewidth=2.5, label='Bitcoin')
+                ax1.set_title('Bitcoin Price (USD)', 
+                            fontsize=16, fontweight='bold', pad=20)
+                ax1.set_ylabel('Bitcoin Price (USD)', fontsize=13)
+                ax1.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
+                ax1.tick_params(axis='both', which='major', labelsize=11)
+                
+                # Форматирование цены
+                ax1.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: f'${x:,.0f}'))
+        
+        # Market breadth график (нижняя панель) - точно как в веб-интерфейсе
+        indicator_filtered = indicator_data.tail(history_days)
+        dates = pd.to_datetime(indicator_filtered.index)
+        
+        # Основная линия индикатора
+        ax2.plot(dates, indicator_filtered['percentage'], 
+                color='#2563EB', linewidth=2.5, label='Market Breadth')
+        
+        # Цветные зоны точно как в веб-интерфейсе
+        ax2.axhspan(80, 100, alpha=0.25, color='#FFE4E1', label='Overbought Zone (80%+)')
+        ax2.axhspan(0, 20, alpha=0.25, color='#F0FFF0', label='Oversold Zone (20%-)')
+        ax2.axhspan(20, 80, alpha=0.1, color='#F5F5F5', label='Neutral Zone (20%-80%)')
+        
+        # Горизонтальные линии
+        ax2.axhline(y=80, color='#FF6B6B', linestyle='--', alpha=0.7, linewidth=1)
+        ax2.axhline(y=50, color='#666666', linestyle='-', alpha=0.5, linewidth=1)
+        ax2.axhline(y=20, color='#4ECDC4', linestyle='--', alpha=0.7, linewidth=1)
+        
+        # Заголовок точно как в веб-интерфейсе
+        ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                     fontsize=16, fontweight='bold', pad=20)
+        ax2.set_ylabel('Percentage (%)', fontsize=13)
+        ax2.set_xlabel('Date', fontsize=13)
+        ax2.set_ylim(0, 100)
+        ax2.grid(True, alpha=0.3, linestyle='-', linewidth=0.5)
+        ax2.tick_params(axis='both', which='major', labelsize=11)
+        
+        # Форматирование дат точно как в веб-интерфейсе
+        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+        
+        # Добавляем аннотацию как в веб-интерфейсе
+        current_value = indicator_filtered['percentage'].iloc[-1]
+        ax2.text(0.02, 0.98, 
+                f'Current: {current_value:.1f}%\nAnalyzing {len(filtered_coins)} cryptocurrencies\nOver {history_days} days with {ma_period}-day MA',
+                transform=ax2.transAxes, fontsize=10, verticalalignment='top',
+                bbox=dict(boxstyle='round', facecolor='white', alpha=0.8, edgecolor='gray'))
+        
+        # Общий заголовок
+        plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
+                    fontsize=18, fontweight='bold', y=0.98)
+        
+        # Финальное оформление
+        plt.tight_layout()
+        plt.subplots_adjust(top=0.94, hspace=0.3)
+        
+        # Сохранение в высоком качестве
+        img_buffer = BytesIO()
+        plt.savefig(img_buffer, format='png', dpi=200, bbox_inches='tight', 
+                   facecolor='white', edgecolor='none', 
+                   pad_inches=0.2)
+        img_buffer.seek(0)
+        img_bytes = img_buffer.getvalue()
+        plt.close(fig)
+        
+        logger.info("График веб-интерфейса создан успешно")
+        return img_bytes
+        
+    except Exception as e:
+        logger.error(f"Ошибка создания точного графика веб-интерфейса: {str(e)}")
+        import traceback
+        logger.error(f"Полная ошибка: {traceback.format_exc()}")
         return None
 
 def create_quick_chart():
