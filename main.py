@@ -493,7 +493,7 @@ def set_manual_rank():
 
 @app.route('/market-breadth')
 def market_breadth():
-    """Market Breadth Analysis using your exact code"""
+    """Market Breadth Analysis - ваш точный интерфейс"""
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
         from data_cache import DataCache
@@ -515,11 +515,11 @@ def market_breadth():
             'cache_info': cache.get_cache_info()
         }
         
-        return render_template('market_breadth_analysis.html', breadth_data=breadth_data)
+        return render_template('market_breadth_plotly.html', breadth_data=breadth_data)
         
     except Exception as e:
         logger.error(f"Error initializing market breadth: {str(e)}")
-        return render_template('market_breadth_analysis.html', 
+        return render_template('market_breadth_plotly.html', 
                              breadth_data=None, error=str(e))
 
 @app.route('/api/run-market-analysis', methods=['POST'])
@@ -623,6 +623,260 @@ def run_market_analysis():
         
     except Exception as e:
         logger.error(f"Error in market analysis: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})
+
+@app.route('/api/run-market-analysis-plotly', methods=['POST'])
+def run_market_analysis_plotly():
+    """Запуск полного анализа рынка с Plotly графиками (ваш точный код)"""
+    try:
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        from data_cache import DataCache
+        import pandas as pd
+        from datetime import datetime, timedelta
+        
+        # Получение параметров из запроса
+        data = request.get_json() or {}
+        top_n = data.get('top_n', 50)
+        ma_period = data.get('ma_period', 200) 
+        history_days = data.get('history_days', 365)
+        
+        # Инициализация
+        cache = DataCache()
+        analyzer = CryptoAnalyzer(cache)
+        
+        # Получение топ монет (ваш код)
+        top_coins = analyzer.get_top_coins(top_n)
+        if not top_coins:
+            return jsonify({"status": "error", "message": "Не удалось получить список топ монет"})
+        
+        # Загрузка исторических данных
+        historical_data = analyzer.load_historical_data(
+            top_coins, 
+            ma_period + history_days + 100
+        )
+        
+        if not historical_data:
+            return jsonify({"status": "error", "message": "Не удалось загрузить исторические данные"})
+        
+        # Расчет индикатора (ваш точный код)
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            return jsonify({"status": "error", "message": "Не удалось рассчитать индикатор"})
+        
+        # Получение сводной информации (ваш код)
+        summary = analyzer.get_market_summary(indicator_data)
+        current_value = summary.get('current_value', 0)
+        
+        # Подсчет монет выше MA используя данные из summary
+        coins_above_ma = summary.get('coins_above_ma', 'N/A')
+        
+        # Определение рыночного сигнала (ваш код)
+        if current_value >= 80:
+            signal = "🔴"
+            condition = "Перекупленность"
+            description = "Большинство монет выше MA200, возможна коррекция"
+        elif current_value <= 20:
+            signal = "🟢" 
+            condition = "Перепроданность"
+            description = "Большинство монет ниже MA200, возможен отскок"
+        else:
+            signal = "🟡"
+            condition = "Нейтральная зона"
+            description = "Рынок в состоянии равновесия"
+        
+        # Создание Plotly данных (ваш точный код)
+        plotly_data = []
+        annotations = []
+        shapes = []
+        
+        # График Bitcoin сверху
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            
+            # Фильтрация по тому же периоду
+            end_date = datetime.now().date()
+            start_date = end_date - timedelta(days=history_days)
+            btc_data = btc_data[(btc_data['date'].dt.date >= start_date) & (btc_data['date'].dt.date <= end_date)]
+            
+            if not btc_data.empty:
+                plotly_data.append({
+                    'x': btc_data['date'].dt.strftime('%Y-%m-%d').tolist(),
+                    'y': btc_data['price'].tolist(),
+                    'mode': 'lines',
+                    'name': 'Bitcoin',
+                    'line': {'color': '#F7931A', 'width': 2},
+                    'hovertemplate': '<b>%{x}</b><br>Цена BTC: $%{y:,.0f}<extra></extra>',
+                    'yaxis': 'y'
+                })
+        
+        # График индикатора снизу
+        indicator_data_reset = indicator_data.reset_index()
+        plotly_data.append({
+            'x': indicator_data_reset['date'].dt.strftime('%Y-%m-%d').tolist() if 'date' in indicator_data_reset.columns else [str(d)[:10] for d in indicator_data_reset.index],
+            'y': indicator_data_reset['percentage'].tolist(),
+            'mode': 'lines',
+            'name': 'Индикатор ширины',
+            'line': {'color': '#1f77b4', 'width': 2},
+            'hovertemplate': '<b>%{x}</b><br>Процент: %{y:.1f}%<extra></extra>',
+            'yaxis': 'y2'
+        })
+        
+        # Линии уровней для индикатора
+        shapes.extend([
+            # Линия 80%
+            {
+                'type': 'line',
+                'x0': 0, 'x1': 1,
+                'y0': 80, 'y1': 80,
+                'xref': 'paper', 'yref': 'y2',
+                'line': {'color': 'red', 'width': 1, 'dash': 'dash'}
+            },
+            # Линия 20%
+            {
+                'type': 'line',
+                'x0': 0, 'x1': 1,
+                'y0': 20, 'y1': 20,
+                'xref': 'paper', 'yref': 'y2',
+                'line': {'color': 'green', 'width': 1, 'dash': 'dash'}
+            },
+            # Линия 50%
+            {
+                'type': 'line',
+                'x0': 0, 'x1': 1,
+                'y0': 50, 'y1': 50,
+                'xref': 'paper', 'yref': 'y2',
+                'line': {'color': 'gray', 'width': 1, 'dash': 'dot'}
+            },
+            # Зона перекупленности
+            {
+                'type': 'rect',
+                'x0': 0, 'x1': 1,
+                'y0': 80, 'y1': 100,
+                'xref': 'paper', 'yref': 'y2',
+                'fillcolor': 'red', 'opacity': 0.1,
+                'layer': 'below', 'line': {'width': 0}
+            },
+            # Зона перепроданности
+            {
+                'type': 'rect',
+                'x0': 0, 'x1': 1,
+                'y0': 0, 'y1': 20,
+                'xref': 'paper', 'yref': 'y2',
+                'fillcolor': 'green', 'opacity': 0.1,
+                'layer': 'below', 'line': {'width': 0}
+            },
+            # Нейтральная зона
+            {
+                'type': 'rect',
+                'x0': 0, 'x1': 1,
+                'y0': 20, 'y1': 80,
+                'xref': 'paper', 'yref': 'y2',
+                'fillcolor': 'gray', 'opacity': 0.05,
+                'layer': 'below', 'line': {'width': 0}
+            }
+        ])
+        
+        # Аннотации
+        annotations.extend([
+            {
+                'x': 1, 'y': 80,
+                'xref': 'paper', 'yref': 'y2',
+                'text': 'Перекупленность (80%)',
+                'showarrow': False,
+                'xanchor': 'right',
+                'font': {'size': 10}
+            },
+            {
+                'x': 1, 'y': 20,
+                'xref': 'paper', 'yref': 'y2',
+                'text': 'Перепроданность (20%)',
+                'showarrow': False,
+                'xanchor': 'right',
+                'font': {'size': 10}
+            },
+            {
+                'x': 1, 'y': 50,
+                'xref': 'paper', 'yref': 'y2',
+                'text': 'Нейтральная зона (50%)',
+                'showarrow': False,
+                'xanchor': 'right',
+                'font': {'size': 10}
+            }
+        ])
+        
+        # Расчет корреляций (ваш код)
+        correlations = []
+        if 'BTC' in historical_data:
+            btc_data = historical_data['BTC'].copy()
+            btc_data['date'] = pd.to_datetime(btc_data['date'])
+            btc_data = btc_data.set_index('date')
+            
+            for coin_symbol, df in historical_data.items():
+                if coin_symbol != 'BTC' and df is not None:
+                    try:
+                        df = df.copy()
+                        df['date'] = pd.to_datetime(df['date'])
+                        df = df.set_index('date')
+                        
+                        # Объединение данных по датам
+                        merged = btc_data[['price']].join(df[['price']], rsuffix='_alt', how='inner')
+                        
+                        if len(merged) > 10:
+                            correlation = merged['price'].corr(merged['price_alt'])
+                            if pd.notna(correlation):
+                                correlations.append({
+                                    'coin': coin_symbol,
+                                    'correlation': f"{correlation:.3f}"
+                                })
+                    except Exception as e:
+                        logger.debug(f"Error calculating correlation for {coin_symbol}: {e}")
+                        continue
+        
+        # Сортировка корреляций
+        correlations.sort(key=lambda x: float(x['correlation']), reverse=True)
+        
+        # Безопасное получение последней даты
+        try:
+            last_date = str(indicator_data.index[-1])
+            if ' ' in last_date:
+                timestamp = last_date.split(' ')[0]
+            else:
+                timestamp = last_date[:10]
+        except:
+            timestamp = 'Latest'
+        
+        result = {
+            'status': 'success',
+            'data': {
+                'signal': signal,
+                'condition': condition,
+                'description': description,
+                'current_value': current_value,
+                'timestamp': timestamp,
+                'coins_above_ma': coins_above_ma,
+                'total_coins': len(top_coins),
+                'avg_value': summary.get('avg_value', 0),
+                'max_value': summary.get('max_value', 0),
+                'min_value': summary.get('min_value', 0),
+                'plotly_data': {
+                    'data': plotly_data,
+                    'annotations': annotations,
+                    'shapes': shapes
+                },
+                'correlations': correlations[:20]  # Топ 20 корреляций
+            }
+        }
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        logger.error(f"Error in Plotly market analysis: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
 
 @app.route('/market-breadth-legacy')

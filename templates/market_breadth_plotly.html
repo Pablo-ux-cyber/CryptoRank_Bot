@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Индикатор ширины криптовалютного рынка - SensorTower Bot</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .breadth-card {
+            border-left: 4px solid var(--bs-info);
+        }
+        .signal-icon {
+            font-size: 3rem;
+            line-height: 1;
+        }
+        .progress-large {
+            height: 40px;
+            font-size: 1.1rem;
+        }
+        .metric-card {
+            background: var(--bs-gray-900);
+            border: 1px solid var(--bs-gray-700);
+        }
+        .analysis-controls {
+            background: var(--bs-gray-800);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+        .loading-content {
+            text-align: center;
+            color: white;
+        }
+        .plotly-container {
+            background: var(--bs-gray-900);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h4 id="loadingText">Получение списка топ криптовалют...</h4>
+            <div class="progress" style="width: 400px; margin-top: 1rem;">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                     id="loadingProgress" role="progressbar" style="width: 0%"></div>
+            </div>
+            <div id="loadingDetails" class="mt-2 text-muted"></div>
+        </div>
+    </div>
+
+    <div class="container-fluid py-4">
+        <div class="row">
+            <!-- Боковая панель с настройками -->
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">⚙️ Настройки анализа</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="topNSlider" class="form-label">Количество топ монет: <span id="topNValue">50</span></label>
+                            <input type="range" class="form-range" min="10" max="100" step="5" value="50" 
+                                   id="topNSlider" oninput="updateSliderValue('topN', this.value)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="maPeriodSlider" class="form-label">Период MA: <span id="maPeriodValue">200</span></label>
+                            <input type="range" class="form-range" min="50" max="300" step="10" value="200" 
+                                   id="maPeriodSlider" oninput="updateSliderValue('maPeriod', this.value)">
+                        </div>
+                        <div class="mb-3">
+                            <label for="historyDaysSlider" class="form-label">Дней истории: <span id="historyDaysValue">365</span></label>
+                            <input type="range" class="form-range" min="180" max="1460" step="30" value="365" 
+                                   id="historyDaysSlider" oninput="updateSliderValue('historyDays', this.value)">
+                        </div>
+                        <button class="btn btn-primary btn-lg w-100 mb-3" onclick="startAnalysis()">
+                            🚀 Запустить анализ
+                        </button>
+                        
+                        {% if breadth_data and breadth_data.cache_info %}
+                        <div class="small text-muted">
+                            <strong>💾 Информация о кеше:</strong><br>
+                            Размер: {{ "%.1f"|format(breadth_data.cache_info.cache_size_mb) }} МБ<br>
+                            Монет: {{ breadth_data.cache_info.cached_coins_count }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <h6 class="mb-0">ℹ️ О индикаторе</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="small">
+                            <strong>Как работает:</strong><br>
+                            Показывает процент криптовалют, торгующихся выше скользящей средней.
+                        </p>
+                        <p class="small">
+                            <strong>Сигналы:</strong><br>
+                            🔴 >80% - Перекупленность<br>
+                            🟡 20-80% - Нейтральная зона<br>
+                            🟢 <20% - Перепроданность
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Основной контент -->
+            <div class="col-md-9">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h1>📊 Индикатор ширины криптовалютного рынка</h1>
+                    <a href="/" class="btn btn-outline-secondary">← Назад к Dashboard</a>
+                </div>
+
+                <!-- Результаты анализа -->
+                <div id="resultsSection" style="display: none;">
+                    <!-- Основные метрики -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <div class="signal-icon" id="signalIcon">🟡</div>
+                                    <h5 class="card-title">Текущий индикатор</h5>
+                                    <h3 id="currentValueText">0%</h3>
+                                    <small class="text-muted" id="conditionText">Готов к анализу</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Выше MA200</h5>
+                                    <h3 class="text-success" id="coinsAboveText">N/A</h3>
+                                    <small class="text-muted">из <span id="totalCoinsText">N/A</span> монет</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Среднее</h5>
+                                    <h3 class="text-info" id="avgValueText">N/A</h3>
+                                    <small class="text-muted">Историческое</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card metric-card">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Диапазон</h5>
+                                    <h3 class="text-warning" id="rangeText">N/A</h3>
+                                    <small class="text-muted">Мин - Макс</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Описание сигнала -->
+                    <div class="alert" id="signalAlert" style="display: none;">
+                        <span id="descriptionText"></span>
+                    </div>
+
+                    <!-- График -->
+                    <div class="card shadow-sm mb-4">
+                        <div class="card-header">
+                            <h4 class="mb-0">📈 График анализа рынка</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="plotlyChart" class="plotly-container"></div>
+                        </div>
+                    </div>
+
+                    <!-- Таблица корреляций -->
+                    <div class="card shadow-sm">
+                        <div class="card-header">
+                            <h4 class="mb-0">🔗 Корреляция с Bitcoin</h4>
+                        </div>
+                        <div class="card-body">
+                            <div id="correlationTable">
+                                <p class="text-muted">Таблица корреляций будет доступна после анализа</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Начальное состояние -->
+                <div id="initialState">
+                    <div class="card shadow-sm mb-4 breadth-card">
+                        <div class="card-body text-center py-5">
+                            <div class="signal-icon mb-3">📊</div>
+                            <h3>Анализатор готов к работе</h3>
+                            <p class="text-muted">Настройте параметры в боковой панели и нажмите "Запустить анализ"</p>
+                            <p class="small text-muted">Система использует ваш точный алгоритм с Plotly графиками</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function updateSliderValue(type, value) {
+            document.getElementById(type + 'Value').textContent = value;
+        }
+        
+        function startAnalysis() {
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            const loadingText = document.getElementById('loadingText');
+            const loadingProgress = document.getElementById('loadingProgress');
+            const loadingDetails = document.getElementById('loadingDetails');
+            
+            loadingOverlay.style.display = 'flex';
+            
+            const steps = [
+                'Получение списка топ криптовалют...',
+                'Загрузка исторических данных...',
+                'Расчет скользящих средних...',
+                'Анализ ширины рынка...',
+                'Построение графиков...',
+                'Расчет корреляций...',
+                'Генерация результатов...'
+            ];
+            
+            let currentStep = 0;
+            
+            function updateProgress() {
+                if (currentStep < steps.length) {
+                    loadingText.textContent = steps[currentStep];
+                    loadingProgress.style.width = ((currentStep + 1) / steps.length * 100) + '%';
+                    currentStep++;
+                    setTimeout(updateProgress, 1500);
+                }
+            }
+            
+            updateProgress();
+            
+            // Получение параметров
+            const params = {
+                top_n: parseInt(document.getElementById('topNSlider').value),
+                ma_period: parseInt(document.getElementById('maPeriodSlider').value),
+                history_days: parseInt(document.getElementById('historyDaysSlider').value)
+            };
+            
+            fetch('/api/run-market-analysis-plotly', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(params)
+            })
+            .then(response => response.json())
+            .then(data => {
+                loadingOverlay.style.display = 'none';
+                
+                if (data.status === 'success') {
+                    updatePageData(data.data);
+                    showResults();
+                } else {
+                    alert('Ошибка: ' + data.message);
+                }
+            })
+            .catch(error => {
+                loadingOverlay.style.display = 'none';
+                alert('Ошибка: ' + error.message);
+            });
+        }
+        
+        function showResults() {
+            document.getElementById('initialState').style.display = 'none';
+            document.getElementById('resultsSection').style.display = 'block';
+        }
+        
+        function updatePageData(data) {
+            // Обновление основных элементов
+            document.getElementById('signalIcon').textContent = data.signal;
+            document.getElementById('currentValueText').textContent = data.current_value.toFixed(1) + '%';
+            document.getElementById('conditionText').textContent = data.condition;
+            
+            // Обновление метрик
+            document.getElementById('coinsAboveText').textContent = data.coins_above_ma;
+            document.getElementById('totalCoinsText').textContent = data.total_coins;
+            document.getElementById('avgValueText').textContent = data.avg_value.toFixed(1) + '%';
+            document.getElementById('rangeText').textContent = 
+                data.min_value.toFixed(1) + '% - ' + data.max_value.toFixed(1) + '%';
+            
+            // Обновление сигнала
+            const signalAlert = document.getElementById('signalAlert');
+            const descriptionText = document.getElementById('descriptionText');
+            descriptionText.textContent = data.signal + ' ' + data.description;
+            
+            // Цвет алерта
+            signalAlert.className = 'alert ';
+            if (data.current_value >= 80) {
+                signalAlert.className += 'alert-danger';
+            } else if (data.current_value <= 20) {
+                signalAlert.className += 'alert-success';
+            } else {
+                signalAlert.className += 'alert-warning';
+            }
+            signalAlert.style.display = 'block';
+            
+            // Создание Plotly графика
+            if (data.plotly_data) {
+                createPlotlyChart(data.plotly_data);
+            }
+            
+            // Обновление таблицы корреляций
+            if (data.correlations) {
+                updateCorrelationTable(data.correlations);
+            }
+        }
+        
+        function createPlotlyChart(plotlyData) {
+            const plotDiv = document.getElementById('plotlyChart');
+            
+            // Создаем subplot как в вашем коде
+            const fig = {
+                data: plotlyData.data,
+                layout: {
+                    title: '',
+                    showlegend: true,
+                    hovermode: 'x unified',
+                    template: 'plotly_dark',
+                    paper_bgcolor: 'rgba(0,0,0,0)',
+                    plot_bgcolor: 'rgba(0,0,0,0)',
+                    height: 800,
+                    grid: {
+                        rows: 2,
+                        columns: 1,
+                        pattern: 'independent',
+                        roworder: 'top to bottom'
+                    },
+                    annotations: plotlyData.annotations,
+                    shapes: plotlyData.shapes,
+                    xaxis: {
+                        domain: [0, 1],
+                        anchor: 'y'
+                    },
+                    xaxis2: {
+                        domain: [0, 1],
+                        anchor: 'y2',
+                        title: 'Дата'
+                    },
+                    yaxis: {
+                        domain: [0.6, 1],
+                        anchor: 'x',
+                        title: 'Цена Bitcoin (USD)'
+                    },
+                    yaxis2: {
+                        domain: [0, 0.4],
+                        anchor: 'x2',
+                        title: 'Процент монет выше MA (%)',
+                        range: [0, 100]
+                    }
+                },
+                config: {
+                    responsive: true,
+                    displayModeBar: true
+                }
+            };
+            
+            Plotly.newPlot(plotDiv, fig.data, fig.layout, fig.config);
+        }
+        
+        function updateCorrelationTable(correlations) {
+            const tableDiv = document.getElementById('correlationTable');
+            
+            if (correlations.length === 0) {
+                tableDiv.innerHTML = '<p class="text-muted">Нет данных для корреляции</p>';
+                return;
+            }
+            
+            let tableHtml = `
+                <div class="table-responsive">
+                    <table class="table table-dark table-striped">
+                        <thead>
+                            <tr>
+                                <th>Монета</th>
+                                <th>Корреляция с BTC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            correlations.forEach(corr => {
+                tableHtml += `
+                    <tr>
+                        <td>${corr.coin}</td>
+                        <td>${corr.correlation}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            tableDiv.innerHTML = tableHtml;
+        }
+    </script>
+</body>
+</html>
