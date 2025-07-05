@@ -501,8 +501,8 @@ def test_chart():
             flash("❌ Telegram bot not available", "danger")
             return redirect(url_for('index'))
         
-        # Создаем график
-        chart_image = create_market_chart_screenshot()
+        # Создаем график точно как в веб-интерфейсе
+        chart_image = create_web_ui_chart_screenshot()
         
         if chart_image:
             # Получаем данные для подписи
@@ -1219,6 +1219,146 @@ def create_market_chart_screenshot():
         
     except Exception as e:
         logger.error(f"Ошибка создания скриншота графика: {str(e)}")
+        return None
+
+def create_web_ui_chart_screenshot():
+    """
+    Создает скриншот точно того же графика, что показывается в веб-интерфейсе
+    Напрямую вызывает run_market_analysis_plotly и конвертирует результат в PNG
+    """
+    try:
+        from flask import Flask, current_app
+        import json
+        
+        # Создаем mock request для получения данных веб-интерфейса
+        test_data = {
+            'top_n': 50,
+            'ma_period': 200,
+            'history_days': 1095
+        }
+        
+        # Используем тестовый контекст для вызова функции веб-интерфейса
+        with current_app.test_request_context(
+            path='/api/run-market-analysis-plotly',
+            method='POST',
+            json=test_data
+        ):
+            # Импортируем функцию анализа из веб-интерфейса
+            from crypto_analyzer_cryptocompare import CryptoAnalyzer
+            from data_cache import DataCache
+            import pandas as pd
+            import plotly.graph_objects as go
+            import plotly.io as pio
+            from datetime import datetime, timedelta
+            
+            # Получение параметров - те же что в веб-интерфейсе
+            top_n = 50
+            ma_period = 200
+            history_days = 1095  # 3 года
+            
+            # Инициализация
+            cache = DataCache()
+            analyzer = CryptoAnalyzer(cache)
+            
+            # Получение данных
+            top_coins = analyzer.get_top_coins(top_n)
+            if not top_coins:
+                logger.error("Не удалось получить топ монеты")
+                return None
+                
+            historical_data = analyzer.load_historical_data(
+                top_coins, 
+                ma_period + history_days + 100
+            )
+            
+            if not historical_data:
+                logger.error("Не удалось загрузить исторические данные")
+                return None
+            
+            # Расчет индикатора
+            indicator_data = analyzer.calculate_market_breadth(
+                historical_data, 
+                ma_period, 
+                history_days
+            )
+            
+            if indicator_data.empty:
+                logger.error("Не удалось рассчитать индикатор")
+                return None
+            
+            # Создание ТОЧНО ТАКОГО ЖЕ графика как в веб-интерфейсе
+            import matplotlib.pyplot as plt
+            import matplotlib.dates as mdates
+            from io import BytesIO
+            
+            # Используем matplotlib для создания графика
+            fig_mpl, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
+            fig_mpl.patch.set_facecolor('white')
+            
+            # Bitcoin график - те же данные что в веб-интерфейсе
+            if 'BTC' in historical_data:
+                btc_data = historical_data['BTC'].copy()
+                btc_data['date'] = pd.to_datetime(btc_data['date'])
+                
+                # Фильтрация по тому же периоду что в веб-интерфейсе
+                end_date = datetime.now().date()
+                start_date = end_date - timedelta(days=history_days)
+                btc_filtered = btc_data[(btc_data['date'].dt.date >= start_date) & (btc_data['date'].dt.date <= end_date)]
+                
+                if not btc_filtered.empty:
+                    ax1.plot(btc_filtered['date'], btc_filtered['price'], 
+                            color='#FF6B35', linewidth=3, label='Bitcoin')
+                    ax1.set_title('Bitcoin Price (USD)', fontsize=16, fontweight='bold', color='#2D3748')
+                    ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12, color='#4A5568')
+                    ax1.grid(True, alpha=0.3, color='#E2E8F0')
+            
+            # Market breadth график - те же данные что в веб-интерфейсе
+            if not indicator_data.empty:
+                indicator_filtered = indicator_data.tail(history_days)
+                dates = pd.to_datetime(indicator_filtered.index)
+                
+                ax2.plot(dates, indicator_filtered['percentage'], 
+                        color='#2563EB', linewidth=3)
+                
+                # Зоны - точно как в веб-интерфейсе
+                ax2.axhspan(80, 100, alpha=0.3, color='#FEF2F2')
+                ax2.axhspan(0, 20, alpha=0.3, color='#F0FDF4')
+                ax2.axhspan(20, 80, alpha=0.2, color='#F9FAFB')
+                
+                ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                             fontsize=16, fontweight='bold', color='#2D3748')
+                ax2.set_ylabel('Percentage (%)', fontsize=12, color='#4A5568')
+                ax2.set_xlabel('Date', fontsize=12, color='#4A5568')
+                ax2.set_ylim(0, 100)
+                ax2.grid(True, alpha=0.3, color='#E2E8F0')
+                
+                # Форматирование дат
+                ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+                ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=4))
+            
+            plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
+                        fontsize=18, fontweight='bold', color='#2D3748', y=0.98)
+            plt.tight_layout()
+            
+            # Добавляем подпись
+            fig_mpl.text(0.05, 0.38, '80%+ = Market too hot, 20%- = Buying opportunity', 
+                        fontsize=12, color='#4A5568', 
+                        bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
+                                 edgecolor='#CBD5E0', alpha=0.8))
+            
+            # Сохранение
+            img_buffer = BytesIO()
+            plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            img_buffer.seek(0)
+            img_bytes = img_buffer.getvalue()
+            plt.close(fig_mpl)
+            
+            logger.info("График веб-интерфейса для Telegram создан через matplotlib")
+            return img_bytes
+            
+    except Exception as e:
+        logger.error(f"Ошибка создания скриншота веб-графика: {str(e)}")
         return None
 
 # Set up signal handler for graceful shutdown
