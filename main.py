@@ -1729,25 +1729,30 @@ def create_quick_chart():
         fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
         fig.patch.set_facecolor('white')
         
-        # Bitcoin график
+        # Bitcoin график - синхронизируем с market breadth данными
         if 'BTC' in historical_data:
             btc_data = historical_data['BTC'].copy()
             btc_data['date'] = pd.to_datetime(btc_data['date'])
             
-            # Фильтрация по периоду
-            end_date = datetime.now().date()
-            start_date = end_date - timedelta(days=history_days)
-            btc_filtered = btc_data[
-                (btc_data['date'].dt.date >= start_date) & 
-                (btc_data['date'].dt.date <= end_date)
-            ].sort_values('date')
-            
-            if not btc_filtered.empty:
-                ax1.plot(btc_filtered['date'], btc_filtered['price'], 
-                        color='#FF6B35', linewidth=2, label='Bitcoin')
-                ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold')
-                ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12)
-                ax1.grid(True, alpha=0.3)
+            # Используем те же даты что и в market breadth индикаторе
+            indicator_filtered = indicator_data.tail(history_days)
+            if len(indicator_filtered) > 0:
+                # Получаем диапазон дат из market breadth данных
+                mb_start_date = indicator_filtered.index.min()
+                mb_end_date = indicator_filtered.index.max()
+                
+                # Фильтруем Bitcoin данные по тому же диапазону
+                btc_filtered = btc_data[
+                    (btc_data['date'] >= mb_start_date) & 
+                    (btc_data['date'] <= mb_end_date)
+                ].sort_values('date')
+                
+                if not btc_filtered.empty:
+                    ax1.plot(btc_filtered['date'], btc_filtered['price'], 
+                            color='#FF6B35', linewidth=2, label='Bitcoin')
+                    ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold')
+                    ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12)
+                    ax1.grid(True, alpha=0.3)
         
         # Market breadth график - исправляем обработку дат
         indicator_filtered = indicator_data.tail(history_days)
@@ -1793,13 +1798,24 @@ def create_quick_chart():
         ax2.set_ylim(0, 100)
         ax2.grid(True, alpha=0.3)
         
-        # Форматирование дат - убираем неправильные даты
+        # Синхронизированное форматирование дат для обоих графиков
         try:
-            ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-            ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
+            # Одинаковое форматирование для обеих панелей
+            date_formatter = mdates.DateFormatter('%Y-%m')
+            month_locator = mdates.MonthLocator(interval=3)
+            
+            # Форматируем ось X на обоих графиках
+            ax1.xaxis.set_major_formatter(date_formatter)
+            ax1.xaxis.set_major_locator(month_locator)
+            ax1.tick_params(axis='x', rotation=45)
+            
+            ax2.xaxis.set_major_formatter(date_formatter)
+            ax2.xaxis.set_major_locator(month_locator)
+            ax2.tick_params(axis='x', rotation=45)
         except Exception as date_error:
             logger.warning(f"Ошибка форматирования дат: {date_error}")
             # Простое форматирование без сложных локаторов
+            ax1.tick_params(axis='x', rotation=45)
             ax2.tick_params(axis='x', rotation=45)
         
         plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
