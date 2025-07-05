@@ -1,0 +1,247 @@
+{
+  "BTC": {
+    "timestamp": "2025-07-05T07:10:05.086272",
+    "days": 280,
+    "records": 281
+  },
+  "ETH": {
+    "timestamp": "2025-07-05T07:10:06.337875",
+    "days": 280,
+    "records": 281
+  },
+  "USDT": {
+    "timestamp": "2025-07-05T07:10:07.271020",
+    "days": 280,
+    "records": 281
+  },
+  "BNB": {
+    "timestamp": "2025-07-05T07:10:08.382389",
+    "days": 280,
+    "records": 281
+  },
+  "SOL": {
+    "timestamp": "2025-07-05T07:10:09.109443",
+    "days": 280,
+    "records": 281
+  },
+  "USDC": {
+    "timestamp": "2025-07-05T07:10:09.834650",
+    "days": 280,
+    "records": 281
+  },
+  "XRP": {
+    "timestamp": "2025-07-05T07:10:10.551906",
+    "days": 280,
+    "records": 281
+  },
+  "DOGE": {
+    "timestamp": "2025-07-05T07:10:11.467568",
+    "days": 280,
+    "records": 281
+  },
+  "TON": {
+    "timestamp": "2025-07-05T07:10:12.236373",
+    "days": 280,
+    "records": 281
+  },
+  "ADA": {
+    "timestamp": "2025-07-05T07:10:13.031027",
+    "days": 280,
+    "records": 281
+  },
+  "SHIB": {
+    "timestamp": "2025-07-05T07:10:13.716028",
+    "days": 280,
+    "records": 281
+  },
+  "AVAX": {
+    "timestamp": "2025-07-05T07:10:14.428773",
+    "days": 280,
+    "records": 281
+  },
+  "TRX": {
+    "timestamp": "2025-07-05T07:10:15.148439",
+    "days": 280,
+    "records": 281
+  },
+  "DOT": {
+    "timestamp": "2025-07-05T07:10:15.848728",
+    "days": 280,
+    "records": 281
+  },
+  "LINK": {
+    "timestamp": "2025-07-05T07:10:16.633958",
+    "days": 280,
+    "records": 281
+  },
+  "BCH": {
+    "timestamp": "2025-07-05T07:10:17.363159",
+    "days": 280,
+    "records": 281
+  },
+  "NEAR": {
+    "timestamp": "2025-07-05T07:10:18.057167",
+    "days": 280,
+    "records": 281
+  },
+  "MATIC": {
+    "timestamp": "2025-07-05T07:10:18.728786",
+    "days": 280,
+    "records": 281
+  },
+  "ICP": {
+    "timestamp": "2025-07-05T07:10:20.879680",
+    "days": 280,
+    "records": 281
+  },
+  "UNI": {
+    "timestamp": "2025-07-05T07:10:21.597044",
+    "days": 280,
+    "records": 281
+  },
+  "LTC": {
+    "timestamp": "2025-07-05T07:10:22.307421",
+    "days": 280,
+    "records": 281
+  },
+  "DAI": {
+    "timestamp": "2025-07-05T07:10:23.394019",
+    "days": 280,
+    "records": 281
+  },
+  "ETC": {
+    "timestamp": "2025-07-05T07:10:24.107414",
+    "days": 280,
+    "records": 281
+  },
+  "APT": {
+    "timestamp": "2025-07-05T07:10:26.059734",
+    "days": 280,
+    "records": 281
+  },
+  "STX": {
+    "timestamp": "2025-07-05T07:10:26.793243",
+    "days": 280,
+    "records": 281
+  },
+  "CRO": {
+    "timestamp": "2025-07-05T07:10:27.705012",
+    "days": 280,
+    "records": 281
+  },
+  "ATOM": {
+    "timestamp": "2025-07-05T07:10:29.159785",
+    "days": 280,
+    "records": 281
+  },
+  "OKB": {
+    "timestamp": "2025-07-05T07:10:29.848958",
+    "days": 280,
+    "records": 281
+  },
+  "FIL": {
+    "timestamp": "2025-07-05T07:10:30.580759",
+    "days": 280,
+    "records": 281
+  },
+  "ARB": {
+    "timestamp": "2025-07-05T07:10:31.300383",
+    "days": 280,
+    "records": 281
+  },
+  "IMX": {
+    "timestamp": "2025-07-05T07:10:31.999753",
+    "days": 280,
+    "records": 281
+  },
+  "VET": {
+    "timestamp": "2025-07-05T07:10:33.121121",
+    "days": 280,
+    "records": 281
+  },
+  "HBAR": {
+    "timestamp": "2025-07-05T07:10:33.883446",
+    "days": 280,
+    "records": 281
+  },
+  "OP": {
+    "timestamp": "2025-07-05T07:10:53.571780",
+    "days": 280,
+    "records": 281
+  },
+  "RNDR": {
+    "timestamp": "2025-07-05T07:10:54.250263",
+    "days": 280,
+    "records": 281
+  },
+  "GRT": {
+    "timestamp": "2025-07-05T07:10:54.973056",
+    "days": 280,
+    "records": 281
+  },
+  "ALGO": {
+    "timestamp": "2025-07-05T07:10:55.662954",
+    "days": 280,
+    "records": 281
+  },
+  "FLOW": {
+    "timestamp": "2025-07-05T07:10:56.764464",
+    "days": 280,
+    "records": 281
+  },
+  "MANA": {
+    "timestamp": "2025-07-05T07:10:57.456366",
+    "days": 280,
+    "records": 281
+  },
+  "SAND": {
+    "timestamp": "2025-07-05T07:10:58.142552",
+    "days": 280,
+    "records": 281
+  },
+  "XMR": {
+    "timestamp": "2025-07-05T07:10:58.838224",
+    "days": 280,
+    "records": 281
+  },
+  "THETA": {
+    "timestamp": "2025-07-05T07:10:59.553743",
+    "days": 280,
+    "records": 281
+  },
+  "EGLD": {
+    "timestamp": "2025-07-05T07:11:00.252665",
+    "days": 280,
+    "records": 281
+  },
+  "AXS": {
+    "timestamp": "2025-07-05T07:11:00.945367",
+    "days": 280,
+    "records": 281
+  },
+  "AAVE": {
+    "timestamp": "2025-07-05T07:11:01.657832",
+    "days": 280,
+    "records": 281
+  },
+  "FTM": {
+    "timestamp": "2025-07-05T07:11:02.327932",
+    "days": 280,
+    "records": 281
+  },
+  "XTZ": {
+    "timestamp": "2025-07-05T07:11:03.009546",
+    "days": 280,
+    "records": 281
+  },
+  "RUNE": {
+    "timestamp": "2025-07-05T07:11:05.043286",
+    "days": 280,
+    "records": 281
+  },
+  "KAVA": {
+    "timestamp": "2025-07-05T07:11:05.726908",
+    "days": 280,
+    "records": 281
+  }
+}

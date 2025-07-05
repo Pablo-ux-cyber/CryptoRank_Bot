@@ -495,14 +495,16 @@ def set_manual_rank():
 def market_breadth():
     """Display Market Breadth Indicator page"""
     try:
-        # Get market breadth data
-        if scheduler and scheduler.market_breadth:
-            breadth_data = scheduler.market_breadth.get_market_breadth_data()
-        else:
-            # Fallback: create instance if scheduler not available
-            from market_breadth_indicator import MarketBreadthIndicator
-            market_breadth = MarketBreadthIndicator()
-            breadth_data = market_breadth.get_market_breadth_data()
+        # Создаем простую заглушку данных для быстрого отображения
+        breadth_data = {
+            'signal': '⏳',
+            'condition': 'Loading...',
+            'description': 'Market breadth data is being calculated. Please use refresh button to get latest data.',
+            'current_value': 0,
+            'timestamp': 'Loading...',
+            'coins_above_ma': 'N/A',
+            'total_coins': 'N/A'
+        }
         
         return render_template('market_breadth.html', breadth_data=breadth_data)
     except Exception as e:
@@ -513,21 +515,19 @@ def market_breadth():
 def market_breadth_refresh():
     """Refresh market breadth data"""
     try:
+        # Получаем актуальные данные от scheduler, если он доступен
         if scheduler and scheduler.market_breadth:
-            # Clear cache and get fresh data
-            scheduler.market_breadth.clear_cache()
             breadth_data = scheduler.market_breadth.get_market_breadth_data()
+            if breadth_data:
+                return jsonify({
+                    "status": "success", 
+                    "message": "Market breadth data refreshed successfully",
+                    "data": breadth_data
+                })
+            else:
+                return jsonify({"status": "error", "message": "Market breadth data not yet available"}), 500
         else:
-            # Fallback: create instance if scheduler not available
-            from market_breadth_indicator import MarketBreadthIndicator
-            market_breadth = MarketBreadthIndicator()
-            market_breadth.clear_cache()
-            breadth_data = market_breadth.get_market_breadth_data()
-        
-        if breadth_data:
-            return jsonify({"status": "success", "message": "Market breadth data refreshed successfully"})
-        else:
-            return jsonify({"status": "error", "message": "Failed to refresh market breadth data"}), 500
+            return jsonify({"status": "error", "message": "Market breadth analyzer not initialized"}), 500
             
     except Exception as e:
         logger.error(f"Error refreshing market breadth data: {str(e)}")

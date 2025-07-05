@@ -181,8 +181,9 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
-                    location.reload();
+                if (data.status === 'success' && data.data) {
+                    // Обновляем элементы страницы с новыми данными
+                    updatePageData(data.data);
                 } else {
                     alert('Error refreshing data: ' + data.message);
                 }
@@ -193,6 +194,56 @@
             .finally(() => {
                 refreshBtn.textContent = originalText;
             });
+        }
+
+        function updatePageData(breadthData) {
+            // Обновляем сигнал и статус
+            const signalElement = document.querySelector('.signal-icon');
+            if (signalElement) {
+                signalElement.textContent = breadthData.signal;
+            }
+            
+            const conditionElement = document.querySelector('h4');
+            if (conditionElement) {
+                conditionElement.textContent = breadthData.condition;
+            }
+            
+            // Обновляем прогресс-бар
+            const progressBar = document.querySelector('.progress-bar');
+            const progressText = document.querySelector('.progress-bar');
+            if (progressBar) {
+                progressBar.style.width = breadthData.current_value + '%';
+                progressBar.textContent = breadthData.current_value.toFixed(1) + '%';
+                
+                // Обновляем цвет
+                progressBar.className = 'progress-bar ';
+                if (breadthData.current_value < 30) {
+                    progressBar.className += 'bg-danger';
+                } else if (breadthData.current_value < 50) {
+                    progressBar.className += 'bg-warning';
+                } else if (breadthData.current_value < 70) {
+                    progressBar.className += 'bg-info';
+                } else {
+                    progressBar.className += 'bg-success';
+                }
+            }
+            
+            // Обновляем описание
+            const descriptionElement = document.querySelector('.alert-info strong');
+            if (descriptionElement && descriptionElement.nextSibling) {
+                descriptionElement.nextSibling.textContent = ' ' + breadthData.description;
+            }
+            
+            // Обновляем метрики
+            const coinsAboveElement = document.querySelector('.text-success');
+            if (coinsAboveElement) {
+                coinsAboveElement.textContent = breadthData.coins_above_ma || 'N/A';
+            }
+            
+            const totalCoinsElement = document.querySelector('.text-muted');
+            if (totalCoinsElement && totalCoinsElement.textContent.includes('out of')) {
+                totalCoinsElement.textContent = 'out of ' + (breadthData.total_coins || 'N/A') + ' coins';
+            }
         }
     </script>
 </body>
