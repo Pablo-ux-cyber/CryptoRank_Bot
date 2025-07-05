@@ -721,7 +721,7 @@ def run_market_analysis_plotly():
             'x': indicator_data_reset['date'].dt.strftime('%Y-%m-%d').tolist() if 'date' in indicator_data_reset.columns else [str(d)[:10] for d in indicator_data_reset.index],
             'y': indicator_data_reset['percentage'].tolist(),
             'mode': 'lines',
-            'name': 'Market Breadth',
+            'name': '% Of Cryptocurrencies Above 200-Day Moving Average',
             'line': {'color': '#2563EB', 'width': 3},
             'hovertemplate': '<b>%{x}</b><br>Above MA: %{y:.1f}%<extra></extra>',
             'yaxis': 'y2'
