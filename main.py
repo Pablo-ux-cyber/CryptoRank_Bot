@@ -525,8 +525,8 @@ def test_chart():
                 external_url = image_uploader.upload_chart(png_data)
                 
                 if external_url:
-                    # Отправляем сообщение со ссылкой на внешний сервис
-                    message = f"{caption}\n\n📈 Chart: {external_url}"
+                    # Отправляем только ссылку без описания
+                    message = external_url
                     
                     if scheduler.telegram_bot.send_message(message):
                         flash("✅ Chart uploaded and link sent to Telegram successfully", "success")

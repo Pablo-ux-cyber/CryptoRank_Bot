@@ -303,8 +303,8 @@ class SensorTowerScheduler:
                     external_url = image_uploader.upload_chart(png_data)
                     
                     if external_url:
-                        # Отправляем ссылку в отдельном сообщении
-                        chart_message = f"📈 Chart: {external_url}"
+                        # Отправляем только ссылку без описания
+                        chart_message = external_url
                         
                         if self.telegram_bot.send_message(chart_message):
                             logger.info(f"График загружен на внешний сервис и ссылка отправлена: {external_url}")

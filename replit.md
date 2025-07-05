@@ -125,11 +125,12 @@ The system follows a modular, event-driven architecture with separate components
 - **Reliable Chart Pipeline**: Created dual-approach system: uses existing scheduler data when available, otherwise generates new charts with reduced complexity for guaranteed delivery
 - **Chart Link Delivery**: Replaced chart image attachments with URL links to reduce message size and provide access to full interactive web interface
 - **External Service Integration**: Successfully implemented chart upload to real external services (Imgur, Telegraph) for secure link-based delivery
-- **Catbox Chart Hosting**: Charts are now automatically uploaded to Catbox.moe (primary) with Imgur.com fallback and shared as direct links in Telegram messages
+- **Catbox Exclusive Hosting**: Charts are exclusively uploaded to Catbox.moe and shared as direct links in Telegram messages (removed all fallback services for simplicity)
 - **Complete Server Privacy**: Real server address remains completely hidden while providing functional chart links through external hosting
 - **Working Link Solution**: Users receive clickable chart links (`https://i.imgur.com/xxxxx.png`) that open charts directly without exposing server location
 - **Extended Historical Data**: Updated chart system to display 3 years (1095 days) of data instead of 1 year for comprehensive market analysis
 - **Fixed Date Processing**: Resolved 1970 date display issue by properly setting date index in market breadth calculations and improved date handling in chart generation functions
+- **Clean Chart Links**: Removed description text from chart messages - now sends only clean URLs without "📈 Chart:" or other descriptive text
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

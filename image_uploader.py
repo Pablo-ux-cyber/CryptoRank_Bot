@@ -202,26 +202,18 @@ class ImageUploader:
         Returns:
             str or None: URL изображения или None если все сервисы недоступны
         """
-        # Пробуем разные сервисы по очереди (Catbox первым)
-        services = [
-            self.upload_to_catbox,
-            self.upload_to_imgur_anonymous,
-            self.upload_to_telegra_ph,
-            self.upload_to_0x0,
-        ]
-        
-        for service in services:
-            try:
-                url = service(image_data)
-                if url:
-                    logger.info(f"Image uploaded successfully: {url}")
-                    return url
-            except Exception as e:
-                logger.warning(f"Service failed: {str(e)}")
-                continue
-        
-        logger.error("All image upload services failed")
-        return None
+        # Используем только Catbox
+        try:
+            url = self.upload_to_catbox(image_data)
+            if url:
+                logger.info(f"Image uploaded successfully: {url}")
+                return url
+            else:
+                logger.error("Catbox upload failed")
+                return None
+        except Exception as e:
+            logger.error(f"Catbox upload error: {str(e)}")
+            return None
 
 # Глобальный экземпляр
 image_uploader = ImageUploader()
