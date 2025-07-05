@@ -131,6 +131,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Extended Historical Data**: Updated chart system to display 3 years (1095 days) of data instead of 1 year for comprehensive market analysis
 - **Fixed Date Processing**: Resolved 1970 date display issue by properly setting date index in market breadth calculations and improved date handling in chart generation functions
 - **Disabled Link Preview**: Added `disable_web_page_preview=True` parameter to Telegram API calls to completely disable automatic link preview while keeping links clickable
+- **Removed Chart Title**: Removed "Cryptocurrency Market Breadth Analysis" main title from chart screenshots for cleaner appearance
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

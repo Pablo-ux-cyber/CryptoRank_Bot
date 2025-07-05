@@ -1648,9 +1648,7 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
                 transform=ax2.transAxes, fontsize=10, verticalalignment='top',
                 bbox=dict(boxstyle='round', facecolor='white', alpha=0.8, edgecolor='gray'))
         
-        # Общий заголовок
-        plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
-                    fontsize=18, fontweight='bold', y=0.98)
+
         
         # Финальное оформление
         plt.tight_layout()
@@ -1818,8 +1816,7 @@ def create_quick_chart():
             ax1.tick_params(axis='x', rotation=45)
             ax2.tick_params(axis='x', rotation=45)
         
-        plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
-                    fontsize=16, fontweight='bold', y=0.98)
+
         plt.tight_layout()
         
         # Сохранение
