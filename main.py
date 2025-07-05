@@ -528,6 +528,7 @@ def run_market_analysis():
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
         from data_cache import DataCache
+        import pandas as pd
         
         # Получение параметров из запроса
         data = request.get_json() or {}
@@ -553,7 +554,7 @@ def run_market_analysis():
         if not historical_data:
             return jsonify({"status": "error", "message": "Не удалось загрузить исторические данные"})
         
-        # Расчет индикатора (ваш код)
+        # Расчет индикатора (ваш точный код)
         indicator_data = analyzer.calculate_market_breadth(
             historical_data, 
             ma_period, 
@@ -563,9 +564,12 @@ def run_market_analysis():
         if indicator_data.empty:
             return jsonify({"status": "error", "message": "Не удалось рассчитать индикатор"})
         
-        # Получение сводной информации
+        # Получение сводной информации (ваш код)
         summary = analyzer.get_market_summary(indicator_data)
         current_value = summary.get('current_value', 0)
+        
+        # Подсчет монет выше MA используя данные из summary
+        coins_above_ma = summary.get('coins_above_ma', 'N/A')
         
         # Определение рыночного сигнала (ваш код)
         if current_value >= 80:
@@ -582,11 +586,21 @@ def run_market_analysis():
             description = "Рынок в состоянии равновесия"
         
         # Подготовка данных для графика
-        last_30_dates = indicator_data.index[-30:]
+        last_30_rows = indicator_data.tail(30)
         chart_data = {
-            'labels': [str(d).split(' ')[0] for d in last_30_dates],
-            'values': indicator_data['percentage'].tail(30).tolist()
+            'labels': [str(idx)[:10] for idx in last_30_rows.index],
+            'values': last_30_rows['percentage'].tolist()
         }
+        
+        # Безопасное получение последней даты
+        try:
+            last_date = str(indicator_data.index[-1])
+            if ' ' in last_date:
+                timestamp = last_date.split(' ')[0]
+            else:
+                timestamp = last_date[:10]
+        except:
+            timestamp = 'Latest'
         
         result = {
             'status': 'success',
@@ -595,8 +609,8 @@ def run_market_analysis():
                 'condition': condition,
                 'description': description,
                 'current_value': current_value,
-                'timestamp': str(indicator_data.index[-1]).split(' ')[0],
-                'coins_above_ma': summary.get('coins_above_ma', 'N/A'),
+                'timestamp': timestamp,
+                'coins_above_ma': coins_above_ma,
                 'total_coins': len(top_coins),
                 'avg_value': summary.get('avg_value', 0),
                 'max_value': summary.get('max_value', 0),

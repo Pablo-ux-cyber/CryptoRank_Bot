@@ -85,163 +85,163 @@
     "records": 661
   },
   "MATIC": {
-    "timestamp": "2025-07-05T07:10:18.728786",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:28.057508",
+    "days": 660,
+    "records": 661
   },
   "ICP": {
-    "timestamp": "2025-07-05T07:10:20.879680",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:28.972522",
+    "days": 660,
+    "records": 661
   },
   "UNI": {
-    "timestamp": "2025-07-05T07:10:21.597044",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:29.855016",
+    "days": 660,
+    "records": 661
   },
   "LTC": {
-    "timestamp": "2025-07-05T07:10:22.307421",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:30.713826",
+    "days": 660,
+    "records": 661
   },
   "DAI": {
-    "timestamp": "2025-07-05T07:10:23.394019",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:31.666944",
+    "days": 660,
+    "records": 661
   },
   "ETC": {
-    "timestamp": "2025-07-05T07:10:24.107414",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:32.604124",
+    "days": 660,
+    "records": 661
   },
   "APT": {
-    "timestamp": "2025-07-05T07:10:26.059734",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:33.564883",
+    "days": 660,
+    "records": 661
   },
   "STX": {
-    "timestamp": "2025-07-05T07:10:26.793243",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:34.733071",
+    "days": 660,
+    "records": 661
   },
   "CRO": {
-    "timestamp": "2025-07-05T07:10:27.705012",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:35.593806",
+    "days": 660,
+    "records": 661
   },
   "ATOM": {
-    "timestamp": "2025-07-05T07:10:29.159785",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:36.816672",
+    "days": 660,
+    "records": 661
   },
   "OKB": {
-    "timestamp": "2025-07-05T07:10:29.848958",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:37.628508",
+    "days": 660,
+    "records": 661
   },
   "FIL": {
-    "timestamp": "2025-07-05T07:10:30.580759",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:38.760312",
+    "days": 660,
+    "records": 661
   },
   "ARB": {
-    "timestamp": "2025-07-05T07:10:31.300383",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:40.851759",
+    "days": 660,
+    "records": 661
   },
   "IMX": {
-    "timestamp": "2025-07-05T07:10:31.999753",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:42.087160",
+    "days": 660,
+    "records": 661
   },
   "VET": {
-    "timestamp": "2025-07-05T07:10:33.121121",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:43.152806",
+    "days": 660,
+    "records": 661
   },
   "HBAR": {
-    "timestamp": "2025-07-05T07:10:33.883446",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:22:44.031707",
+    "days": 660,
+    "records": 661
   },
   "OP": {
-    "timestamp": "2025-07-05T07:10:53.571780",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:02.842852",
+    "days": 660,
+    "records": 661
   },
   "RNDR": {
-    "timestamp": "2025-07-05T07:10:54.250263",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:03.700693",
+    "days": 660,
+    "records": 661
   },
   "GRT": {
-    "timestamp": "2025-07-05T07:10:54.973056",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:04.694642",
+    "days": 660,
+    "records": 661
   },
   "ALGO": {
-    "timestamp": "2025-07-05T07:10:55.662954",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:05.620246",
+    "days": 660,
+    "records": 661
   },
   "FLOW": {
-    "timestamp": "2025-07-05T07:10:56.764464",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:06.510586",
+    "days": 660,
+    "records": 661
   },
   "MANA": {
-    "timestamp": "2025-07-05T07:10:57.456366",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:07.433743",
+    "days": 660,
+    "records": 661
   },
   "SAND": {
-    "timestamp": "2025-07-05T07:10:58.142552",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:08.309435",
+    "days": 660,
+    "records": 661
   },
   "XMR": {
-    "timestamp": "2025-07-05T07:10:58.838224",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:09.229654",
+    "days": 660,
+    "records": 661
   },
   "THETA": {
-    "timestamp": "2025-07-05T07:10:59.553743",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:10.123890",
+    "days": 660,
+    "records": 661
   },
   "EGLD": {
-    "timestamp": "2025-07-05T07:11:00.252665",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:11.004490",
+    "days": 660,
+    "records": 661
   },
   "AXS": {
-    "timestamp": "2025-07-05T07:11:00.945367",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:11.887014",
+    "days": 660,
+    "records": 661
   },
   "AAVE": {
-    "timestamp": "2025-07-05T07:11:01.657832",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:13.304342",
+    "days": 660,
+    "records": 661
   },
   "FTM": {
-    "timestamp": "2025-07-05T07:11:02.327932",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:14.145898",
+    "days": 660,
+    "records": 661
   },
   "XTZ": {
-    "timestamp": "2025-07-05T07:11:03.009546",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:15.026585",
+    "days": 660,
+    "records": 661
   },
   "RUNE": {
-    "timestamp": "2025-07-05T07:11:05.043286",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:15.923041",
+    "days": 660,
+    "records": 661
   },
   "KAVA": {
-    "timestamp": "2025-07-05T07:11:05.726908",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-05T07:23:16.826432",
+    "days": 660,
+    "records": 661
   }
 }
