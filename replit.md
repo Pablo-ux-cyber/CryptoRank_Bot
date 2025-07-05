@@ -136,7 +136,8 @@ The system follows a modular, event-driven architecture with separate components
 - **Dashed Zone Lines**: Added prominent dashed lines (--) for zone boundaries at 80% and 20% levels with matching colors for better visual separation
 - **Professional Typography**: Used font-weight 600 and improved spacing with right-aligned labels for cleaner, modern appearance
 - **Subtitle Chart Explanation**: Moved educational explanation from chart area to subtitle position under main chart title "% Of Cryptocurrencies Above 200-Day Moving Average" with smaller font (9px) in italic gray text
-- **Clean Chart Layout**: Explanation now reads "80%+ = Market too hot • 20%- = Buying opportunity • Shows how many coins are above 200-day average" positioned professionally under chart title for better readability
+- **Clean Chart Layout**: Removed all explanatory text from charts leaving only main title "% Of Cryptocurrencies Above 200-Day Moving Average" for cleaner appearance
+- **Optimized Telegram Messages**: Updated message format to show only status (Oversold/Overbought/Neutral) in English with percentage and chart link, removing "Market Breadth Analysis Test" header
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user

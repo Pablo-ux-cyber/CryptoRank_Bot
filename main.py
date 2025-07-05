@@ -508,11 +508,18 @@ def test_chart():
         if scheduler.market_breadth:
             market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
             if market_breadth_data:
-                caption = f"📊 Market Breadth Analysis Test\n{market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                # Переводим условия на английский
+                condition_map = {
+                    "Перекупленность": "Overbought",
+                    "Перепроданность": "Oversold", 
+                    "Нейтральная зона": "Neutral"
+                }
+                english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                caption = f"{market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
             else:
-                caption = "📊 Market Breadth Analysis Test"
+                caption = "🟡 Neutral: 50.0%"
         else:
-            caption = "📊 Market Breadth Analysis Test"
+            caption = "🟡 Neutral: 50.0%"
         
         # Загружаем график на внешний сервис (Imgur/Telegraph)
         try:
