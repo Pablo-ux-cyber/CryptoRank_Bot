@@ -250,70 +250,52 @@
                 return;
             }
 
-            // Используем встроенную функцию Plotly для экспорта в PNG
-            Plotly.downloadImage(plotDiv, {
-                format: 'png',
-                filename: 'market_breadth_analysis',
-                height: 800,
-                width: 1400,
-                scale: 2
-            }).catch(function(err) {
-                console.error('Ошибка экспорта PNG:', err);
-                
-                // Альтернативный метод: создаем canvas и конвертируем в PNG
-                try {
-                    const gd = plotDiv;
-                    Plotly.toImage(gd, {
-                        format: 'png',
-                        height: 800,
-                        width: 1400,
-                        scale: 2
-                    }).then(function(dataURL) {
-                        // Проверяем что dataURL начинается с правильного префикса
-                        if (!dataURL.startsWith('data:image/png;base64,')) {
-                            dataURL = 'data:image/png;base64,' + dataURL;
-                        }
-                        
-                        const link = document.createElement('a');
-                        link.download = 'market_breadth_analysis.png';
-                        link.href = dataURL;
-                        link.setAttribute('type', 'image/png');
-                        
-                        // Принудительно устанавливаем MIME-тип
-                        document.body.appendChild(link);
-                        link.click();
-                        
-                        // Небольшая задержка перед удалением
-                        setTimeout(() => {
-                            document.body.removeChild(link);
-                        }, 100);
-                    }).catch(function(error) {
-                        console.error('Альтернативный метод экспорта также не сработал:', error);
-                        
-                        // Третий метод: через Canvas и Blob
-                        try {
-                            html2canvas(plotDiv).then(function(canvas) {
-                                canvas.toBlob(function(blob) {
-                                    const url = URL.createObjectURL(blob);
-                                    const link = document.createElement('a');
-                                    link.download = 'market_breadth_analysis.png';
-                                    link.href = url;
-                                    document.body.appendChild(link);
-                                    link.click();
-                                    document.body.removeChild(link);
-                                    URL.revokeObjectURL(url);
-                                }, 'image/png');
-                            }).catch(function() {
-                                alert('Все методы экспорта не работают. Используйте встроенную кнопку камеры в графике или сделайте скриншот.');
-                            });
-                        } catch (e) {
-                            alert('Используйте встроенную кнопку камеры в панели инструментов графика.');
-                        }
-                    });
-                } catch (e) {
-                    console.error('Критическая ошибка экспорта:', e);
-                    alert('Ошибка экспорта. Используйте встроенную кнопку камеры в графике.');
+            // Получаем данные графика из глобальной переменной
+            if (!window.currentChartData) {
+                alert('Данные графика недоступны. Запустите анализ заново.');
+                return;
+            }
+
+            // Отправляем запрос на сервер для генерации PNG
+            fetch('/download-chart-png', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    chartData: window.currentChartData
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.blob();
                 }
+                throw new Error('Ошибка сервера при генерации PNG');
+            })
+            .then(blob => {
+                // Создаем ссылку для скачивания
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'market_breadth_analysis.png';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                URL.revokeObjectURL(url);
+            })
+            .catch(error => {
+                console.error('Ошибка при скачивании PNG:', error);
+                
+                // Fallback: пробуем Plotly метод
+                Plotly.downloadImage(plotDiv, {
+                    format: 'png',
+                    filename: 'market_breadth_analysis',
+                    height: 800,
+                    width: 1400,
+                    scale: 2
+                }).catch(function() {
+                    alert('Не удалось скачать PNG. Используйте кнопку камеры в панели инструментов графика.');
+                });
             });
         }
         
@@ -385,6 +367,15 @@
         }
         
         function updatePageData(data) {
+            // Сохраняем данные графика для PNG экспорта
+            if (data.plotly_data && data.plotly_data.data && data.plotly_data.data.length >= 2) {
+                window.currentChartData = {
+                    dates: data.plotly_data.data[0].x,
+                    btc_prices: data.plotly_data.data[0].y,
+                    breadth_values: data.plotly_data.data[1].y
+                };
+            }
+            
             // Обновление основных элементов
             document.getElementById('signalIcon').textContent = data.signal;
             document.getElementById('currentValueText').textContent = data.current_value.toFixed(1) + '%';
