@@ -1261,12 +1261,9 @@ def create_market_chart_screenshot():
                 
             plt.tight_layout()
             
-            # Правильное размещение описания под заголовком
-            plt.suptitle('% Of Cryptocurrencies Above 200-Day Moving Average\n80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                        fontsize=12, fontweight='bold', y=0.95)
-            
-            # Убираем заголовок с ax2, так как теперь используем suptitle
-            ax2.set_title('')
+            # Простой заголовок без описания
+            plt.suptitle('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                        fontsize=14, fontweight='bold', y=0.95)
             
             # Сохранение в BytesIO
             img_buffer = BytesIO()
@@ -1674,12 +1671,9 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         # Финальное оформление
         plt.tight_layout()
         
-        # Правильное размещение описания под заголовком
-        plt.suptitle('% Of Cryptocurrencies Above 200-Day Moving Average\n80%+ = Market too hot  •  20%- = Buying opportunity  •  Shows how many coins are above 200-day average', 
-                    fontsize=12, fontweight='bold', y=0.95)
-        
-        # Убираем заголовок с ax2, так как теперь используем suptitle
-        ax2.set_title('')
+        # Простой заголовок без описания
+        plt.suptitle('% Of Cryptocurrencies Above 200-Day Moving Average', 
+                    fontsize=14, fontweight='bold', y=0.95)
         plt.subplots_adjust(top=0.94, hspace=0.3)
         
         # Сохранение в высоком качестве
