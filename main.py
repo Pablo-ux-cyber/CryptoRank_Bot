@@ -514,29 +514,26 @@ def test_chart():
         else:
             caption = "📊 Market Breadth Analysis Test"
         
-        # Создаем поддельную ссылку на график (скрывает ваш сервер)
+        # Загружаем график на внешний сервис (Imgur/Telegraph)
         try:
-            from chart_link_manager import chart_link_manager
+            from image_uploader import image_uploader
             
             # Создаем PNG график
             png_data = create_quick_chart()
             if png_data:
-                # Создаем временную ссылку
-                short_code = chart_link_manager.create_chart_link(png_data, expiry_hours=24)
+                # Загружаем на внешний сервис
+                external_url = image_uploader.upload_chart(png_data)
                 
-                if short_code:
-                    # Создаем поддельную ссылку (не раскрывает ваш сервер)
-                    fake_url = f"https://charts.analysis.pro/view/{short_code}"
-                    
-                    # Отправляем сообщение с поддельной ссылкой
-                    message = f"{caption}\n\n📈 Chart: {fake_url}"
+                if external_url:
+                    # Отправляем сообщение со ссылкой на внешний сервис
+                    message = f"{caption}\n\n📈 Chart: {external_url}"
                     
                     if scheduler.telegram_bot.send_message(message):
-                        flash("✅ Chart link created and sent to Telegram successfully", "success")
+                        flash("✅ Chart uploaded and link sent to Telegram successfully", "success")
                     else:
                         flash("❌ Failed to send chart link to Telegram", "danger")
                 else:
-                    flash("❌ Failed to create chart link", "danger")
+                    flash("❌ Failed to upload chart to external service", "danger")
             else:
                 flash("❌ Failed to generate chart", "danger")
                 

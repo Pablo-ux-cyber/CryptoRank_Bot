@@ -14,13 +14,12 @@ class ImageUploader:
     def __init__(self):
         pass
     
-    def upload_to_imgbb(self, image_data, api_key=""):
+    def upload_to_imgur_anonymous(self, image_data):
         """
-        Загружает изображение на imgbb.com (бесплатный сервис)
+        Загружает изображение на imgur.com анонимно (без API ключа)
         
         Args:
             image_data (bytes): PNG данные изображения
-            api_key (str): API ключ (можно использовать без регистрации)
             
         Returns:
             str or None: URL изображения или None в случае ошибки
@@ -29,29 +28,30 @@ class ImageUploader:
             # Кодируем изображение в base64
             image_base64 = base64.b64encode(image_data).decode('utf-8')
             
-            url = "https://api.imgbb.com/1/upload"
+            url = "https://api.imgur.com/3/image"
             
-            # Используем бесплатный API без ключа (с ограничениями)
-            payload = {
-                'image': image_base64,
-                'expiration': 600  # 10 минут
+            # Используем Client-ID для анонимных загрузок
+            headers = {
+                'Authorization': 'Client-ID 546c25a59c58ad7'  # Публичный Client ID
             }
             
-            if api_key:
-                payload['key'] = api_key
+            payload = {
+                'image': image_base64,
+                'type': 'base64'
+            }
             
-            response = requests.post(url, data=payload, timeout=30)
+            response = requests.post(url, headers=headers, data=payload, timeout=30)
             
             if response.status_code == 200:
                 result = response.json()
                 if result.get('success'):
-                    return result['data']['url']
+                    return result['data']['link']
             
-            logger.error(f"ImgBB upload failed: {response.text}")
+            logger.error(f"Imgur upload failed: {response.text}")
             return None
             
         except Exception as e:
-            logger.error(f"Error uploading to ImgBB: {str(e)}")
+            logger.error(f"Error uploading to Imgur: {str(e)}")
             return None
     
     def upload_to_telegra_ph(self, image_data):
@@ -166,9 +166,9 @@ class ImageUploader:
         """
         # Пробуем разные сервисы по очереди
         services = [
+            self.upload_to_imgur_anonymous,
             self.upload_to_telegra_ph,
             self.upload_to_0x0,
-            self.upload_to_imgbb,
         ]
         
         for service in services:

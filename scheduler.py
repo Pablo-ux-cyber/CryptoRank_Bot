@@ -292,34 +292,31 @@ class SensorTowerScheduler:
                 logger.error("Не удалось отправить комбинированное сообщение в Telegram.")
                 return False
                 
-            # Создаем поддельную ссылку на график (скрывает ваш сервер)
+            # Загружаем график на внешний сервис (Imgur/Telegraph)
             try:
                 from main import create_quick_chart
-                from chart_link_manager import chart_link_manager
+                from image_uploader import image_uploader
                 
                 png_data = create_quick_chart()
                 if png_data:
-                    # Создаем временную ссылку
-                    short_code = chart_link_manager.create_chart_link(png_data, expiry_hours=48)
+                    # Загружаем на внешний сервис
+                    external_url = image_uploader.upload_chart(png_data)
                     
-                    if short_code:
-                        # Создаем поддельную ссылку (не раскрывает ваш сервер)
-                        fake_url = f"https://charts.analysis.pro/view/{short_code}"
-                        
+                    if external_url:
                         # Отправляем ссылку в отдельном сообщении
-                        chart_message = f"📈 Chart: {fake_url}"
+                        chart_message = f"📈 Chart: {external_url}"
                         
                         if self.telegram_bot.send_message(chart_message):
-                            logger.info(f"График создан и поддельная ссылка отправлена: {fake_url}")
+                            logger.info(f"График загружен на внешний сервис и ссылка отправлена: {external_url}")
                         else:
                             logger.error("Не удалось отправить ссылку на график")
                     else:
-                        logger.error("Не удалось создать временную ссылку на график")
+                        logger.error("Не удалось загрузить график на внешний сервис")
                 else:
                     logger.error("Не удалось создать PNG данные графика")
                     
             except Exception as e:
-                logger.error(f"Ошибка при создании ссылки на график: {str(e)}")
+                logger.error(f"Ошибка при загрузке графика на внешний сервис: {str(e)}")
                 
             return True
             
