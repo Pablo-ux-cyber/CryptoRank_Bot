@@ -1226,211 +1226,69 @@ def create_market_chart_screenshot():
 
 def create_web_ui_chart_screenshot():
     """
-    Создает скриншот точно того же графика, что показывается в веб-интерфейсе
-    Напрямую вызывает run_market_analysis_plotly и конвертирует результат в PNG
+    Создает скриншот веб-интерфейса с помощью Selenium
     """
     try:
-        from flask import Flask, current_app
-        import json
+        from selenium import webdriver
+        from selenium.webdriver.chrome.options import Options
+        from selenium.webdriver.chrome.service import Service
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.support import expected_conditions as EC
+        import time
+        import io
         
-        # Создаем mock request для получения данных веб-интерфейса
-        test_data = {
-            'top_n': 50,
-            'ma_period': 200,
-            'history_days': 1095
-        }
+        # Настройка Chrome для headless режима
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1400,900")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--disable-plugins")
+        chrome_options.add_argument("--disable-images")
         
-        # Используем тестовый контекст для вызова функции веб-интерфейса
-        with current_app.test_request_context(
-            path='/api/run-market-analysis-plotly',
-            method='POST',
-            json=test_data
-        ):
-            # Импортируем функцию анализа из веб-интерфейса
-            from crypto_analyzer_cryptocompare import CryptoAnalyzer
-            from data_cache import DataCache
-            import pandas as pd
-            import plotly.graph_objects as go
-            import plotly.io as pio
-            from datetime import datetime, timedelta
+        # Создаем драйвер
+        driver = webdriver.Chrome(options=chrome_options)
+        
+        try:
+            # Переходим на страницу анализа
+            driver.get("http://localhost:5000/market-breadth-plotly")
             
-            # Получение параметров - те же что в веб-интерфейсе
-            top_n = 50
-            ma_period = 200
-            history_days = 1095  # 3 года
-            
-            # Инициализация
-            cache = DataCache()
-            analyzer = CryptoAnalyzer(cache)
-            
-            # Получение данных
-            top_coins = analyzer.get_top_coins(top_n)
-            if not top_coins:
-                logger.error("Не удалось получить топ монеты")
-                return None
-                
-            historical_data = analyzer.load_historical_data(
-                top_coins, 
-                ma_period + history_days + 100
+            # Ждем загрузки страницы
+            WebDriverWait(driver, 20).until(
+                EC.presence_of_element_located((By.CLASS_NAME, "analysis-controls"))
             )
             
-            if not historical_data:
-                logger.error("Не удалось загрузить исторические данные")
-                return None
+            # Нажимаем кнопку "Start Analysis"
+            start_button = WebDriverWait(driver, 10).until(
+                EC.element_to_be_clickable((By.XPATH, "//button[contains(text(), 'Start Analysis')]"))
+            )
+            start_button.click()
             
-            # Расчет индикатора
-            indicator_data = analyzer.calculate_market_breadth(
-                historical_data, 
-                ma_period, 
-                history_days
+            # Ждем появления графика
+            WebDriverWait(driver, 60).until(
+                EC.presence_of_element_located((By.ID, "plotlyChart"))
             )
             
-            if indicator_data.empty:
-                logger.error("Не удалось рассчитать индикатор")
-                return None
+            # Дополнительная пауза для полной загрузки графика
+            time.sleep(5)
             
-            # Создание ТОЧНО ТАКОГО ЖЕ графика как в веб-интерфейсе
-            import matplotlib.pyplot as plt
-            import matplotlib.dates as mdates
-            from io import BytesIO
+            # Находим элемент с графиком
+            chart_element = driver.find_element(By.ID, "plotlyChart")
             
-            # Используем matplotlib для создания графика
-            fig_mpl, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
-            fig_mpl.patch.set_facecolor('white')
+            # Делаем скриншот конкретного элемента
+            screenshot = chart_element.screenshot_as_png
             
-            # Bitcoin график - те же данные что в веб-интерфейсе
-            if 'BTC' in historical_data:
-                btc_data = historical_data['BTC'].copy()
-                btc_data['date'] = pd.to_datetime(btc_data['date'])
-                
-                # Фильтрация по тому же периоду что в веб-интерфейсе
-                end_date = datetime.now().date()
-                start_date = end_date - timedelta(days=history_days)
-                btc_filtered = btc_data[(btc_data['date'].dt.date >= start_date) & (btc_data['date'].dt.date <= end_date)]
-                
-                if not btc_filtered.empty:
-                    ax1.plot(btc_filtered['date'], btc_filtered['price'], 
-                            color='#FF6B35', linewidth=3, label='Bitcoin')
-                    ax1.set_title('Bitcoin Price (USD)', fontsize=16, fontweight='bold', color='#2D3748')
-                    ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12, color='#4A5568')
-                    ax1.grid(True, alpha=0.3, color='#E2E8F0')
+            logger.info("Скриншот графика из веб-интерфейса создан")
+            return screenshot
             
-            # Market breadth график - те же данные что в веб-интерфейсе
-            if not indicator_data.empty:
-                indicator_filtered = indicator_data.tail(history_days)
-                dates = pd.to_datetime(indicator_filtered.index)
-                
-                ax2.plot(dates, indicator_filtered['percentage'], 
-                        color='#2563EB', linewidth=3)
-                
-                # Зоны - точно как в веб-интерфейсе
-                ax2.axhspan(80, 100, alpha=0.3, color='#FEF2F2')
-                ax2.axhspan(0, 20, alpha=0.3, color='#F0FDF4')
-                ax2.axhspan(20, 80, alpha=0.2, color='#F9FAFB')
-                
-                ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
-                             fontsize=16, fontweight='bold', color='#2D3748')
-                ax2.set_ylabel('Percentage (%)', fontsize=12, color='#4A5568')
-                ax2.set_xlabel('Date', fontsize=12, color='#4A5568')
-                ax2.set_ylim(0, 100)
-                ax2.grid(True, alpha=0.3, color='#E2E8F0')
-                
-                # Форматирование дат
-                ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-                ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=4))
-            
-            plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
-                        fontsize=18, fontweight='bold', color='#2D3748', y=0.98)
-            plt.tight_layout()
-            
-            # Добавляем подпись
-            fig_mpl.text(0.05, 0.38, '80%+ = Market too hot, 20%- = Buying opportunity', 
-                        fontsize=12, color='#4A5568', 
-                        bbox=dict(boxstyle="round,pad=0.3", facecolor='white', 
-                                 edgecolor='#CBD5E0', alpha=0.8))
-            
-            # Сохранение
-            img_buffer = BytesIO()
-            plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
-                       facecolor='white', edgecolor='none')
-            img_buffer.seek(0)
-            img_bytes = img_buffer.getvalue()
-            plt.close(fig_mpl)
-            
-            logger.info("График веб-интерфейса для Telegram создан через matplotlib")
-            return img_bytes
+        finally:
+            driver.quit()
             
     except Exception as e:
-        logger.error(f"Ошибка создания скриншота веб-графика: {str(e)}")
-        return None
-
-def create_plotly_chart_from_web_api():
-    """
-    Создает график, вызывая точно ту же функцию что используется в веб-интерфейсе
-    """
-    try:
-        # Симулируем запрос к API веб-интерфейса
-        from flask import current_app, request as flask_request
-        with current_app.test_request_context(
-            method='POST',
-            json={'top_n': 50, 'ma_period': 200, 'history_days': 1095}
-        ):
-            # Вызываем ТОЧНО ТУ ЖЕ функцию что используется в веб-интерфейсе
-            response = run_market_analysis_plotly()
-            
-            # Получаем JSON данные из ответа
-            if hasattr(response, 'get_json'):
-                data = response.get_json()
-            elif hasattr(response, 'json'):
-                data = response.json
-            else:
-                # Если это уже dict, используем напрямую
-                data = response
-                
-            logger.info(f"Получены данные из веб-API: {type(data)}")
-            
-            if data and isinstance(data, dict) and data.get('status') == 'success':
-                # Проверяем наличие plotly_data
-                if 'plotly_data' in data and data['plotly_data']:
-                    import plotly.graph_objects as go
-                    import plotly.io as pio
-                    
-                    plotly_data = data['plotly_data']
-                    layout = data.get('layout', {})
-                    
-                    logger.info(f"Создаем график Plotly с {len(plotly_data.get('data', []))} наборами данных")
-                    
-                    # Создаем график из данных веб-интерфейса
-                    fig = go.Figure(
-                        data=plotly_data.get('data', []),
-                        layout=layout
-                    )
-                    
-                    # Конвертируем в PNG
-                    try:
-                        img_bytes = pio.to_image(
-                            fig, 
-                            format='png',
-                            width=1200,
-                            height=700,
-                            scale=2
-                        )
-                        logger.info("График создан из веб-интерфейса API через Plotly")
-                        return img_bytes
-                    except Exception as plotly_error:
-                        logger.error(f"Ошибка конвертации Plotly в PNG: {plotly_error}")
-                        return None
-                else:
-                    logger.error(f"Нет plotly_data в ответе. Доступные ключи: {list(data.keys())}")
-                    return None
-            else:
-                logger.error(f"Неверный формат данных: {data}")
-                return None
-                
-    except Exception as e:
-        logger.error(f"Ошибка создания графика из веб-API: {str(e)}")
-        import traceback
-        logger.error(f"Полная ошибка: {traceback.format_exc()}")
+        logger.error(f"Ошибка создания скриншота веб-интерфейса: {str(e)}")
         return None
 
 # Set up signal handler for graceful shutdown
