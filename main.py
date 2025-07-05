@@ -1689,24 +1689,27 @@ def create_quick_chart():
         
         logger.info("Создаем быстрый график...")
         
-        # Сокращенные параметры для быстрой работы
-        top_n = 30  # Меньше монет
+        # Параметры для 3-летнего графика  
+        top_n = 47  # Все монеты кроме стейблкоинов
         ma_period = 200
-        history_days = 365  # 1 год вместо 3
+        history_days = 1095  # 3 года данных
         
         # Инициализация
         cache = DataCache()
         analyzer = CryptoAnalyzer(cache)
         
-        # Получение данных
-        top_coins = analyzer.get_top_coins(top_n)
+        # Получение данных с фильтрацией стейблкоинов
+        top_coins = analyzer.get_top_coins(50)  # Получаем 50, потом отфильтруем
         if not top_coins:
             logger.error("Не удалось получить топ монеты")
             return None
+        
+        # Фильтруем стейблкоины    
+        filtered_coins = [coin for coin in top_coins if coin['symbol'] not in ['USDT', 'USDC', 'DAI']][:top_n]
             
-        # Загружаем меньше данных
-        total_days_needed = ma_period + history_days + 50
-        historical_data = analyzer.load_historical_data(top_coins, total_days_needed)
+        # Загружаем данные на 3 года + буфер для MA
+        total_days_needed = ma_period + history_days + 100
+        historical_data = analyzer.load_historical_data(filtered_coins, total_days_needed)
         
         if not historical_data:
             logger.error("Не удалось загрузить исторические данные")
@@ -1725,41 +1728,63 @@ def create_quick_chart():
         
         logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
         
-        # Создание графика через matplotlib (быстрее)
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+        # Получаем единый диапазон дат для обоих графиков
+        end_date = datetime.now()
+        start_date = end_date - timedelta(days=history_days)
+        
+        # Создание графика для 3 лет 
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(14, 10))
         fig.patch.set_facecolor('white')
         
-        # Bitcoin график
+        # Bitcoin график с синхронизированными датами
         if 'BTC' in historical_data:
             btc_data = historical_data['BTC'].copy()
             btc_data['date'] = pd.to_datetime(btc_data['date'])
             
-            # Фильтрация по периоду
-            end_date = datetime.now().date()
-            start_date = end_date - timedelta(days=history_days)
+            # Фильтрация по тому же диапазону что и индикатор
             btc_filtered = btc_data[
-                (btc_data['date'].dt.date >= start_date) & 
-                (btc_data['date'].dt.date <= end_date)
+                (btc_data['date'] >= start_date) & 
+                (btc_data['date'] <= end_date)
             ].sort_values('date')
             
             if not btc_filtered.empty:
                 ax1.plot(btc_filtered['date'], btc_filtered['price'], 
-                        color='#FF6B35', linewidth=2, label='Bitcoin')
+                        color='#f7931a', linewidth=2, label='Bitcoin')
                 ax1.set_title('Bitcoin Price (USD)', fontsize=14, fontweight='bold')
                 ax1.set_ylabel('Bitcoin Price (USD)', fontsize=12)
                 ax1.grid(True, alpha=0.3)
         
-        # Market breadth график
-        indicator_filtered = indicator_data.tail(history_days)
+        # Market breadth график с теми же датами
+        indicator_filtered = indicator_data[
+            (pd.to_datetime(indicator_data.index) >= start_date) & 
+            (pd.to_datetime(indicator_data.index) <= end_date)
+        ]
         dates = pd.to_datetime(indicator_filtered.index)
         
-        ax2.plot(dates, indicator_filtered['percentage'], 
+        # Определяем правильное название колонки
+        breadth_column = 'percentage_above_ma'
+        if 'percentage_above_ma' not in indicator_filtered.columns:
+            possible_names = ['market_breadth', 'breadth', 'percentage', 'above_ma']
+            for name in possible_names:
+                if name in indicator_filtered.columns:
+                    breadth_column = name
+                    break
+            else:
+                numeric_cols = indicator_filtered.select_dtypes(include=[float, int]).columns
+                if len(numeric_cols) > 0:
+                    breadth_column = numeric_cols[0]
+        
+        ax2.plot(dates, indicator_filtered[breadth_column], 
                 color='#2563EB', linewidth=2)
         
         # Зоны
-        ax2.axhspan(80, 100, alpha=0.3, color='#FFE4E1', label='Overbought (80%+)')
-        ax2.axhspan(0, 20, alpha=0.3, color='#F0FFF0', label='Oversold (20%-)')
-        ax2.axhspan(20, 80, alpha=0.1, color='#F5F5F5', label='Neutral Zone')
+        ax2.axhspan(80, 100, alpha=0.2, color='#FED7D7', label='Overbought Zone')
+        ax2.axhspan(0, 20, alpha=0.2, color='#C6F6D5', label='Oversold Zone')
+        ax2.axhspan(20, 80, alpha=0.1, color='#F7FAFC', label='Neutral Zone')
+        
+        ax2.axhline(y=80, color='#E53E3E', linestyle='--', alpha=0.8, linewidth=1)
+        ax2.axhline(y=50, color='#A0AEC0', linestyle=':', alpha=0.6, linewidth=1)
+        ax2.axhline(y=20, color='#38A169', linestyle='--', alpha=0.8, linewidth=1)
         
         ax2.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
                      fontsize=14, fontweight='bold')
@@ -1768,15 +1793,16 @@ def create_quick_chart():
         ax2.set_ylim(0, 100)
         ax2.grid(True, alpha=0.3)
         
-        # Форматирование дат
-        ax2.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-        ax2.xaxis.set_major_locator(mdates.MonthLocator(interval=2))
+        # Настройка дат - одинаково для обоих графиков, для 3-летнего периода
+        for ax in [ax1, ax2]:
+            ax.set_xlim(start_date, end_date)
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+            ax.xaxis.set_major_locator(mdates.MonthLocator(interval=6))  # Каждые 6 месяцев для 3 лет
+            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
         
-        plt.suptitle('📊 Cryptocurrency Market Breadth Analysis', 
-                    fontsize=16, fontweight='bold', y=0.98)
         plt.tight_layout()
         
-        # Сохранение
+        # Сохранение PNG
         img_buffer = BytesIO()
         plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
                    facecolor='white', edgecolor='none')
@@ -1784,7 +1810,7 @@ def create_quick_chart():
         img_bytes = img_buffer.getvalue()
         plt.close(fig)
         
-        logger.info("Быстрый график создан успешно")
+        logger.info("График на 3 года создан успешно")
         return img_bytes
         
     except Exception as e:
