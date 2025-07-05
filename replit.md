@@ -130,7 +130,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Working Link Solution**: Users receive clickable chart links (`https://i.imgur.com/xxxxx.png`) that open charts directly without exposing server location
 - **Extended Historical Data**: Updated chart system to display 3 years (1095 days) of data instead of 1 year for comprehensive market analysis
 - **Fixed Date Processing**: Resolved 1970 date display issue by properly setting date index in market breadth calculations and improved date handling in chart generation functions
-- **Clean Chart Links**: Removed description text from chart messages - now sends only clean URLs without "📈 Chart:" or other descriptive text
+- **Disabled Link Preview**: Chart links now wrapped in angle brackets `<>` to disable Telegram's automatic link preview while keeping links clickable
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
