@@ -501,8 +501,11 @@ def test_chart():
             flash("❌ Telegram bot not available", "danger")
             return redirect(url_for('index'))
         
-        # Создаем график точно как в веб-интерфейсе
-        chart_image = create_web_ui_chart_screenshot()
+        # Создаем график, вызывая точно ту же функцию что в веб-интерфейсе
+        chart_image = create_plotly_chart_from_web_api()
+        if not chart_image:
+            # Fallback на старую функцию
+            chart_image = create_web_ui_chart_screenshot()
         
         if chart_image:
             # Получаем данные для подписи
@@ -1359,6 +1362,57 @@ def create_web_ui_chart_screenshot():
             
     except Exception as e:
         logger.error(f"Ошибка создания скриншота веб-графика: {str(e)}")
+        return None
+
+def create_plotly_chart_from_web_api():
+    """
+    Создает график, вызывая точно ту же функцию что используется в веб-интерфейсе
+    """
+    try:
+        # Симулируем запрос к API веб-интерфейса
+        from flask import current_app
+        with current_app.test_request_context(
+            method='POST',
+            json={'top_n': 50, 'ma_period': 200, 'history_days': 1095}
+        ):
+            # Вызываем ТОЧНО ТУ ЖЕ функцию что используется в веб-интерфейсе
+            response = run_market_analysis_plotly()
+            
+            if hasattr(response, 'get_json'):
+                data = response.get_json()
+            else:
+                data = response
+                
+            if data and data.get('status') == 'success' and 'plotly_data' in data:
+                import plotly.graph_objects as go
+                import plotly.io as pio
+                
+                # Создаем график из данных веб-интерфейса
+                fig = go.Figure(
+                    data=data['plotly_data'],
+                    layout=data['layout']
+                )
+                
+                # Конвертируем в PNG
+                try:
+                    img_bytes = pio.to_image(
+                        fig, 
+                        format='png',
+                        width=1200,
+                        height=700,
+                        scale=2
+                    )
+                    logger.info("График создан из веб-интерфейса API")
+                    return img_bytes
+                except Exception as plotly_error:
+                    logger.error(f"Ошибка конвертации Plotly в PNG: {plotly_error}")
+                    return None
+            else:
+                logger.error("Не удалось получить данные из веб-интерфейса API")
+                return None
+                
+    except Exception as e:
+        logger.error(f"Ошибка создания графика из веб-API: {str(e)}")
         return None
 
 # Set up signal handler for graceful shutdown
