@@ -110,6 +110,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Extended Analysis Period**: Default analysis period increased to 3 years (1095 days) for comprehensive market insights
 - **Full English Interface**: Complete translation of web interface from Russian to English including all buttons, labels, chart titles, annotations (Overbought/Oversold/Neutral Zone), loading messages, and error alerts
 - **Professional Chart Titles**: Updated market breadth chart title to "% Of Cryptocurrencies Above 200-Day Moving Average" matching professional financial terminology
+- **Embedded Chart Explanation**: Added informative annotation directly in the chart explaining the indicator purpose and interpretation, displayed in a bordered box within the graph area for immediate user understanding
 
 ### July 03, 2025
 - **JSON File Data Source**: System now reads ranking data directly from `parsed_ranks.json` file provided by user
