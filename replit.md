@@ -118,6 +118,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Robust Chart Generation**: Implemented dual-engine chart creation with Plotly/Kaleido primary and matplotlib fallback for reliable PNG generation
 - **Telegram Chart Testing**: Added "Test Chart to Telegram" functionality working successfully with automatic fallback to matplotlib when system dependencies unavailable
 - **Chart Function Synchronization**: Updated Telegram chart generation to use `create_web_ui_chart_screenshot()` ensuring exact match with web interface display
+- **Fixed Chart Text Positioning**: Resolved subtitle positioning issue where explanatory text was overlapping the graph area instead of being placed between charts - now using `plt.figtext()` for proper placement between Bitcoin price and Market Breadth panels
 - **Scheduler Chart Integration**: Modified daily scheduler to use web-interface-matching chart function for consistent visual reports across all channels
 - **Fast Chart Generation Solution**: Replaced web endpoint chart generation with optimized `create_chart_from_web_endpoint()` function that creates charts using local data processing instead of HTTP requests
 - **Telegram Chart Success**: Implemented working chart delivery system using matplotlib with 1-year data fallback (365 days) to ensure reliable chart generation and delivery to Telegram
