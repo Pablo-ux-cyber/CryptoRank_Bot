@@ -129,6 +129,7 @@
                             </div>
                             <div class="d-flex flex-wrap gap-2">
                                 <a href="/trigger-scrape?force=true" class="btn btn-danger">Force Send Message</a>
+                                <button class="btn btn-primary" onclick="testRealMessage()">Test Real Message</button>
                                 <a href="/get-altseason-index" class="btn btn-success">Get Altcoin Season Index</a>
                                 <a href="/altseason" class="btn btn-outline-success">View Altseason Analytics</a>
                                 <a href="/market-breadth" class="btn btn-outline-info">Market Breadth Indicator</a>
@@ -381,6 +382,36 @@
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error setting manual rank');
+            });
+        }
+        
+        function testRealMessage() {
+            const button = event.target;
+            const originalText = button.innerHTML;
+            
+            // Disable button and show loading
+            button.disabled = true;
+            button.innerHTML = '<span class="spinner-border spinner-border-sm" role="status"></span> Testing...';
+            
+            fetch('/test-telegram-message', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('✅ Real test message sent successfully to test channel!\n\nMessage includes:\n- Coinbase Appstore Rank: 281\n- Fear & Greed Index with real data\n- Market Breadth with chart link');
+                } else {
+                    alert('❌ Test failed: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('❌ Error testing message: ' + error.message);
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = originalText;
             });
         }
     </script>
