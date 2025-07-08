@@ -25,7 +25,8 @@ if not TELEGRAM_BOT_TOKEN:
 
 # Может быть ID канала (@channel_name) или ID группы (вида -1001234567890)
 TELEGRAM_CHANNEL_ID = os.environ.get("TELEGRAM_CHANNEL_ID", "@cryptorankbase")  # Основной канал для отправки сообщений
-# Тестовая группа: "@telegrm_hub"
+# Тестовая группа для отладки
+TELEGRAM_TEST_CHANNEL_ID = os.environ.get("TELEGRAM_TEST_CHANNEL_ID", "@telegrm_hub")
 
 # Канал, откуда бот получает данные о рейтинге (источник данных)
 TELEGRAM_SOURCE_CHANNEL = os.environ.get("TELEGRAM_SOURCE_CHANNEL", "@coinbaseappstore")

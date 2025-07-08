@@ -2122,6 +2122,131 @@ def create_web_interface_chart():
         logger.error(f"Ошибка при создании веб-интерфейс графика: {str(e)}")
         return None
 
+# Тестовые эндпоинты
+@app.route('/test-telegram-message', methods=['POST'])
+def test_telegram_message():
+    """Отправить тестовое сообщение в тестовую группу"""
+    try:
+        from telegram_bot import TelegramBot
+        from config import TELEGRAM_TEST_CHANNEL_ID
+        
+        # Создаем бота с тестовым каналом
+        test_bot = TelegramBot()
+        test_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
+        
+        # Тестовое сообщение
+        test_message = "🧪 Тестовое сообщение\n\nCoinbase: 📱 Rank 281\nFear & Greed: 🟡 Neutral (50)\nGoogle Trends: ⚪ Low interest\nAltcoin Season: 🔴 No altseason (20%)\nMarket by 200MA: 🟢 [Oversold](https://test.com): 15.2%"
+        
+        success = test_bot.send_message(test_message)
+        
+        if success:
+            return jsonify({
+                "success": True, 
+                "message": f"Тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка отправки сообщения"
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Ошибка тестового сообщения: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "message": f"Ошибка: {str(e)}"
+        }), 500
+
+@app.route('/test-chart-telegram', methods=['POST'])
+def test_chart_telegram():
+    """Создать и отправить тестовый график в тестовую группу"""
+    try:
+        from telegram_bot import TelegramBot
+        from config import TELEGRAM_TEST_CHANNEL_ID
+        from image_uploader import image_uploader
+        
+        # Создаем график
+        png_data = create_quick_chart()
+        if not png_data:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка создания графика"
+            }), 500
+        
+        # Загружаем на Catbox
+        chart_url = image_uploader.upload_chart(png_data)
+        if not chart_url:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка загрузки графика"
+            }), 500
+        
+        # Создаем бота с тестовым каналом
+        test_bot = TelegramBot()
+        test_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
+        
+        # Отправляем сообщение с графиком
+        test_message = f"🧪 Тестовый график Market Breadth\n\n📊 График: {chart_url}"
+        success = test_bot.send_message(test_message)
+        
+        if success:
+            return jsonify({
+                "success": True, 
+                "message": f"График отправлен в {TELEGRAM_TEST_CHANNEL_ID}",
+                "chart_url": chart_url
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка отправки графика"
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Ошибка тестового графика: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "message": f"Ошибка: {str(e)}"
+        }), 500
+
+@app.route('/test-full-message', methods=['POST'])
+def test_full_message():
+    """Отправить полное тестовое сообщение как в ежедневной отправке"""
+    try:
+        from telegram_bot import TelegramBot
+        from config import TELEGRAM_TEST_CHANNEL_ID
+        from scheduler import SensorTowerScheduler
+        
+        # Создаем планировщик
+        scheduler = SensorTowerScheduler()
+        
+        # Временно меняем канал на тестовый
+        original_channel = scheduler.telegram_bot.channel_id
+        scheduler.telegram_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
+        
+        # Выполняем задание планировщика
+        success = scheduler.run_scraping_job(force_refresh=True)
+        
+        # Возвращаем оригинальный канал
+        scheduler.telegram_bot.channel_id = original_channel
+        
+        if success:
+            return jsonify({
+                "success": True, 
+                "message": f"Полное тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка выполнения тестовой задачи"
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Ошибка полного теста: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "message": f"Ошибка: {str(e)}"
+        }), 500
+
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)
 
