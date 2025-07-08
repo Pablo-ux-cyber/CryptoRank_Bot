@@ -2165,7 +2165,7 @@ def test_chart_telegram():
         from config import TELEGRAM_TEST_CHANNEL_ID
         from image_uploader import image_uploader
         
-        # Создаем график
+        # Создаем быстрый график с минимальными данными
         png_data = create_quick_chart()
         if not png_data:
             return jsonify({
@@ -2185,8 +2185,8 @@ def test_chart_telegram():
         test_bot = TelegramBot()
         test_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
         
-        # Отправляем сообщение с графиком
-        test_message = f"🧪 Тестовый график Market Breadth\n\n📊 График: {chart_url}"
+        # Отправляем сообщение с графиком в правильном формате
+        test_message = f"🧪 Тестовый график Market Breadth\n\nMarket by 200MA: 🟢 [Oversold]({chart_url}): 15.2%"
         success = test_bot.send_message(test_message)
         
         if success:
@@ -2203,6 +2203,44 @@ def test_chart_telegram():
             
     except Exception as e:
         logger.error(f"Ошибка тестового графика: {str(e)}")
+        return jsonify({
+            "success": False, 
+            "message": f"Ошибка: {str(e)}"
+        }), 500
+
+@app.route('/test-quick', methods=['POST'])
+def test_quick():
+    """Быстрый тест с готовыми данными"""
+    try:
+        from telegram_bot import TelegramBot
+        from config import TELEGRAM_TEST_CHANNEL_ID
+        
+        # Создаем бота с тестовым каналом
+        test_bot = TelegramBot()
+        test_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
+        
+        # Полное тестовое сообщение как будет в продакшене
+        test_message = """Coinbase: 📱 Rank 281
+Fear & Greed: 🟡 Greed (65)
+Google Trends: ⚪ Low interest
+Altcoin Season: 🔴 No altseason (14%)
+Market by 200MA: 🟢 [Oversold](https://files.catbox.moe/5mlsdl.png): 15.2%"""
+        
+        success = test_bot.send_message(test_message)
+        
+        if success:
+            return jsonify({
+                "success": True, 
+                "message": f"Быстрое тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
+            })
+        else:
+            return jsonify({
+                "success": False, 
+                "message": "Ошибка отправки сообщения"
+            }), 500
+            
+    except Exception as e:
+        logger.error(f"Ошибка быстрого теста: {str(e)}")
         return jsonify({
             "success": False, 
             "message": f"Ошибка: {str(e)}"
