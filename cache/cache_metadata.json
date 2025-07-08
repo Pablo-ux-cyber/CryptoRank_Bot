@@ -130,64 +130,64 @@
     "records": 1346
   },
   "ATOM": {
-    "timestamp": "2025-07-08T10:56:53.630601",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:16.439341",
+    "days": 1345,
+    "records": 1346
   },
   "OKB": {
-    "timestamp": "2025-07-08T10:56:54.352189",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:17.392967",
+    "days": 1345,
+    "records": 1346
   },
   "FIL": {
-    "timestamp": "2025-07-08T10:56:55.091420",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:18.361524",
+    "days": 1345,
+    "records": 1346
   },
   "ARB": {
-    "timestamp": "2025-07-08T10:56:56.202390",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:19.978703",
+    "days": 1345,
+    "records": 827
   },
   "IMX": {
-    "timestamp": "2025-07-08T10:56:56.976401",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:21.905940",
+    "days": 1345,
+    "records": 1266
   },
   "VET": {
-    "timestamp": "2025-07-08T10:56:57.709644",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:23.081738",
+    "days": 1345,
+    "records": 1346
   },
   "HBAR": {
-    "timestamp": "2025-07-08T10:56:58.410384",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:24.157094",
+    "days": 1345,
+    "records": 1346
   },
   "OP": {
-    "timestamp": "2025-07-08T10:56:59.772426",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:26.529808",
+    "days": 1345,
+    "records": 1098
   },
   "RNDR": {
-    "timestamp": "2025-07-08T10:57:00.469078",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:28.266093",
+    "days": 1345,
+    "records": 1346
   },
   "GRT": {
-    "timestamp": "2025-07-08T10:57:01.176130",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:30.530435",
+    "days": 1345,
+    "records": 1346
   },
   "ALGO": {
-    "timestamp": "2025-07-08T10:57:01.889217",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:34.786273",
+    "days": 1345,
+    "records": 1346
   },
   "FLOW": {
-    "timestamp": "2025-07-08T10:57:02.620078",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-08T11:01:36.758733",
+    "days": 1345,
+    "records": 1346
   },
   "MANA": {
     "timestamp": "2025-07-08T10:57:03.338226",

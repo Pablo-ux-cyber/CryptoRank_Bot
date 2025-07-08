@@ -2125,24 +2125,73 @@ def create_web_interface_chart():
 # Тестовые эндпоинты
 @app.route('/test-telegram-message', methods=['POST'])
 def test_telegram_message():
-    """Отправить тестовое сообщение в тестовую группу"""
+    """Отправить реальное сообщение в тестовую группу используя настоящие данные"""
     try:
         from telegram_bot import TelegramBot
         from config import TELEGRAM_TEST_CHANNEL_ID
+        from scraper import SensorTowerScraper
+        from fear_greed_index import FearGreedIndexTracker
+        from market_breadth_indicator import MarketBreadthIndicator
+        from image_uploader import image_uploader
         
         # Создаем бота с тестовым каналом
         test_bot = TelegramBot()
         test_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
         
-        # Тестовое сообщение
-        test_message = "🧪 Тестовое сообщение\n\nCoinbase: 📱 Rank 281\nFear & Greed: 🟡 Neutral (50)\nGoogle Trends: ⚪ Low interest\nAltcoin Season: 🔴 No altseason (20%)\nMarket by 200MA: 🟢 [Oversold](https://test.com): 15.2%"
+        # Получаем реальные данные быстро
+        scraper = SensorTowerScraper()
+        fear_greed = FearGreedIndexTracker()
+        market_breadth = MarketBreadthIndicator()
         
-        success = test_bot.send_message(test_message)
+        # Собираем все данные
+        logger.info("Получение данных для тестового сообщения...")
+        
+        # 1. Coinbase рейтинг
+        rankings_data = scraper.scrape_category_rankings()
+        if not rankings_data:
+            return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга"}), 500
+        rankings_message = scraper.format_rankings_message(rankings_data)
+        
+        # 2. Fear & Greed Index
+        fear_greed_data = fear_greed.get_fear_greed_index()
+        if not fear_greed_data:
+            return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index"}), 500
+        fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
+        
+        # 3. Market Breadth с графиком
+        market_breadth_data = market_breadth.get_market_breadth_data()
+        if not market_breadth_data:
+            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth"}), 500
+            
+        # Создаем график и загружаем
+        png_data = create_quick_chart()
+        if not png_data:
+            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth"}), 500
+            
+        chart_url = image_uploader.upload_chart(png_data)
+        if not chart_url:
+            return jsonify({"success": False, "message": "Не удалось загрузить график на Catbox"}), 500
+            
+        # Переводим на английский для ссылки
+        condition_map = {
+            "Перекупленность": "Overbought",
+            "Перепроданность": "Oversold", 
+            "Нейтральная зона": "Neutral"
+        }
+        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%"
+        
+        # Собираем финальное сообщение
+        combined_message = rankings_message
+        combined_message += f"\n{fear_greed_message}"
+        combined_message += f"\n{market_breadth_message}"
+        
+        success = test_bot.send_message(combined_message)
         
         if success:
             return jsonify({
                 "success": True, 
-                "message": f"Тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
+                "message": f"Реальное тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
             })
         else:
             return jsonify({
