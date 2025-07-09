@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 import time
 import os
 from crypto_analyzer_cryptocompare import CryptoAnalyzer
-from data_cache import DataCache
 
 # Настройка страницы
 st.set_page_config(
@@ -20,14 +19,13 @@ st.set_page_config(
 st.title("📊 Индикатор ширины криптовалютного рынка")
 st.markdown("**Процент топ-50 криптовалют выше MA200**")
 
-# Инициализация кеша и анализатора
+# Инициализация анализатора без кеширования
 @st.cache_resource
 def init_components():
-    cache = DataCache()
-    analyzer = CryptoAnalyzer(cache)
-    return cache, analyzer
+    analyzer = CryptoAnalyzer(cache=None)
+    return analyzer
 
-cache, analyzer = init_components()
+analyzer = init_components()
 
 # Боковая панель с настройками
 st.sidebar.header("⚙️ Настройки")
@@ -58,21 +56,10 @@ with col4:
         st.session_state.history_days = 1095
         st.rerun()
 
-# Информация о кеше
+# Информация о данных
 st.sidebar.markdown("---")
-st.sidebar.header("💾 Кеш данных")
-
-# Получение информации о кеше
-cache_info = cache.get_cache_info()
-st.sidebar.metric("Размер кеша", f"{cache_info['cache_size_mb']:.1f} МБ")
-st.sidebar.metric("Монет в кеше", cache_info['cached_coins_count'])
-st.sidebar.metric("Последнее обновление", cache_info.get('last_update', 'Неизвестно'))
-
-# Кнопка очистки кеша
-if st.sidebar.button("🗑️ Очистить кеш", help="Удалить все кешированные данные"):
-    cache.clear_all()
-    st.sidebar.success("Кеш очищен!")
-    st.rerun()
+st.sidebar.header("📊 Данные")
+st.sidebar.info("Всегда загружаются свежие данные из CryptoCompare API")
 
 # Кнопка анализа
 st.sidebar.markdown("---")

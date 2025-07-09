@@ -60,49 +60,49 @@
     "records": 1346
   },
   "TRX": {
-    "timestamp": "2025-07-09T12:21:57.897003",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:46.811246",
+    "days": 1345,
+    "records": 1346
   },
   "DOT": {
-    "timestamp": "2025-07-09T12:21:58.634382",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:48.024311",
+    "days": 1345,
+    "records": 1346
   },
   "LINK": {
-    "timestamp": "2025-07-09T12:21:59.343324",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:49.178609",
+    "days": 1345,
+    "records": 1346
   },
   "BCH": {
-    "timestamp": "2025-07-09T12:22:00.053074",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:50.384862",
+    "days": 1345,
+    "records": 1346
   },
   "NEAR": {
-    "timestamp": "2025-07-09T12:22:00.746607",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:51.455763",
+    "days": 1345,
+    "records": 1346
   },
   "MATIC": {
-    "timestamp": "2025-07-09T12:22:01.444411",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:54.058625",
+    "days": 1345,
+    "records": 1346
   },
   "ICP": {
-    "timestamp": "2025-07-09T12:22:02.155160",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:55.451412",
+    "days": 1345,
+    "records": 1346
   },
   "UNI": {
-    "timestamp": "2025-07-09T12:22:02.933034",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:56.426091",
+    "days": 1345,
+    "records": 1346
   },
   "LTC": {
-    "timestamp": "2025-07-09T12:22:03.642089",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:57.502552",
+    "days": 1345,
+    "records": 1346
   },
   "DAI": {
     "timestamp": "2025-07-05T07:27:07.715508",
@@ -110,64 +110,64 @@
     "records": 1411
   },
   "ETC": {
-    "timestamp": "2025-07-09T12:22:04.331261",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:26:58.596056",
+    "days": 1345,
+    "records": 1346
   },
   "APT": {
-    "timestamp": "2025-07-09T12:22:05.041508",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:00.285838",
+    "days": 1345,
+    "records": 994
   },
   "STX": {
-    "timestamp": "2025-07-09T12:22:05.748323",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:02.055952",
+    "days": 1345,
+    "records": 1346
   },
   "CRO": {
-    "timestamp": "2025-07-09T12:22:07.308585",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:03.201718",
+    "days": 1345,
+    "records": 1346
   },
   "ATOM": {
-    "timestamp": "2025-07-09T12:22:08.267515",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:04.343026",
+    "days": 1345,
+    "records": 1346
   },
   "OKB": {
-    "timestamp": "2025-07-09T12:22:10.260932",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:05.291841",
+    "days": 1345,
+    "records": 1346
   },
   "FIL": {
-    "timestamp": "2025-07-09T12:22:11.049881",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:06.264086",
+    "days": 1345,
+    "records": 1346
   },
   "ARB": {
-    "timestamp": "2025-07-09T12:22:12.455677",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:07.548979",
+    "days": 1345,
+    "records": 828
   },
   "IMX": {
-    "timestamp": "2025-07-09T12:22:14.234954",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:09.301192",
+    "days": 1345,
+    "records": 1267
   },
   "VET": {
-    "timestamp": "2025-07-09T12:22:15.250978",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:10.629298",
+    "days": 1345,
+    "records": 1346
   },
   "HBAR": {
-    "timestamp": "2025-07-09T12:22:16.370932",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:12.087628",
+    "days": 1345,
+    "records": 1346
   },
   "OP": {
-    "timestamp": "2025-07-09T12:22:18.001935",
-    "days": 280,
-    "records": 281
+    "timestamp": "2025-07-09T12:27:14.519972",
+    "days": 1345,
+    "records": 1099
   },
   "RNDR": {
     "timestamp": "2025-07-09T12:22:26.333212",

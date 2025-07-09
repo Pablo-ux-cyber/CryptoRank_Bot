@@ -2,7 +2,6 @@ import logging
 from datetime import datetime
 from typing import Dict, Optional
 from crypto_analyzer_cryptocompare import CryptoAnalyzer
-from data_cache import DataCache
 
 class MarketBreadthIndicator:
     """
@@ -12,8 +11,7 @@ class MarketBreadthIndicator:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.cache = DataCache(cache_dir="cache")
-        self.analyzer = CryptoAnalyzer(cache=self.cache)
+        self.analyzer = CryptoAnalyzer(cache=None)  # Отключаем кеширование
         
         # Параметры по умолчанию
         self.top_n = 50

@@ -643,12 +643,10 @@ def market_breadth():
     """Market Breadth Analysis - ваш точный интерфейс"""
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import pandas as pd
         
-        # Инициализация компонентов (ваш код)
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация компонентов без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение данных для демонстрации (упрощенная версия)
         breadth_data = {
@@ -659,7 +657,7 @@ def market_breadth():
             'timestamp': 'Ready to start',
             'coins_above_ma': 'N/A',
             'total_coins': '50',
-            'cache_info': cache.get_cache_info()
+            'cache_info': {'cache_size_mb': 0, 'cached_coins_count': 0, 'status': 'Кеширование отключено'}
         }
         
         return render_template('market_breadth_plotly.html', breadth_data=breadth_data)
@@ -674,7 +672,6 @@ def run_market_analysis():
     """Запуск полного анализа рынка"""
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import pandas as pd
         
         # Получение параметров из запроса
@@ -683,9 +680,8 @@ def run_market_analysis():
         ma_period = data.get('ma_period', 200) 
         history_days = data.get('history_days', 1095)  # 3 года по умолчанию
         
-        # Инициализация
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение топ монет (ваш код)
         top_coins = analyzer.get_top_coins(top_n)
@@ -777,7 +773,6 @@ def run_market_analysis_plotly():
     """Запуск полного анализа рынка с Plotly графиками (ваш точный код)"""
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import pandas as pd
         from datetime import datetime, timedelta
         
@@ -787,9 +782,8 @@ def run_market_analysis_plotly():
         ma_period = data.get('ma_period', 200) 
         history_days = data.get('history_days', 1095)  # 3 года по умолчанию
         
-        # Инициализация
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение топ монет (ваш код)
         top_coins = analyzer.get_top_coins(top_n)
@@ -1083,12 +1077,10 @@ def create_market_chart_screenshot():
         from plotly.subplots import make_subplots
         import plotly.io as pio
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import pandas as pd
         
-        # Инициализация
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Параметры анализа
         top_n = 50
@@ -1328,7 +1320,6 @@ def create_web_ui_chart_screenshot():
     """
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import pandas as pd
         import plotly.graph_objects as go
         import plotly.io as pio
@@ -1342,9 +1333,8 @@ def create_web_ui_chart_screenshot():
         ma_period = 200
         history_days = 1095  # 3 года
         
-        # Инициализация
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1584,16 +1574,14 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         import pandas as pd
         from datetime import datetime, timedelta
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         from io import BytesIO
         import matplotlib.pyplot as plt
         import matplotlib.dates as mdates
         
         logger.info(f"Создаем точную копию веб-интерфейса: {top_n} монет, {ma_period}MA, {history_days} дней")
         
-        # Инициализация точно как в веб-интерфейсе
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1743,7 +1731,6 @@ def create_quick_chart():
     """
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import pandas as pd
         import matplotlib.pyplot as plt
         import matplotlib.dates as mdates
@@ -1757,9 +1744,8 @@ def create_quick_chart():
         ma_period = 200
         history_days = 1095  # 3 года данных для графика
         
-        # Инициализация
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1983,7 +1969,6 @@ def create_web_interface_chart():
     """
     try:
         from crypto_analyzer_cryptocompare import CryptoAnalyzer
-        from data_cache import DataCache
         import plotly.graph_objects as go
         from plotly.subplots import make_subplots
         import pandas as pd
@@ -1993,9 +1978,8 @@ def create_web_interface_chart():
         ma_period = 200
         history_days = 1095  # 3 года
         
-        # Инициализация
-        cache = DataCache()
-        analyzer = CryptoAnalyzer(cache)
+        # Инициализация без кеширования
+        analyzer = CryptoAnalyzer(cache=None)
         
         # Получение топ монет и исключение стейблкоинов
         coins = analyzer.get_top_coins(limit=50)

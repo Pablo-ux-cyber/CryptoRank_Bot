@@ -80,13 +80,8 @@ class CryptoAnalyzer:
     def get_coin_history(self, coin_symbol: str, days: int) -> Optional[pd.DataFrame]:
         """
         Получение исторических данных для одной монеты через CryptoCompare API
+        Всегда загружает свежие данные, кеширование отключено
         """
-        # Проверка кеша
-        if self.cache:
-            cached_data = self.cache.get_coin_data(coin_symbol, days)
-            if cached_data is not None:
-                self.logger.info(f"Данные для {coin_symbol} загружены из кеша")
-                return cached_data
         
         # Используем CryptoCompare API для исторических данных
         url = f"{self.cryptocompare_url}/v2/histoday"
@@ -124,20 +119,21 @@ class CryptoAnalyzer:
         df = df.sort_values('date').reset_index(drop=True)
         df = df.drop_duplicates(subset=['date']).reset_index(drop=True)
         
-        # Сохранение в кеш
-        if self.cache:
-            self.cache.save_coin_data(coin_symbol, df, days)
-        
-        self.logger.info(f"Загружены данные для {coin_symbol}: {len(df)} записей")
+        self.logger.info(f"Загружены свежие данные для {coin_symbol}: {len(df)} записей")
         return df
     
     def load_historical_data(self, coins: List[Dict], days: int, 
                            progress_callback: Optional[Callable] = None) -> Dict[str, pd.DataFrame]:
         """
-        Загрузка исторических данных для всех монет
+        Загрузка исторических данных для всех монет с пакетной обработкой
+        Всегда загружает свежие данные, кеширование отключено
         """
         historical_data = {}
         total_coins = len(coins)
+        successful_loads = 0
+        failed_loads = 0
+        
+        self.logger.info(f"Начинаем загрузку свежих данных для {total_coins} монет...")
         
         for i, coin in enumerate(coins):
             coin_symbol = coin['symbol']
@@ -149,13 +145,24 @@ class CryptoAnalyzer:
             
             self.logger.info(f"Загрузка данных для {coin['name']} ({coin_symbol}) ({i+1}/{total_coins})")
             
-            df = self.get_coin_history(coin_symbol, days)
-            if df is not None and len(df) >= days * 0.6:
-                historical_data[coin_symbol] = df
-            else:
-                self.logger.warning(f"Пропуск {coin['name']} - недостаточно данных")
+            try:
+                df = self.get_coin_history(coin_symbol, days)
+                if df is not None and len(df) >= days * 0.6:
+                    historical_data[coin_symbol] = df
+                    successful_loads += 1
+                else:
+                    self.logger.warning(f"Пропуск {coin['name']} - недостаточно данных")
+                    failed_loads += 1
+                    
+            except Exception as e:
+                self.logger.error(f"Ошибка при загрузке данных для {coin_symbol}: {str(e)}")
+                failed_loads += 1
+                
+            # Небольшая пауза между запросами для стабильности
+            if i < total_coins - 1:  # Не делаем паузу после последнего элемента
+                time.sleep(self.request_delay)
         
-        self.logger.info(f"Загружены данные для {len(historical_data)} из {total_coins} монет")
+        self.logger.info(f"Загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
         return historical_data
     
     def calculate_moving_average(self, prices: pd.Series, window: int) -> pd.Series:
