@@ -110,6 +110,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Test Function Fix**: Fixed test buttons in web interface to use simplified format matching production messages
 - **Consistent Formatting**: All Market Breadth messages now use same concise format across scheduler and test functions
 - **Removed Detailed Format**: Eliminated verbose format with headers, descriptions, and 30-day statistics from Telegram messages
+- **Fixed String Pattern Error**: Resolved "string did not match expected pattern" error by standardizing Market Breadth conditions to English (Overbought/Oversold/Neutral) across all components
+- **Eliminated Manual Mapping**: Removed redundant Russian-to-English condition translation from scheduler.py and main.py since market_breadth_indicator.py now returns English conditions directly
+- **Message Format Verification**: Confirmed simplified format "Market by 200MA: 🟡 Neutral: 45.7%" works correctly without pattern errors
 
 ### July 05, 2025
 - **Market Breadth Integration**: Fully integrated user's Streamlit code into Flask web interface

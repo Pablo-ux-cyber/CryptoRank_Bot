@@ -398,36 +398,16 @@ def test_message():
                     from image_uploader import image_uploader
                     external_url = image_uploader.upload_chart(png_data)
                     if external_url:
-                        # Переводим условия на английский для ссылки
-                        condition_map = {
-                            "Перекупленность": "Overbought",
-                            "Перепроданность": "Oversold", 
-                            "Нейтральная зона": "Neutral"
-                        }
-                        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-                        
                         # Формируем сообщение со ссылкой встроенной в статус
-                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({external_url}): {market_breadth_data['current_value']:.1f}%"
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['current_value']:.1f}%"
                         combined_message += f"\n\n{market_breadth_message}"
                     else:
                         # Fallback без ссылки - используем упрощенный формат
-                        condition_map = {
-                            "Перекупленность": "Overbought",
-                            "Перепроданность": "Oversold", 
-                            "Нейтральная зона": "Neutral"
-                        }
-                        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
                         combined_message += f"\n\n{market_breadth_message}"
                 else:
                     # Fallback без ссылки - используем упрощенный формат
-                    condition_map = {
-                        "Перекупленность": "Overbought",
-                        "Перепроданность": "Oversold", 
-                        "Нейтральная зона": "Neutral"
-                    }
-                    english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
+                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
                     combined_message += f"\n\n{market_breadth_message}"
             except Exception as e:
                 logger.error(f"Ошибка при создании графика для test-message: {str(e)}")

@@ -68,16 +68,16 @@ class MarketBreadthIndicator:
             # Определение рыночного сигнала
             if current_value >= 80:
                 signal = "🔴"
-                condition = "Перекупленность"
-                description = "Большинство монет выше MA200, возможна коррекция"
+                condition = "Overbought"
+                description = "Most coins above MA200, possible correction"
             elif current_value <= 20:
                 signal = "🟢" 
-                condition = "Перепроданность"
-                description = "Большинство монет ниже MA200, возможен отскок"
+                condition = "Oversold"
+                description = "Most coins below MA200, possible bounce"
             else:
                 signal = "🟡"
-                condition = "Нейтральная зона"
-                description = "Смешанные сигналы рынка"
+                condition = "Neutral"
+                description = "Mixed market signals"
             
             return {
                 'signal': signal,
