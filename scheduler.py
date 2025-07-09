@@ -295,22 +295,37 @@ class SensorTowerScheduler:
                             combined_message += f"\n\n{market_breadth_message}"
                             logger.info(f"Добавлены данные ширины рынка с графиком: {market_breadth_data['signal']} - {market_breadth_data['condition']}")
                         else:
-                            # Fallback без ссылки
-                            market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
-                            if market_breadth_message:
-                                combined_message += f"\n\n{market_breadth_message}"
-                    else:
-                        # Fallback без ссылки
-                        market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
-                        if market_breadth_message:
+                            # Fallback без ссылки - используем упрощенный формат
+                            condition_map = {
+                                "Перекупленность": "Overbought",
+                                "Перепроданность": "Oversold", 
+                                "Нейтральная зона": "Neutral"
+                            }
+                            english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
                             combined_message += f"\n\n{market_breadth_message}"
+                    else:
+                        # Fallback без ссылки - используем упрощенный формат
+                        condition_map = {
+                            "Перекупленность": "Overbought",
+                            "Перепроданность": "Oversold", 
+                            "Нейтральная зона": "Neutral"
+                        }
+                        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
+                        combined_message += f"\n\n{market_breadth_message}"
                             
                 except Exception as e:
                     logger.error(f"Ошибка при создании графика для Market Breadth: {str(e)}")
-                    # Fallback без ссылки
-                    market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
-                    if market_breadth_message:
-                        combined_message += f"\n\n{market_breadth_message}"
+                    # Fallback без ссылки - используем упрощенный формат
+                    condition_map = {
+                        "Перекупленность": "Overbought",
+                        "Перепроданность": "Oversold", 
+                        "Нейтральная зона": "Neutral"
+                    }
+                    english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {english_condition}: {market_breadth_data['current_value']:.1f}%"
+                    combined_message += f"\n\n{market_breadth_message}"
             else:
                 logger.info("Данные индикатора ширины рынка недоступны")
             
