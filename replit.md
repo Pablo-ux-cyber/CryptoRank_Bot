@@ -98,6 +98,13 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Recent Changes
 
+### July 09, 2025
+- **Fixed Market Breadth Message Format**: Corrected Telegram messages to use simplified format instead of detailed format
+- **Scheduler Message Fix**: Updated scheduler.py to send "Market by 200MA: {emoji} {Status}: {percentage}%" instead of detailed message with statistics
+- **Test Function Fix**: Fixed test buttons in web interface to use simplified format matching production messages
+- **Consistent Formatting**: All Market Breadth messages now use same concise format across scheduler and test functions
+- **Removed Detailed Format**: Eliminated verbose format with headers, descriptions, and 30-day statistics from Telegram messages
+
 ### July 05, 2025
 - **Market Breadth Integration**: Fully integrated user's Streamlit code into Flask web interface
 - **Plotly Visualization**: Created dual-panel charts with Bitcoin price and market breadth indicator

@@ -1,11 +1,11 @@
 {
   "BTC": {
-    "timestamp": "2025-07-08T10:57:20.499708",
+    "timestamp": "2025-07-09T12:22:42.322374",
     "days": 1345,
     "records": 1346
   },
   "ETH": {
-    "timestamp": "2025-07-08T10:57:21.581668",
+    "timestamp": "2025-07-09T12:22:43.411819",
     "days": 1345,
     "records": 1346
   },
@@ -15,12 +15,12 @@
     "records": 1411
   },
   "BNB": {
-    "timestamp": "2025-07-08T10:57:22.761134",
+    "timestamp": "2025-07-09T12:22:44.851755",
     "days": 1345,
     "records": 1346
   },
   "SOL": {
-    "timestamp": "2025-07-08T10:57:23.929621",
+    "timestamp": "2025-07-09T12:22:45.932688",
     "days": 1345,
     "records": 1346
   },
@@ -30,79 +30,79 @@
     "records": 1411
   },
   "XRP": {
-    "timestamp": "2025-07-08T10:57:25.130615",
+    "timestamp": "2025-07-09T12:22:47.129299",
     "days": 1345,
     "records": 1346
   },
   "DOGE": {
-    "timestamp": "2025-07-08T10:57:26.331861",
+    "timestamp": "2025-07-09T12:22:49.058393",
     "days": 1345,
     "records": 1346
   },
   "TON": {
-    "timestamp": "2025-07-08T10:57:27.642427",
+    "timestamp": "2025-07-09T12:22:50.315751",
     "days": 1345,
-    "records": 1126
+    "records": 1127
   },
   "ADA": {
-    "timestamp": "2025-07-08T10:57:28.746197",
+    "timestamp": "2025-07-09T12:22:52.567486",
     "days": 1345,
     "records": 1346
   },
   "SHIB": {
-    "timestamp": "2025-07-08T10:57:29.807152",
+    "timestamp": "2025-07-09T12:22:53.625078",
     "days": 1345,
     "records": 1346
   },
   "AVAX": {
-    "timestamp": "2025-07-08T10:57:30.930321",
+    "timestamp": "2025-07-09T12:22:54.703734",
     "days": 1345,
     "records": 1346
   },
   "TRX": {
-    "timestamp": "2025-07-08T10:57:32.012943",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:21:57.897003",
+    "days": 280,
+    "records": 281
   },
   "DOT": {
-    "timestamp": "2025-07-08T10:57:33.208885",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:21:58.634382",
+    "days": 280,
+    "records": 281
   },
   "LINK": {
-    "timestamp": "2025-07-08T10:57:34.324741",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:21:59.343324",
+    "days": 280,
+    "records": 281
   },
   "BCH": {
-    "timestamp": "2025-07-08T10:57:35.520605",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:00.053074",
+    "days": 280,
+    "records": 281
   },
   "NEAR": {
-    "timestamp": "2025-07-08T10:57:36.480656",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:00.746607",
+    "days": 280,
+    "records": 281
   },
   "MATIC": {
-    "timestamp": "2025-07-08T10:57:37.640329",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:01.444411",
+    "days": 280,
+    "records": 281
   },
   "ICP": {
-    "timestamp": "2025-07-08T10:57:40.107379",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:02.155160",
+    "days": 280,
+    "records": 281
   },
   "UNI": {
-    "timestamp": "2025-07-08T10:57:41.284808",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:02.933034",
+    "days": 280,
+    "records": 281
   },
   "LTC": {
-    "timestamp": "2025-07-08T10:57:42.466770",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:03.642089",
+    "days": 280,
+    "records": 281
   },
   "DAI": {
     "timestamp": "2025-07-05T07:27:07.715508",
@@ -110,152 +110,152 @@
     "records": 1411
   },
   "ETC": {
-    "timestamp": "2025-07-08T10:57:43.497027",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:04.331261",
+    "days": 280,
+    "records": 281
   },
   "APT": {
-    "timestamp": "2025-07-08T10:57:45.842271",
-    "days": 1345,
-    "records": 993
+    "timestamp": "2025-07-09T12:22:05.041508",
+    "days": 280,
+    "records": 281
   },
   "STX": {
-    "timestamp": "2025-07-08T10:57:47.091884",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:05.748323",
+    "days": 280,
+    "records": 281
   },
   "CRO": {
-    "timestamp": "2025-07-08T10:57:48.694636",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:07.308585",
+    "days": 280,
+    "records": 281
   },
   "ATOM": {
-    "timestamp": "2025-07-08T11:01:16.439341",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:08.267515",
+    "days": 280,
+    "records": 281
   },
   "OKB": {
-    "timestamp": "2025-07-08T11:01:17.392967",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:10.260932",
+    "days": 280,
+    "records": 281
   },
   "FIL": {
-    "timestamp": "2025-07-08T11:01:18.361524",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:11.049881",
+    "days": 280,
+    "records": 281
   },
   "ARB": {
-    "timestamp": "2025-07-08T11:01:19.978703",
-    "days": 1345,
-    "records": 827
+    "timestamp": "2025-07-09T12:22:12.455677",
+    "days": 280,
+    "records": 281
   },
   "IMX": {
-    "timestamp": "2025-07-08T11:01:21.905940",
-    "days": 1345,
-    "records": 1266
+    "timestamp": "2025-07-09T12:22:14.234954",
+    "days": 280,
+    "records": 281
   },
   "VET": {
-    "timestamp": "2025-07-08T11:01:23.081738",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:15.250978",
+    "days": 280,
+    "records": 281
   },
   "HBAR": {
-    "timestamp": "2025-07-08T11:01:24.157094",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:16.370932",
+    "days": 280,
+    "records": 281
   },
   "OP": {
-    "timestamp": "2025-07-08T11:01:26.529808",
-    "days": 1345,
-    "records": 1098
+    "timestamp": "2025-07-09T12:22:18.001935",
+    "days": 280,
+    "records": 281
   },
   "RNDR": {
-    "timestamp": "2025-07-08T11:01:28.266093",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:26.333212",
+    "days": 280,
+    "records": 281
   },
   "GRT": {
-    "timestamp": "2025-07-08T11:01:30.530435",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:27.031104",
+    "days": 280,
+    "records": 281
   },
   "ALGO": {
-    "timestamp": "2025-07-08T11:01:34.786273",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:27.735642",
+    "days": 280,
+    "records": 281
   },
   "FLOW": {
-    "timestamp": "2025-07-08T11:01:36.758733",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:28.490771",
+    "days": 280,
+    "records": 281
   },
   "MANA": {
-    "timestamp": "2025-07-08T11:01:38.036372",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:29.204644",
+    "days": 280,
+    "records": 281
   },
   "SAND": {
-    "timestamp": "2025-07-08T11:01:39.046023",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:30.137417",
+    "days": 280,
+    "records": 281
   },
   "XMR": {
-    "timestamp": "2025-07-08T11:01:40.356547",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:30.847585",
+    "days": 280,
+    "records": 281
   },
   "THETA": {
-    "timestamp": "2025-07-08T11:01:42.852161",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:32.157467",
+    "days": 280,
+    "records": 281
   },
   "EGLD": {
-    "timestamp": "2025-07-08T11:03:46.557384",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:32.844267",
+    "days": 280,
+    "records": 281
   },
   "AXS": {
-    "timestamp": "2025-07-08T11:03:47.837156",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:33.646105",
+    "days": 280,
+    "records": 281
   },
   "AAVE": {
-    "timestamp": "2025-07-08T11:03:49.251550",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:34.343225",
+    "days": 280,
+    "records": 281
   },
   "FTM": {
-    "timestamp": "2025-07-08T11:03:50.287579",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:35.033814",
+    "days": 280,
+    "records": 281
   },
   "XTZ": {
-    "timestamp": "2025-07-08T11:03:51.744608",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:35.722817",
+    "days": 280,
+    "records": 281
   },
   "RUNE": {
-    "timestamp": "2025-07-08T11:03:53.003260",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:36.444564",
+    "days": 280,
+    "records": 281
   },
   "KAVA": {
-    "timestamp": "2025-07-08T11:03:54.098140",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:37.158667",
+    "days": 280,
+    "records": 281
   },
   "INJ": {
-    "timestamp": "2025-07-08T11:03:55.210960",
-    "days": 1345,
-    "records": 1346
+    "timestamp": "2025-07-09T12:22:37.851224",
+    "days": 280,
+    "records": 281
   },
   "PEPE": {
-    "timestamp": "2025-07-08T11:03:56.652423",
-    "days": 1345,
-    "records": 1332
+    "timestamp": "2025-07-09T12:22:38.518702",
+    "days": 280,
+    "records": 281
   },
   "WIF": {
-    "timestamp": "2025-07-08T10:57:18.426851",
+    "timestamp": "2025-07-09T12:22:39.195947",
     "days": 280,
     "records": 281
   }
