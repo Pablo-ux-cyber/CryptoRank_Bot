@@ -98,7 +98,7 @@ class MarketBreadthIndicator:
     
     def format_breadth_message(self, breadth_data: Optional[Dict] = None) -> Optional[str]:
         """
-        Форматирует данные индикатора ширины рынка в сообщение для Telegram
+        Форматирует данные индикатора ширины рынка в упрощенное сообщение для Telegram
         
         Args:
             breadth_data (dict, optional): Данные индикатора или None для получения новых данных
@@ -113,20 +113,17 @@ class MarketBreadthIndicator:
             return None
         
         try:
-            # Формирование сообщения
-            message = f"""📊 **Ширина рынка (MA{breadth_data['ma_period']})**
-
-{breadth_data['signal']} **{breadth_data['condition']}**: {breadth_data['current_value']:.1f}%
-
-{breadth_data['description']}
-
-📈 **Статистика ({breadth_data['analysis_period']}д):**
-• Текущий: {breadth_data['current_value']:.1f}%
-• Средний: {breadth_data['average_value']:.1f}%
-• Максимум: {breadth_data['max_value']:.1f}%
-• Минимум: {breadth_data['min_value']:.1f}%
-
-📋 Анализ {breadth_data['total_coins']} топ монет"""
+            # Определяем статус на английском для упрощенного формата
+            current_value = breadth_data['current_value']
+            if current_value >= 80:
+                status = "Overbought"
+            elif current_value <= 20:
+                status = "Oversold" 
+            else:
+                status = "Neutral"
+            
+            # Упрощенный формат: Market by 200MA: {emoji} {Status}: {percentage}%
+            message = f"Market by 200MA: {breadth_data['signal']} {status}: {current_value:.1f}%"
             
             return message
             
@@ -152,10 +149,6 @@ class MarketBreadthIndicator:
     
     def clear_cache(self):
         """
-        Очищает кеш данных
+        Метод для совместимости - кеширование отключено
         """
-        try:
-            self.cache.clear_all()
-            self.logger.info("Кеш индикатора ширины рынка очищен")
-        except Exception as e:
-            self.logger.error(f"Ошибка очистки кеша: {str(e)}")
+        self.logger.info("Кеширование отключено - ничего не нужно очищать")
