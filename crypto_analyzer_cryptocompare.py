@@ -7,6 +7,7 @@ import logging
 from typing import List, Dict, Optional, Callable
 import concurrent.futures
 import threading
+import os
 
 class CryptoAnalyzer:
     """
@@ -18,6 +19,7 @@ class CryptoAnalyzer:
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
         self.request_delay = 0.02  # Максимально быстрая загрузка
+        self.api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
         
         # Настройка логирования
         logging.basicConfig(level=logging.INFO)
@@ -39,7 +41,14 @@ class CryptoAnalyzer:
         try:
             time.sleep(self.request_delay)
             
-            response = requests.get(url, params=params or {}, timeout=15)
+            # Добавляем API ключ если доступен
+            if params is None:
+                params = {}
+            if self.api_key:
+                params['api_key'] = self.api_key
+                self.logger.info(f"Использую API ключ для запроса к {url}")
+            
+            response = requests.get(url, params=params, timeout=15)
             
             if response.status_code == 429:
                 self.logger.warning("Превышен лимит запросов, ожидание...")
