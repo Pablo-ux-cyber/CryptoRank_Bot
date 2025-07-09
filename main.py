@@ -440,54 +440,24 @@ def test_message():
 
 @app.route('/api/test_market_breadth')
 def test_market_breadth():
-    """Test Market Breadth data loading and formatting with caching"""
+    """Test Market Breadth data loading and formatting with fast mode"""
     try:
         if not scheduler or not scheduler.market_breadth:
             return jsonify({"status": "error", "message": "Market breadth not initialized"}), 500
         
-        # Проверяем кеш (действителен 10 минут)
-        current_time = time.time()
-        if market_breadth_cache['data'] and (current_time - market_breadth_cache['timestamp'] < 600):
-            logger.info("Using cached Market Breadth data")
-            message = scheduler.market_breadth.format_breadth_message(market_breadth_cache['data'])
+        # Используем быстрый режим с 10 монетами для тестирования
+        logger.info("Starting Market Breadth data loading with fast mode...")
+        market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=True)
+        
+        if market_breadth_data:
+            message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
             return jsonify({
                 "status": "success",
                 "message": message,
-                "data": market_breadth_cache['data'],
-                "cached": True
+                "data": market_breadth_data
             })
-        
-        # Проверяем, идет ли загрузка
-        if market_breadth_cache['loading']:
-            return jsonify({"status": "loading", "message": "Data is being loaded, please wait..."}), 202
-        
-        # Запускаем загрузку данных
-        market_breadth_cache['loading'] = True
-        logger.info("Starting Market Breadth data loading...")
-        
-        try:
-            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=True)
-            
-            if market_breadth_data:
-                # Сохраняем в кеш
-                market_breadth_cache['data'] = market_breadth_data
-                market_breadth_cache['timestamp'] = current_time
-                market_breadth_cache['loading'] = False
-                
-                message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
-                return jsonify({
-                    "status": "success",
-                    "message": message,
-                    "data": market_breadth_data,
-                    "cached": False
-                })
-            else:
-                market_breadth_cache['loading'] = False
-                return jsonify({"status": "error", "message": "Failed to load market breadth data"}), 500
-                
-        except Exception as e:
-            market_breadth_cache['loading'] = False
-            raise e
+        else:
+            return jsonify({"status": "error", "message": "Failed to load market breadth data"}), 500
             
     except Exception as e:
         logger.error(f"Error testing market breadth: {str(e)}")
