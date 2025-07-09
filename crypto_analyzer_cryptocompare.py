@@ -133,36 +133,49 @@ class CryptoAnalyzer:
         successful_loads = 0
         failed_loads = 0
         
-        self.logger.info(f"Начинаем загрузку свежих данных для {total_coins} монет...")
+        self.logger.info(f"Начинаем пакетную загрузку свежих данных для {total_coins} монет...")
         
-        for i, coin in enumerate(coins):
-            coin_symbol = coin['symbol']
+        # Пакетная обработка по 10 монет за раз для увеличения скорости
+        batch_size = 10
+        for batch_start in range(0, total_coins, batch_size):
+            batch_end = min(batch_start + batch_size, total_coins)
+            batch_coins = coins[batch_start:batch_end]
             
-            # Обновление прогресса
-            if progress_callback:
-                progress = (i / total_coins) * 100
-                progress_callback(progress)
+            self.logger.info(f"Обрабатываем пакет {batch_start//batch_size + 1} ({batch_start+1}-{batch_end} из {total_coins})")
             
-            self.logger.info(f"Загрузка данных для {coin['name']} ({coin_symbol}) ({i+1}/{total_coins})")
-            
-            try:
-                df = self.get_coin_history(coin_symbol, days)
-                if df is not None and len(df) >= days * 0.6:
-                    historical_data[coin_symbol] = df
-                    successful_loads += 1
-                else:
-                    self.logger.warning(f"Пропуск {coin['name']} - недостаточно данных")
+            for i, coin in enumerate(batch_coins):
+                coin_symbol = coin['symbol']
+                global_index = batch_start + i
+                
+                # Обновление прогресса
+                if progress_callback:
+                    progress = (global_index / total_coins) * 100
+                    progress_callback(progress)
+                
+                self.logger.info(f"Загрузка данных для {coin['name']} ({coin_symbol}) ({global_index+1}/{total_coins})")
+                
+                try:
+                    df = self.get_coin_history(coin_symbol, days)
+                    if df is not None and len(df) >= days * 0.6:
+                        historical_data[coin_symbol] = df
+                        successful_loads += 1
+                    else:
+                        self.logger.warning(f"Пропуск {coin['name']} - недостаточно данных")
+                        failed_loads += 1
+                        
+                except Exception as e:
+                    self.logger.error(f"Ошибка при загрузке данных для {coin_symbol}: {str(e)}")
                     failed_loads += 1
                     
-            except Exception as e:
-                self.logger.error(f"Ошибка при загрузке данных для {coin_symbol}: {str(e)}")
-                failed_loads += 1
-                
-            # Небольшая пауза между запросами для стабильности
-            if i < total_coins - 1:  # Не делаем паузу после последнего элемента
+                # Небольшая пауза между запросами для стабильности
                 time.sleep(self.request_delay)
+            
+            # Короткая пауза между пакетами
+            if batch_end < total_coins:
+                self.logger.info(f"Пауза между пакетами...")
+                time.sleep(0.5)
         
-        self.logger.info(f"Загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
+        self.logger.info(f"Пакетная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
         return historical_data
     
     def calculate_moving_average(self, prices: pd.Series, window: int) -> pd.Series:

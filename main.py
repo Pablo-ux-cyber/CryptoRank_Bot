@@ -64,6 +64,13 @@ last_fear_greed_time = None
 last_altseason_data = None
 last_altseason_time = None
 
+# Простое кеширование для Market Breadth данных
+market_breadth_cache = {
+    'data': None,
+    'timestamp': 0,
+    'loading': False
+}
+
 def get_current_rank():
     """Get current rank from manual file or JSON file"""
     try:
@@ -377,10 +384,10 @@ def test_message():
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
-        # Get Market Breadth data (fast mode for testing)
+        # Get Market Breadth data (полные данные для всех монет)
         market_breadth_data = None
         if scheduler.market_breadth:
-            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=True)
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
         
         # Format individual messages (без Altcoin Season Index)
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
@@ -429,6 +436,61 @@ def test_message():
             return jsonify({"status": "error", "message": "Failed to send message to Telegram"}), 500
     except Exception as e:
         logger.error(f"Error sending test message: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/test_market_breadth')
+def test_market_breadth():
+    """Test Market Breadth data loading and formatting with caching"""
+    try:
+        if not scheduler or not scheduler.market_breadth:
+            return jsonify({"status": "error", "message": "Market breadth not initialized"}), 500
+        
+        # Проверяем кеш (действителен 10 минут)
+        current_time = time.time()
+        if market_breadth_cache['data'] and (current_time - market_breadth_cache['timestamp'] < 600):
+            logger.info("Using cached Market Breadth data")
+            message = scheduler.market_breadth.format_breadth_message(market_breadth_cache['data'])
+            return jsonify({
+                "status": "success",
+                "message": message,
+                "data": market_breadth_cache['data'],
+                "cached": True
+            })
+        
+        # Проверяем, идет ли загрузка
+        if market_breadth_cache['loading']:
+            return jsonify({"status": "loading", "message": "Data is being loaded, please wait..."}), 202
+        
+        # Запускаем загрузку данных
+        market_breadth_cache['loading'] = True
+        logger.info("Starting Market Breadth data loading...")
+        
+        try:
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=True)
+            
+            if market_breadth_data:
+                # Сохраняем в кеш
+                market_breadth_cache['data'] = market_breadth_data
+                market_breadth_cache['timestamp'] = current_time
+                market_breadth_cache['loading'] = False
+                
+                message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
+                return jsonify({
+                    "status": "success",
+                    "message": message,
+                    "data": market_breadth_data,
+                    "cached": False
+                })
+            else:
+                market_breadth_cache['loading'] = False
+                return jsonify({"status": "error", "message": "Failed to load market breadth data"}), 500
+                
+        except Exception as e:
+            market_breadth_cache['loading'] = False
+            raise e
+            
+    except Exception as e:
+        logger.error(f"Error testing market breadth: {str(e)}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/test_format')

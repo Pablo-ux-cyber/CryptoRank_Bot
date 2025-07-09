@@ -14,9 +14,9 @@ class MarketBreadthIndicator:
         self.analyzer = CryptoAnalyzer(cache=None)  # Отключаем кеширование
         
         # Параметры по умолчанию
-        self.top_n = 20  # Уменьшаем для быстрой загрузки
+        self.top_n = 30  # Оптимальное количество монет для стабильности
         self.ma_period = 200
-        self.analysis_days = 10  # Очень короткий период для быстрого тестирования
+        self.analysis_days = 30  # Возвращаем к нормальному периоду
         
     def get_market_breadth_data(self, fast_mode: bool = False) -> Optional[Dict]:
         """
