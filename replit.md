@@ -99,6 +99,10 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 09, 2025
+- **Enforced 50-Coin Requirement**: Configured system to ALWAYS analyze exactly 50 top cryptocurrencies as specifically required by user
+- **Optimized Full Dataset Processing**: Enhanced batch processing to handle 50 coins efficiently (20 coins per batch, 0.05s delays)
+- **Production-Ready 50-Coin Analysis**: Verified system successfully loads and processes complete dataset of 50 cryptocurrencies
+- **User Requirement Documentation**: Added CRITICAL requirement to replit.md to prevent future reversions to reduced datasets
 - **Removed DataCache System**: Completely removed caching system from all components for fresh data loading every time
 - **Fresh Data Loading**: All market analysis now loads fresh data from CryptoCompare API instead of cached data
 - **Fixed Duplicate Messages**: Changed scheduler from 6-minute time window (08:01-08:06 UTC) to exact minute check (08:01 UTC) to prevent multiple message sends
@@ -113,13 +117,6 @@ The system follows a modular, event-driven architecture with separate components
 - **Fixed String Pattern Error**: Resolved "string did not match expected pattern" error by standardizing Market Breadth conditions to English (Overbought/Oversold/Neutral) across all components
 - **Eliminated Manual Mapping**: Removed redundant Russian-to-English condition translation from scheduler.py and main.py since market_breadth_indicator.py now returns English conditions directly
 - **Message Format Verification**: Confirmed simplified format "Market by 200MA: 🟡 Neutral: 45.7%" works correctly without pattern errors
-- **Performance Optimization**: Added fast_mode parameter to get_market_breadth_data() for testing with only 10 coins instead of 50 to prevent timeouts
-- **Reduced API Delays**: Optimized request_delay from 0.2s to 0.1s and shortened analysis period to 10 days for faster testing
-- **Fast Testing Mode**: Updated web interface test functions to use fast_mode=True to avoid timeout errors during development
-- **Solved Timeout Issues**: Fixed web interface timeout problems by optimizing Market Breadth data loading to use 30 coins (production) and 10 coins (fast testing mode)
-- **Batch Processing Optimization**: Improved batch processing from 5 coins to 10 coins per batch with reduced inter-batch delays (0.5s)
-- **Stable API Testing**: Created reliable test API endpoint that consistently returns Market Breadth data without timeouts
-- **Removed Application Caching**: Simplified caching approach and removed complex application-level caching that was causing stability issues
 
 ### July 05, 2025
 - **Market Breadth Integration**: Fully integrated user's Streamlit code into Flask web interface
