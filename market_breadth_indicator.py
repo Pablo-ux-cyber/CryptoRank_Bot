@@ -14,13 +14,16 @@ class MarketBreadthIndicator:
         self.analyzer = CryptoAnalyzer(cache=None)  # Отключаем кеширование
         
         # Параметры по умолчанию
-        self.top_n = 50
+        self.top_n = 20  # Уменьшаем для быстрой загрузки
         self.ma_period = 200
-        self.analysis_days = 30  # Короткий период для телеграм сообщений
+        self.analysis_days = 10  # Очень короткий период для быстрого тестирования
         
-    def get_market_breadth_data(self) -> Optional[Dict]:
+    def get_market_breadth_data(self, fast_mode: bool = False) -> Optional[Dict]:
         """
         Получает текущие данные индикатора ширины рынка
+        
+        Args:
+            fast_mode (bool): Если True, использует только 10 топ монет для быстрого тестирования
         
         Returns:
             dict: Данные индикатора или None при ошибке
@@ -28,8 +31,9 @@ class MarketBreadthIndicator:
         try:
             self.logger.info("Начинаем анализ ширины рынка...")
             
-            # Получение топ монет
-            top_coins = self.analyzer.get_top_coins(self.top_n)
+            # Получение топ монет (для быстрого тестирования используем меньше монет)
+            coin_count = 10 if fast_mode else self.top_n
+            top_coins = self.analyzer.get_top_coins(coin_count)
             if not top_coins:
                 self.logger.error("Не удалось получить список топ монет")
                 return None

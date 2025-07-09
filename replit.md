@@ -113,6 +113,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Fixed String Pattern Error**: Resolved "string did not match expected pattern" error by standardizing Market Breadth conditions to English (Overbought/Oversold/Neutral) across all components
 - **Eliminated Manual Mapping**: Removed redundant Russian-to-English condition translation from scheduler.py and main.py since market_breadth_indicator.py now returns English conditions directly
 - **Message Format Verification**: Confirmed simplified format "Market by 200MA: 🟡 Neutral: 45.7%" works correctly without pattern errors
+- **Performance Optimization**: Added fast_mode parameter to get_market_breadth_data() for testing with only 10 coins instead of 50 to prevent timeouts
+- **Reduced API Delays**: Optimized request_delay from 0.2s to 0.1s and shortened analysis period to 10 days for faster testing
+- **Fast Testing Mode**: Updated web interface test functions to use fast_mode=True to avoid timeout errors during development
 
 ### July 05, 2025
 - **Market Breadth Integration**: Fully integrated user's Streamlit code into Flask web interface

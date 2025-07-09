@@ -377,10 +377,10 @@ def test_message():
         # Get Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
-        # Get Market Breadth data
+        # Get Market Breadth data (fast mode for testing)
         market_breadth_data = None
         if scheduler.market_breadth:
-            market_breadth_data = scheduler.market_breadth.get_market_breadth_data()
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=True)
         
         # Format individual messages (без Altcoin Season Index)
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
