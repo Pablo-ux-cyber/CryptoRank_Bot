@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 import time
 import logging
 from typing import List, Dict, Optional, Callable
+import concurrent.futures
+import threading
 
 class CryptoAnalyzer:
     """
@@ -15,7 +17,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 0.05  # Уменьшаем задержку для быстрого тестирования
+        self.request_delay = 0.02  # Максимально быстрая загрузка
         
         # Настройка логирования
         logging.basicConfig(level=logging.INFO)
@@ -37,7 +39,7 @@ class CryptoAnalyzer:
         try:
             time.sleep(self.request_delay)
             
-            response = requests.get(url, params=params or {}, timeout=30)
+            response = requests.get(url, params=params or {}, timeout=15)
             
             if response.status_code == 429:
                 self.logger.warning("Превышен лимит запросов, ожидание...")
@@ -122,10 +124,25 @@ class CryptoAnalyzer:
         self.logger.info(f"Загружены свежие данные для {coin_symbol}: {len(df)} записей")
         return df
     
+    def _load_single_coin_data(self, coin: Dict, days: int) -> tuple:
+        """
+        Загрузка данных для одной монеты (для параллельной обработки)
+        """
+        coin_symbol = coin['symbol']
+        try:
+            df = self.get_coin_history(coin_symbol, days)
+            if df is not None and len(df) >= days * 0.6:
+                return coin_symbol, df, True
+            else:
+                return coin_symbol, None, False
+        except Exception as e:
+            self.logger.error(f"Ошибка при загрузке данных для {coin_symbol}: {str(e)}")
+            return coin_symbol, None, False
+
     def load_historical_data(self, coins: List[Dict], days: int, 
                            progress_callback: Optional[Callable] = None) -> Dict[str, pd.DataFrame]:
         """
-        Загрузка исторических данных для всех монет с пакетной обработкой
+        Параллельная загрузка исторических данных для всех монет
         Всегда загружает свежие данные, кеширование отключено
         """
         historical_data = {}
@@ -133,49 +150,35 @@ class CryptoAnalyzer:
         successful_loads = 0
         failed_loads = 0
         
-        self.logger.info(f"Начинаем пакетную загрузку свежих данных для {total_coins} монет...")
+        self.logger.info(f"Начинаем параллельную загрузку свежих данных для {total_coins} монет...")
         
-        # Пакетная обработка по 20 монет за раз для ускорения
-        batch_size = 20
-        for batch_start in range(0, total_coins, batch_size):
-            batch_end = min(batch_start + batch_size, total_coins)
-            batch_coins = coins[batch_start:batch_end]
+        # Параллельная загрузка с 10 потоками для максимальной скорости
+        with concurrent.futures.ThreadPoolExecutor(max_workers=10) as executor:
+            # Запускаем все задачи
+            future_to_coin = {
+                executor.submit(self._load_single_coin_data, coin, days): coin 
+                for coin in coins
+            }
             
-            self.logger.info(f"Обрабатываем пакет {batch_start//batch_size + 1} ({batch_start+1}-{batch_end} из {total_coins})")
-            
-            for i, coin in enumerate(batch_coins):
-                coin_symbol = coin['symbol']
-                global_index = batch_start + i
+            completed = 0
+            for future in concurrent.futures.as_completed(future_to_coin):
+                coin_symbol, df, success = future.result()
+                completed += 1
                 
                 # Обновление прогресса
                 if progress_callback:
-                    progress = (global_index / total_coins) * 100
+                    progress = (completed / total_coins) * 100
                     progress_callback(progress)
                 
-                self.logger.info(f"Загрузка данных для {coin['name']} ({coin_symbol}) ({global_index+1}/{total_coins})")
-                
-                try:
-                    df = self.get_coin_history(coin_symbol, days)
-                    if df is not None and len(df) >= days * 0.6:
-                        historical_data[coin_symbol] = df
-                        successful_loads += 1
-                    else:
-                        self.logger.warning(f"Пропуск {coin['name']} - недостаточно данных")
-                        failed_loads += 1
-                        
-                except Exception as e:
-                    self.logger.error(f"Ошибка при загрузке данных для {coin_symbol}: {str(e)}")
+                if success and df is not None:
+                    historical_data[coin_symbol] = df
+                    successful_loads += 1
+                    self.logger.info(f"✅ {coin_symbol} ({completed}/{total_coins})")
+                else:
                     failed_loads += 1
-                    
-                # Небольшая пауза между запросами для стабильности
-                time.sleep(self.request_delay)
-            
-            # Короткая пауза между пакетами
-            if batch_end < total_coins:
-                self.logger.info(f"Пауза между пакетами...")
-                time.sleep(0.1)
+                    self.logger.warning(f"❌ {coin_symbol} - недостаточно данных ({completed}/{total_coins})")
         
-        self.logger.info(f"Пакетная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
+        self.logger.info(f"Параллельная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
         return historical_data
     
     def calculate_moving_average(self, prices: pd.Series, window: int) -> pd.Series:
