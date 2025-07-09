@@ -95,14 +95,14 @@ class SensorTowerScheduler:
                 run_rnk = False
                 
                 # Проверяем, не нужно ли запустить rnk.py (в 10:59 MSK = 7:59 UTC)
-                if (now.hour == 7 and now.minute >= 59 and now.minute <= 59):
+                if (now.hour == 7 and now.minute == 59):
                     if self.last_rnk_update_date is None or self.last_rnk_update_date < today:
                         run_rnk = True
                         logger.info(f"Запланирован запуск rnk.py в {now} (UTC 7:59 = MSK 10:59)")
                 
                 # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
                 # Fear & Greed Index и Altcoin Season Index (в 11:01 MSK = 8:01 UTC)
-                if (now.hour == 8 and now.minute >= 1 and now.minute <= 6):
+                if (now.hour == 8 and now.minute == 1):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
                         logger.info(f"Запланировано комплексное обновление данных в {now} (UTC 8:01 = MSK 11:01)")
