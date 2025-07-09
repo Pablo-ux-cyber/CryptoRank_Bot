@@ -15,7 +15,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 0.1  # Уменьшаем задержку для быстрого тестирования
+        self.request_delay = 0.05  # Уменьшаем задержку для быстрого тестирования
         
         # Настройка логирования
         logging.basicConfig(level=logging.INFO)
@@ -135,8 +135,8 @@ class CryptoAnalyzer:
         
         self.logger.info(f"Начинаем пакетную загрузку свежих данных для {total_coins} монет...")
         
-        # Пакетная обработка по 10 монет за раз для увеличения скорости
-        batch_size = 10
+        # Пакетная обработка по 20 монет за раз для ускорения
+        batch_size = 20
         for batch_start in range(0, total_coins, batch_size):
             batch_end = min(batch_start + batch_size, total_coins)
             batch_coins = coins[batch_start:batch_end]
@@ -173,7 +173,7 @@ class CryptoAnalyzer:
             # Короткая пауза между пакетами
             if batch_end < total_coins:
                 self.logger.info(f"Пауза между пакетами...")
-                time.sleep(0.5)
+                time.sleep(0.1)
         
         self.logger.info(f"Пакетная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
         return historical_data

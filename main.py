@@ -445,9 +445,9 @@ def test_market_breadth():
         if not scheduler or not scheduler.market_breadth:
             return jsonify({"status": "error", "message": "Market breadth not initialized"}), 500
         
-        # Используем быстрый режим с 10 монетами для тестирования
-        logger.info("Starting Market Breadth data loading with fast mode...")
-        market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=True)
+        # Используем полный режим с 50 монетами как требуется
+        logger.info("Starting Market Breadth data loading with full mode (50 coins)...")
+        market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
         
         if market_breadth_data:
             message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
@@ -1751,10 +1751,10 @@ def create_quick_chart():
         
         logger.info("Создаем быстрый график...")
         
-        # Параметры для полного анализа
-        top_n = 50  # Полный анализ всех 50 монет
+        # Полные параметры как требуется пользователем
+        top_n = 50  # ОБЯЗАТЕЛЬНО 50 МОНЕТ как требует пользователь
         ma_period = 200
-        history_days = 1095  # 3 года данных для графика
+        history_days = 1095  # 3 года данных как в продакшене
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -2164,8 +2164,8 @@ def test_telegram_message():
             return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index"}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
-        # 3. Market Breadth с графиком
-        market_breadth_data = market_breadth.get_market_breadth_data()
+        # 3. Market Breadth с графиком (используем полный режим с 50 монетами)
+        market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
         if not market_breadth_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth"}), 500
             

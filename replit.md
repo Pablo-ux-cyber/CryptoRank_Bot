@@ -186,3 +186,5 @@ The system follows a modular, event-driven architecture with separate components
 ## User Preferences
 
 Preferred communication style: Simple, everyday language.
+
+**CRITICAL REQUIREMENT: Must analyze 50 top cryptocurrencies, not reduced datasets (10 or 30 coins). User has emphasized this multiple times - system MUST work with full 50 coins for Market Breadth analysis.**
