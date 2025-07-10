@@ -107,6 +107,10 @@ The system follows a modular, event-driven architecture with separate components
 - **User Requirement Documentation**: Added CRITICAL requirement to replit.md to prevent future reversions to reduced datasets
 - **Removed DataCache System**: Completely removed caching system from all components for fresh data loading every time
 - **Fresh Data Loading**: All market analysis now loads fresh data from CryptoCompare API instead of cached data
+- **Fixed Threading Issues**: Removed chart generation from scheduler to fix "signal only works in main thread" errors
+- **Simplified Market Breadth Messages**: System now sends text-only Market Breadth data in daily messages
+- **Removed DataCache System**: Completely removed caching system from all components for fresh data loading every time
+- **Fresh Data Loading**: All market analysis now loads fresh data from CryptoCompare API instead of cached data
 - **Fixed Duplicate Messages**: Changed scheduler from 6-minute time window (08:01-08:06 UTC) to exact minute check (08:01 UTC) to prevent multiple message sends
 - **Enhanced Data Accuracy**: System now ensures all market data is real-time and up-to-date without cache delays
 - **Improved Batch Processing**: Updated crypto_analyzer_cryptocompare.py with enhanced batch processing for reliable fresh data loading

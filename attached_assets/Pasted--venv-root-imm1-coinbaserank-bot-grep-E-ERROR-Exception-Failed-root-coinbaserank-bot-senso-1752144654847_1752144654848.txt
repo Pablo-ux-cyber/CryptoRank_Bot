@@ -1,0 +1,22 @@
+(venv) root@imm1:~/coinbaserank_bot# grep -E "(ERROR|Exception|Failed)" /root/coinbaserank_bot/sensortower_bot.log | tail -20
+2025-07-05 13:58:55,397 - sensortower_bot - ERROR - Полная ошибка: Traceback (most recent call last):
+2025-07-05 13:59:51,788 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-05 13:59:51,788 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-05 14:02:57,901 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-05 14:02:57,901 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-05 14:03:10,719 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-05 14:03:10,719 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-07 18:53:35,234 - sensortower_bot - ERROR - Ошибка отправки сообщения: Unknown error in HTTP implementation: RuntimeError('<asyncio.locks.Event object at 0x7f9814ae3f70 [unset]> is bound to a different event loop')
+2025-07-08 13:54:17,989 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-08 13:54:17,989 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-08 14:03:13,978 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-08 14:03:13,978 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-08 14:06:26,882 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-08 14:06:26,882 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-08 14:10:43,484 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-08 14:10:43,484 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-09 08:02:12,270 - sensortower_bot - ERROR - Ошибка при создании графика для Market Breadth: signal only works in main thread of the main interpreter
+2025-07-09 08:02:12,274 - sensortower_bot - ERROR - Ошибка отправки сообщения: Unknown error in HTTP implementation: RuntimeError('<asyncio.locks.Event object at 0x7f882120c400 [unset]> is bound to a different event loop')
+2025-07-09 16:37:42,233 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-09 16:37:42,234 - sensortower_bot - ERROR - Failed to start the scheduler
+(venv) root@imm1:~/coinbaserank_bot# 
