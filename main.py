@@ -196,23 +196,49 @@ def test_telegram():
 
 @app.route('/quick-test-message')
 def quick_test_message():
-    """Send a quick test message with mock Market Breadth data"""
+    """Send a quick test message with real current data"""
     if not scheduler:
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
         
     try:
-        # Create a quick test message with sample data
-        test_msg = (
-            "🧪 Quick Test Message\n\n"
-            "📊 Coinbase Rank: 281\n"
-            "😱 Fear & Greed: 🟢 52 (Neutral)\n"
-            "📈 Market by 200MA: 🟢 Oversold: 16.3%\n"
-            "🪙 Altcoin Season: 🔴 No altseason: 18%\n\n"
-            f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-        )
+        # Get real current data
+        rankings_data = scheduler.scraper.scrape_category_rankings()
+        fear_greed_data = scheduler.get_current_fear_greed_index()
+        market_breadth_data = None
+        if scheduler.market_breadth:
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
+        
+        # Format messages using proper formatting
+        rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
+        fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
+        
+        # Build combined message
+        combined_message = rankings_message
+        combined_message += "\n\n" + fear_greed_message
+        
+        # Add Market Breadth with chart link
+        if market_breadth_data:
+            try:
+                png_data = create_quick_chart()
+                if png_data:
+                    from image_uploader import image_uploader
+                    external_url = image_uploader.upload_chart(png_data)
+                    if external_url:
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['current_value']:.1f}%"
+                        combined_message += f"\n\n{market_breadth_message}"
+                    else:
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                        combined_message += f"\n\n{market_breadth_message}"
+                else:
+                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                    combined_message += f"\n\n{market_breadth_message}"
+            except Exception as e:
+                logger.error(f"Ошибка при создании графика для quick-test-message: {str(e)}")
+                market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                combined_message += f"\n\n{market_breadth_message}"
         
         telegram_bot = scheduler.telegram_bot
-        if telegram_bot.send_message(test_msg):
+        if telegram_bot.send_message(combined_message):
             return jsonify({
                 "status": "success", 
                 "message": "Quick test message sent successfully!"
@@ -405,23 +431,18 @@ def test_message():
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Get app rankings data (either existing or new)
-        if last_scrape_data:
-            # Use existing rankings data
-            rankings_data = last_scrape_data
-        else:
-            # Or fetch new rankings data
-            rankings_data = scheduler.scraper.scrape_category_rankings()
+        # Get fresh app rankings data from JSON file
+        rankings_data = scheduler.scraper.scrape_category_rankings()
         
-        # Get Fear & Greed Index data
+        # Get fresh Fear & Greed Index data
         fear_greed_data = scheduler.get_current_fear_greed_index()
         
-        # Get Market Breadth data (полные данные для всех монет)
+        # Get fresh Market Breadth data (полные данные для всех монет)
         market_breadth_data = None
         if scheduler.market_breadth:
             market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
         
-        # Format individual messages (без Altcoin Season Index)
+        # Format individual messages using proper formatting
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
         fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
         
