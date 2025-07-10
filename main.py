@@ -194,6 +194,38 @@ def test_telegram():
         logger.error(f"Error testing Telegram connection: {str(e)}")
         return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
 
+@app.route('/quick-test-message')
+def quick_test_message():
+    """Send a quick test message with mock Market Breadth data"""
+    if not scheduler:
+        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
+        
+    try:
+        # Create a quick test message with sample data
+        test_msg = (
+            "🧪 Quick Test Message\n\n"
+            "📊 Coinbase Rank: 281\n"
+            "😱 Fear & Greed: 🟢 52 (Neutral)\n"
+            "📈 Market by 200MA: 🟢 Oversold: 16.3%\n"
+            "🪙 Altcoin Season: 🔴 No altseason: 18%\n\n"
+            f"⏰ {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        )
+        
+        telegram_bot = scheduler.telegram_bot
+        if telegram_bot.send_message(test_msg):
+            return jsonify({
+                "status": "success", 
+                "message": "Quick test message sent successfully!"
+            })
+        else:
+            return jsonify({
+                "status": "error", 
+                "message": "Failed to send test message"
+            }), 500
+    except Exception as e:
+        logger.error(f"Error sending quick test message: {str(e)}")
+        return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
+
 @app.route('/trigger-scrape')
 def trigger_scrape():
     """Manually trigger a scrape job"""
