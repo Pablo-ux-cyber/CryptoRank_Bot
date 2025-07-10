@@ -271,12 +271,48 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные индикатора ширины рынка (только текст, без графиков)
+            # Добавляем данные индикатора ширины рынка со ссылкой на график
             if market_breadth_data:
-                # Используем только текстовые данные для избежания threading проблем
-                market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                combined_message += f"\n\n{market_breadth_message}"
-                logger.info(f"Добавлены данные ширины рынка: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                # Создаем график и загружаем на внешний сервис (как в Test Real Message)
+                try:
+                    # Избегаем circular import - импортируем здесь
+                    import matplotlib
+                    matplotlib.use('Agg')  # Используем non-interactive backend для избежания threading проблем
+                    
+                    # Импортируем функции для создания и загрузки графика
+                    import sys
+                    import os
+                    sys.path.append(os.getcwd())
+                    from main import create_quick_chart
+                    from image_uploader import image_uploader
+                    
+                    # Создаем PNG данные графика
+                    png_data = create_quick_chart()
+                    if png_data:
+                        # Загружаем на внешний сервис
+                        external_url = image_uploader.upload_chart(png_data)
+                        if external_url:
+                            # Формируем сообщение со ссылкой встроенной в статус
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['current_value']:.1f}%"
+                            combined_message += f"\n\n{market_breadth_message}"
+                            logger.info(f"Добавлены данные ширины рынка с внешним графиком: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                        else:
+                            # Fallback без ссылки
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                            combined_message += f"\n\n{market_breadth_message}"
+                            logger.info(f"Добавлены данные ширины рынка без графика (загрузка не удалась): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                    else:
+                        # Fallback без ссылки
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                        combined_message += f"\n\n{market_breadth_message}"
+                        logger.info(f"Добавлены данные ширины рынка без графика (создание не удалось): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                    
+                except Exception as e:
+                    logger.error(f"Ошибка при создании графика для Market Breadth: {str(e)}")
+                    # Fallback без ссылки
+                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
+                    combined_message += f"\n\n{market_breadth_message}"
+                    logger.info(f"Добавлены данные ширины рынка без графика (ошибка): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
             else:
                 logger.info("Данные индикатора ширины рынка недоступны")
             

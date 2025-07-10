@@ -109,6 +109,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Fresh Data Loading**: All market analysis now loads fresh data from CryptoCompare API instead of cached data
 - **Fixed Threading Issues**: Removed chart generation from scheduler to fix "signal only works in main thread" errors
 - **Simplified Market Breadth Messages**: System now sends text-only Market Breadth data in daily messages
+- **Restored Chart Links**: Re-enabled external chart hosting (Catbox.moe) for Market Breadth in daily messages using same system as "Test Real Message" button
 - **Removed DataCache System**: Completely removed caching system from all components for fresh data loading every time
 - **Fresh Data Loading**: All market analysis now loads fresh data from CryptoCompare API instead of cached data
 - **Fixed Duplicate Messages**: Changed scheduler from 6-minute time window (08:01-08:06 UTC) to exact minute check (08:01 UTC) to prevent multiple message sends
