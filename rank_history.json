@@ -383,5 +383,12 @@
     "change_direction": null,
     "change_value": null,
     "timestamp": "2025-07-11T10:01:16.572683"
+  },
+  {
+    "rank": 160,
+    "category": "Finance",
+    "change_direction": "up",
+    "change_value": 55,
+    "timestamp": "2025-07-11T10:09:14.968002"
   }
 ]
