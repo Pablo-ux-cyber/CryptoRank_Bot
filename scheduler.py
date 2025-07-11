@@ -357,34 +357,25 @@ class SensorTowerScheduler:
                 logger.error("Ошибка соединения с Telegram. Задание прервано.")
                 return False
             
-            # Получаем данные о рейтинге
-            rankings_data = self.scraper.scrape_category_rankings()
+            # ИСПРАВЛЕНИЕ: Получаем данные о рейтинге из JSON файла
+            logger.info("ИСПРАВЛЕНИЕ: Читаем рейтинг из parsed_ranks.json вместо SensorTower API")
+            from json_rank_reader import get_rank_from_json, get_latest_rank_date
             
-            if not rankings_data:
-                logger.info("SensorTower API не вернул данные, создаем сообщение с None")
-                # Создаем структуру данных с None вместо рейтинга
-                rankings_data = {
-                    "app_name": "Coinbase",
-                    "app_id": "886427730",
-                    "date": time.strftime("%Y-%m-%d"),
-                    "categories": [
-                        {"category": "US - iPhone - Top Free", "rank": "None"}
-                    ],
-                    "trend": {"direction": "same", "previous": None}
-                }
+            current_rank = get_rank_from_json()
+            current_date = get_latest_rank_date()
             
-            # Проверяем наличие данных о категориях и рейтинге
-            if not rankings_data.get("categories") or not rankings_data["categories"]:
-                logger.error("Не найдены данные о категориях в полученных данных")
-                return False
-                
-            # Получаем текущий рейтинг
-            rank_value = rankings_data["categories"][0]["rank"]
-            if rank_value == "None":
-                current_rank = None
-                logger.info("Текущий рейтинг: None (нет данных от SensorTower API)")
-            else:
-                current_rank = int(rank_value)
+            # Создаем структуру данных совместимую с остальным кодом
+            rankings_data = {
+                "app_name": "Coinbase",
+                "app_id": "886427730",
+                "date": current_date or time.strftime("%Y-%m-%d"),
+                "categories": [
+                    {"category": "US - iPhone - Top Free", "rank": str(current_rank) if current_rank is not None else "None"}
+                ],
+                "trend": {"direction": "same", "previous": None}
+            }
+            
+            logger.info(f"ИСПРАВЛЕНИЕ: Текущий рейтинг из JSON: {current_rank} на дату {current_date}")
             
             # Получаем данные индекса страха и жадности
             fear_greed_data = None
@@ -410,17 +401,24 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # Получаем данные о ширине рынка
+            # Получаем данные о ширине рынка БЕЗ кеша (ИСПРАВЛЕНИЕ)
             market_breadth_data = None
             try:
-                logger.info("Получение данных индикатора ширины рынка")
-                market_breadth_data = self.market_breadth.get_market_breadth_data()
-                if market_breadth_data:
-                    logger.info(f"Успешно получены данные ширины рынка: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                logger.info("ИСПРАВЛЕНИЕ: Получение данных индикатора ширины рынка БЕЗ кеша")
+                # Импортируем исправленную функцию БЕЗ кеша
+                import sys
+                import os
+                sys.path.append(os.getcwd())
+                from main import get_market_breadth_data_no_cache
+                
+                result = get_market_breadth_data_no_cache()
+                if result and result.get('status') == 'success':
+                    market_breadth_data = result['data']
+                    logger.info(f"ИСПРАВЛЕНИЕ: Успешно получены СВЕЖИЕ данные ширины рынка: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
                 else:
-                    logger.warning("Не удалось получить данные индикатора ширины рынка")
+                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить данные индикатора ширины рынка БЕЗ кеша")
             except Exception as e:
-                logger.error(f"Ошибка при получении данных ширины рынка: {str(e)}")
+                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка при получении данных ширины рынка БЕЗ кеша: {str(e)}")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
