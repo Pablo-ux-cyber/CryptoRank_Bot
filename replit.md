@@ -44,9 +44,9 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Data Flow
 
-1. **Pre-collection**: The scheduler runs rnk.py at 07:59 UTC (10:59 MSK) to collect fresh SensorTower data
-2. **Scheduled Execution**: The scheduler runs daily at 08:01 UTC (11:01 MSK)
-3. **Data Collection**: Each module fetches its respective data from external sources
+1. **Scheduled Execution**: The scheduler runs daily at 08:01 UTC (11:01 MSK)
+2. **Real-Time Data Collection**: rnk.py is executed immediately before message sending to collect fresh SensorTower data
+3. **Data Collection**: Each module fetches its respective data from external sources at send moment
 4. **Change Detection**: System compares new data with historical values stored in JSON files
 5. **Message Composition**: If changes are detected, a formatted message is created
 6. **Notification Delivery**: Message is sent to the configured Telegram channel
@@ -107,6 +107,8 @@ The system follows a modular, event-driven architecture with separate components
 - **Test Functions Verified**: All test endpoints now use corrected functions ensuring consistency between testing and production execution
 - **Production Ready**: System successfully tested with fresh cryptocurrency data loading, current rank reading (160), and proper time precision for automated execution
 - **FINAL VERIFICATION**: Both Force Send Message and Test Real Message confirmed working with rank 160, 48/50 coins loaded, chart generation successful, Telegram delivery confirmed
+- **ARCHITECTURE IMPROVED**: Changed data collection timing - now ALL data including ranking is collected DIRECTLY at send moment (08:01 UTC) instead of pre-collection (07:59 UTC) for maximum real-time accuracy
+- **Real-Time Data Guarantee**: System now runs rnk.py immediately before message sending to ensure latest ranking data is used
 
 ### July 09, 2025
 - **COMPLETED: 50-Coin Analysis System**: Successfully implemented full 50-cryptocurrency analysis with CryptoCompare API key integration

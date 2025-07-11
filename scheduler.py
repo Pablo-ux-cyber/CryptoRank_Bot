@@ -76,7 +76,8 @@ class SensorTowerScheduler:
     def _scheduler_loop(self):
         """
         The main scheduler loop that runs in a background thread.
-        - Проверяет рейтинг приложения, Fear & Greed Index и Altcoin Season Index один раз в день в 8:01
+        - ИСПРАВЛЕНО: Собирает ВСЕ данные включая рейтинг НЕПОСРЕДСТВЕННО в момент отправки в 8:01 UTC
+        - Данные рейтинга загружаются через rnk.py прямо перед отправкой для максимальной актуальности
         - Все данные собираются за один раз и отправляются одним сообщением
         """
         # Переменные для отслеживания, когда последний раз обновлялись данные
@@ -84,7 +85,7 @@ class SensorTowerScheduler:
         self.last_rnk_update_date = None
         
         # При запуске не будем загружать данные Google Trends - получим их вместе с общим обновлением
-        logger.info("Планировщик запущен, rnk.py в 10:59 MSK, обновление данных в 11:01 MSK")
+        logger.info("ИСПРАВЛЕНО: Планировщик запущен, ПОЛНЫЙ сбор данных + отправка в 11:01 MSK (без предварительного сбора в 10:59)")
         
         while not self.stop_event.is_set():
             try:
@@ -94,32 +95,16 @@ class SensorTowerScheduler:
                 update_rank = False
                 run_rnk = False
                 
-                # ИСПРАВЛЕНИЕ 3: Точная проверка времени для rnk.py (10:59 MSK = 7:59 UTC)
-                if (now.hour == 7 and now.minute == 59 and now.second < 30):
-                    if self.last_rnk_update_date is None or self.last_rnk_update_date < today:
-                        run_rnk = True
-                        logger.info(f"ИСПРАВЛЕНИЕ: Запланирован запуск rnk.py в {now} (UTC 7:59 = MSK 10:59)")
+                # ИСПРАВЛЕНИЕ: Убираем предварительный сбор данных в 07:59
+                # Теперь собираем все данные включая рейтинг НЕПОСРЕДСТВЕННО в момент отправки в 08:01
                 
-                # ИСПРАВЛЕНИЕ 3: Точная проверка времени для отправки (11:01 MSK = 8:01 UTC)
+                # ИСПРАВЛЕНИЕ: Точная проверка времени для сбора данных И отправки (11:01 MSK = 8:01 UTC)
                 if (now.hour == 8 and now.minute == 1 and now.second < 30):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"ИСПРАВЛЕНИЕ: Запланировано комплексное обновление данных в {now} (UTC 8:01 = MSK 11:01)")
+                        logger.info(f"ИСПРАВЛЕНИЕ: Запланирован ПОЛНЫЙ сбор данных + отправка в {now} (UTC 8:01 = MSK 11:01)")
                 
-                # Механизм проверки файла блокировки удален, так как он вызывал проблемы
-                # и приводил к тому, что плановые задания не выполнялись
-                
-                # Запускаем rnk.py, если пришло время
-                if run_rnk:
-                    try:
-                        logger.info(f"Запуск rnk.py в {now.hour}:{now.minute}")
-                        self.run_rnk_script()
-                        self.last_rnk_update_date = today
-                        logger.info(f"rnk.py успешно выполнен: {now}")
-                    except Exception as e:
-                        logger.error(f"Ошибка при запуске rnk.py: {str(e)}")
-                
-                # Обновляем все данные, если пришло время
+                # Обновляем все данные включая рейтинг, если пришло время
                 if update_rank:
                     try:
                         time_type = "основное"
@@ -357,12 +342,29 @@ class SensorTowerScheduler:
                 logger.error("Ошибка соединения с Telegram. Задание прервано.")
                 return False
             
-            # ИСПРАВЛЕНИЕ: Получаем данные о рейтинге из JSON файла
-            logger.info("ИСПРАВЛЕНИЕ: Читаем рейтинг из parsed_ranks.json вместо SensorTower API")
+            # ИСПРАВЛЕНИЕ: Собираем СВЕЖИЕ данные рейтинга НЕПОСРЕДСТВЕННО в момент отправки
+            logger.info("ИСПРАВЛЕНИЕ: Собираем СВЕЖИЕ данные рейтинга через rnk.py прямо сейчас")
+            
+            # Сначала запускаем rnk.py для получения свежих данных
+            try:
+                logger.info("Запуск rnk.py для получения актуальных данных...")
+                self.run_rnk_script()
+                logger.info("rnk.py выполнен успешно, данные обновлены")
+                
+                # Небольшая пауза чтобы данные успели записаться
+                import time
+                time.sleep(2)
+                
+            except Exception as e:
+                logger.error(f"Ошибка при запуске rnk.py: {str(e)}")
+            
+            # Теперь читаем свежие данные из JSON файла
             from json_rank_reader import get_rank_from_json, get_latest_rank_date
             
             current_rank = get_rank_from_json()
             current_date = get_latest_rank_date()
+            
+            logger.info(f"ИСПРАВЛЕНИЕ: Получен СВЕЖИЙ рейтинг {current_rank} на дату {current_date}")
             
             # Создаем структуру данных совместимую с остальным кодом
             rankings_data = {
