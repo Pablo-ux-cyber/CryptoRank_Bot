@@ -277,5 +277,14 @@
     "description": "Bitcoin dominates returns",
     "index": 0.2,
     "btc_performance": 1.62
+  },
+  {
+    "timestamp": "2025-07-11T10:01:16.584906",
+    "date": "2025-07-11",
+    "signal": "\ud83d\udd34",
+    "status": "No Altseason",
+    "description": "Bitcoin dominates returns",
+    "index": 0.22,
+    "btc_performance": 8.15
   }
 ]
