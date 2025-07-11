@@ -1,0 +1,43 @@
+(venv) root@imm1:~/coinbaserank_bot# ps aux | grep python
+systemctl status coinbasebot
+timedatectl status
+root         941  0.0  0.4 248332 17952 ?        Ssl  Mar28  30:39 /root/telegram_monitorbot_new/venv/bin/python bot_handler.py
+root         947  0.5  1.7 420576 68868 ?        Ssl  Mar28 849:39 /root/ExChanger/venv/bin/python app.py
+root         949  0.1  0.5 806572 21344 ?        Ssl  Mar28 174:38 /usr/bin/python3 /usr/bin/fail2ban-server -xf start
+root         979  0.0  1.5 466680 61844 ?        Ssl  Mar28 114:35 /root/telegram_bot_project/venv/bin/python /root/telegram_bot_project/bot.py
+root         985  0.0  0.0 112736  3304 ?        Ssl  Mar28   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root     2229199  0.0  0.0  33812  2836 ?        Ss   Jun17   5:08 /var/www/html/di_index_new/venv/bin/python /var/www/html/di_index_new/venv/bin/gunicorn --bind 127.0.0.1:5001 main:app
+root     3304867  0.0  0.1 264344  5644 ?        Ssl  May08  13:28 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+root     3440866  0.0  1.0  67240 41504 ?        Ss   May10   8:40 /root/telegram_monitorbot_new/venv/bin/python read_and_send.py
+root     3608573  0.0  0.4 251908 18020 ?        Sl   May12  16:42 python bot_handler.py
+root     3608574  0.0  0.5 450548 21380 ?        Sl   May12  23:17 python bot.py
+root     3608575  0.0  0.4 149900 18160 ?        Sl   May12  11:18 python app.py
+root     3608579  0.5  1.7 416616 68340 ?        Sl   May12 485:10 python app.py
+www-data 3609425  0.0  0.4 490996 15892 ?        Ssl  May12  27:45 /var/www/html/CurrencyTelegramInformer/venv/bin/python main.py
+www-data 3704698 67.5  2.1 1142820 85616 ?       Ssl  Jul09 1662:14 /var/www/html/200ma/venv/bin/python3 /var/www/html/200ma/venv/bin/streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+root     3759746  0.0  0.0 402228  3512 ?        Ssl  Jul10   0:11 /root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/main.py
+root     3759749  1.4  2.5 1225352 98536 ?       Sl   Jul10  20:09 /root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/main.py
+root     3808247  0.0  0.3 462428 12728 ?        Sl   00:12   0:15 /var/www/html/di_index_new/venv/bin/python /var/www/html/di_index_new/venv/bin/gunicorn --bind 127.0.0.1:5001 main:app
+root     3851973  0.0  0.0   9560  2180 pts/1    S+   12:47   0:00 grep --color=auto python
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor p>
+     Active: active (running) since Thu 2025-07-10 14:10:37 MSK; 22h ago
+   Main PID: 3759746 (python)
+      Tasks: 7 (limit: 4580)
+     Memory: 107.0M
+        CPU: 20min 20.314s
+     CGroup: /system.slice/coinbasebot.service
+             ├─3759746 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+             └─3759749 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+
+Jul 11 12:25:54 imm1.dinet.fvds.ru python[3759746]: 2025-07-11 12:25:54,482 - s>
+Jul 11 12:25:54 imm1.dinet.fvds.ru python[3759746]: INFO:sensortower_bot:Schedu>
+Jul 11 12:30:54 imm1.dinet.fvds.ru python[3759746]: 2025-07-11 12:30:54,719 - s>
+Jul 11 12:30:54 imm1.dinet.fvds.ru python[3759746]: INFO:sensortower_bot:Schedu>
+Jul 11 12:35:55 imm1.dinet.fvds.ru python[3759746]: 2025-07-11 12:35:55,046 - s>
+Jul 11 12:35:55 imm1.dinet.fvds.ru python[3759746]: INFO:sensortower_bot:Schedu>
+Jul 11 12:40:55 imm1.dinet.fvds.ru python[3759746]: 2025-07-11 12:40:55,382 - s>
+Jul 11 12:40:55 imm1.dinet.fvds.ru python[3759746]: INFO:sensortower_bot:Schedu>
+Jul 11 12:45:55 imm1.dinet.fvds.ru python[3759746]: 2025-07-11 12:45:55,690 - s>
+Jul 11 12:45:55 imm1.dinet.fvds.ru python[3759746]: INFO:sensortower_bot:Schedu>
+lines 1-21/21 (END)

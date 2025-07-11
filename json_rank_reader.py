@@ -5,7 +5,7 @@ from logger import logger
 
 def get_rank_from_json():
     """
-    Читает данные рейтинга из JSON файла и возвращает рейтинг за последнюю дату
+    ИСПРАВЛЕНО: Принудительно читает самые последние данные рейтинга из JSON файла
     
     Returns:
         int или None: Рейтинг Coinbase за последнюю дату или None если данные недоступны
@@ -14,30 +14,43 @@ def get_rank_from_json():
         json_file_path = os.path.join(os.path.dirname(__file__), 'parsed_ranks.json')
         
         if not os.path.exists(json_file_path):
-            logger.warning(f"JSON файл не найден: {json_file_path}")
+            logger.warning(f"ИСПРАВЛЕНИЕ: JSON файл не найден: {json_file_path}")
             return None
-            
+        
+        # ИСПРАВЛЕНИЕ: Принудительное чтение без кеширования
+        logger.info("ИСПРАВЛЕНИЕ: Принудительно читаем parsed_ranks.json для получения последних данных")
         with open(json_file_path, 'r', encoding='utf-8') as file:
             data = json.load(file)
             
         if not data or not isinstance(data, list):
-            logger.warning("JSON файл пустой или имеет неверный формат")
+            logger.warning("ИСПРАВЛЕНИЕ: JSON файл пустой или имеет неверный формат")
             return None
+        
+        # ИСПРАВЛЕНИЕ: Детальная проверка последних записей
+        logger.info(f"ИСПРАВЛЕНИЕ: Загружено {len(data)} записей из JSON файла")
+        
+        # ИСПРАВЛЕНИЕ: Принудительная сортировка по дате (самые новые сначала)
+        sorted_data = sorted(data, key=lambda x: x.get('date', ''), reverse=True)
+        
+        # ИСПРАВЛЕНИЕ: Показываем последние записи для отладки
+        logger.info("ИСПРАВЛЕНИЕ: Последние записи в JSON:")
+        for i, entry in enumerate(sorted_data[:3]):
+            logger.info(f"  {i+1}. Дата: {entry.get('date', 'нет')}, Рейтинг: {entry.get('rank', 'нет')}")
             
-        # Находим запись с последней датой
-        latest_entry = max(data, key=lambda x: x.get('date', ''))
+        # ИСПРАВЛЕНИЕ: Принудительно берем самую последнюю запись
+        latest_entry = sorted_data[0]
         
         if latest_entry and 'rank' in latest_entry and 'date' in latest_entry:
             rank = latest_entry['rank']
             date = latest_entry['date']
-            logger.info(f"Найден рейтинг из JSON файла: {rank} на дату {date}")
+            logger.info(f"ИСПРАВЛЕНИЕ: Возвращаем ПОСЛЕДНИЙ рейтинг {rank} на дату {date}")
             return rank
         else:
-            logger.warning("В JSON файле нет корректных данных")
+            logger.warning("ИСПРАВЛЕНИЕ: В последней записи JSON файла нет корректных данных")
             return None
             
     except Exception as e:
-        logger.error(f"Ошибка при чтении JSON файла: {str(e)}")
+        logger.error(f"ИСПРАВЛЕНИЕ: Ошибка при чтении JSON файла: {str(e)}")
         return None
 
 def get_latest_rank_date():

@@ -194,63 +194,7 @@ def test_telegram():
         logger.error(f"Error testing Telegram connection: {str(e)}")
         return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
 
-@app.route('/quick-test-message')
-def quick_test_message():
-    """Send a quick test message with real current data"""
-    if not scheduler:
-        return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
-        
-    try:
-        # Get real current data
-        rankings_data = scheduler.scraper.scrape_category_rankings()
-        fear_greed_data = scheduler.get_current_fear_greed_index()
-        market_breadth_data = None
-        if scheduler.market_breadth:
-            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
-        
-        # Format messages using proper formatting
-        rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
-        fear_greed_message = scheduler.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
-        
-        # Build combined message
-        combined_message = rankings_message
-        combined_message += "\n\n" + fear_greed_message
-        
-        # Add Market Breadth with chart link
-        if market_breadth_data:
-            try:
-                png_data = create_quick_chart()
-                if png_data:
-                    from image_uploader import image_uploader
-                    external_url = image_uploader.upload_chart(png_data)
-                    if external_url:
-                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['current_value']:.1f}%"
-                        combined_message += f"\n\n{market_breadth_message}"
-                    else:
-                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                        combined_message += f"\n\n{market_breadth_message}"
-                else:
-                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                    combined_message += f"\n\n{market_breadth_message}"
-            except Exception as e:
-                logger.error(f"Ошибка при создании графика для quick-test-message: {str(e)}")
-                market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                combined_message += f"\n\n{market_breadth_message}"
-        
-        telegram_bot = scheduler.telegram_bot
-        if telegram_bot.send_message(combined_message):
-            return jsonify({
-                "status": "success", 
-                "message": "Quick test message sent successfully!"
-            })
-        else:
-            return jsonify({
-                "status": "error", 
-                "message": "Failed to send test message"
-            }), 500
-    except Exception as e:
-        logger.error(f"Error sending quick test message: {str(e)}")
-        return jsonify({"status": "error", "message": f"Error: {str(e)}"}), 500
+
 
 @app.route('/trigger-scrape')
 def trigger_scrape():
@@ -2353,6 +2297,146 @@ Market by 200MA: 🟢 [Oversold](https://files.catbox.moe/5mlsdl.png): 15.2%"""
             "success": False, 
             "message": f"Ошибка: {str(e)}"
         }), 500
+
+@app.route('/quick-test-message')
+def quick_test_message():
+    """ИСПРАВЛЕННАЯ ФУНКЦИЯ: Принудительно очищает кеш и загружает свежие данные"""
+    try:
+        logger.info("=== ИСПРАВЛЕНИЕ: Принудительная очистка кеша Market Breadth ===")
+        
+        # Создание экземпляра бота
+        from scheduler import SensorTowerScheduler
+        scheduler = SensorTowerScheduler()
+        
+        # ИСПРАВЛЕНИЕ 1: Принудительно читаем ПОСЛЕДНИЕ данные из parsed_ranks.json
+        logger.info("ИСПРАВЛЕНИЕ: Читаем последние данные из parsed_ranks.json")
+        from json_rank_reader import get_rank_from_json
+        rank = get_rank_from_json()
+        if rank is None:
+            rank = 'N/A'
+        
+        # Fear & Greed данные
+        from fear_greed_index import FearGreedIndexTracker
+        fear_greed_tracker = FearGreedIndexTracker()
+        fear_greed_data = fear_greed_tracker.get_fear_greed_index()
+        
+        # ИСПРАВЛЕНИЕ 2: Market Breadth БЕЗ КЕША - свежие данные
+        logger.info("ИСПРАВЛЕНИЕ: Загружаем Market Breadth БЕЗ кеша")
+        market_breadth_data = get_market_breadth_data_no_cache()  # Новая функция
+        
+        if market_breadth_data and market_breadth_data.get('status') == 'success':
+            breadth_condition = market_breadth_data['data']['condition']
+            breadth_percentage = market_breadth_data['data']['percentage']
+            breadth_signal = market_breadth_data['data']['signal']
+            
+            # Создаем график и получаем ссылку
+            chart_link = create_chart_from_web_endpoint()
+            
+            # Формируем сообщение с кликабельной ссылкой на график
+            if chart_link:
+                market_breadth_message = f"Market by 200MA: {breadth_signal} [{breadth_condition}]({chart_link}): {breadth_percentage}%"
+            else:
+                market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%"
+        else:
+            market_breadth_message = "Market by 200MA: ⚪ Data unavailable"
+        
+        # Формирование итогового сообщения
+        rank_display = f"Coinbase Appstore Rank: {rank}"
+        
+        fear_greed_message = fear_greed_tracker.format_fear_greed_message(fear_greed_data) if fear_greed_data else "Fear & Greed: Data unavailable"
+        
+        # Составляем полное сообщение
+        full_message = f"{rank_display}\n\n{fear_greed_message}\n\n{market_breadth_message}"
+        
+        # Отправка в Telegram
+        from telegram_bot import TelegramBot
+        telegram_bot = TelegramBot()
+        success = telegram_bot.send_message(full_message)
+        
+        if success:
+            logger.info("ИСПРАВЛЕННОЕ быстрое тестовое сообщение отправлено успешно")
+            return jsonify({"status": "success", "message": "Тестовое сообщение отправлено успешно"})
+        else:
+            return jsonify({"status": "error", "message": "Ошибка отправки сообщения в Telegram"})
+            
+    except Exception as e:
+        logger.error(f"Ошибка в ИСПРАВЛЕННОМ quick_test_message: {str(e)}")
+        return jsonify({"status": "error", "message": f"Ошибка: {str(e)}"})
+
+def get_market_breadth_data_no_cache():
+    """НОВАЯ ФУНКЦИЯ: Market Breadth БЕЗ кеша - всегда свежие данные"""
+    try:
+        logger.info("Загружаем Market Breadth БЕЗ кеша - только свежие данные")
+        
+        # Создание анализатора БЕЗ кеша
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        analyzer = CryptoAnalyzer(cache=None)  # НЕТ кеша!
+        
+        # Параметры анализа
+        ma_period = 200
+        history_days = 1096  # 3 года данных
+        
+        # Получаем топ криптовалют
+        top_coins = analyzer.get_top_coins(50)
+        if not top_coins:
+            logger.error("Не удалось получить список топ криптовалют")
+            return None
+        
+        # Исключаем стейблкоины
+        stablecoins = ['USDT', 'USDC', 'DAI']
+        filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
+        logger.info(f"Отфильтровано {len(filtered_coins)} монет (исключены стейблкоины)")
+        
+        # ПРИНУДИТЕЛЬНО загружаем свежие данные БЕЗ кеша
+        total_days_needed = ma_period + history_days + 100
+        logger.info("ПРИНУДИТЕЛЬНАЯ загрузка свежих данных - кеш отключен")
+        historical_data = analyzer.load_historical_data(filtered_coins, total_days_needed)
+        
+        if not historical_data:
+            logger.error("Не удалось загрузить исторические данные")
+            return None
+        
+        # Расчет индикатора
+        indicator_data = analyzer.calculate_market_breadth(
+            historical_data, 
+            ma_period, 
+            history_days
+        )
+        
+        if indicator_data.empty:
+            logger.error("Не удалось рассчитать индикатор")
+            return None
+            
+        logger.info(f"Рассчитан СВЕЖИЙ индикатор для {len(indicator_data)} дней")
+        
+        # Получаем последнее значение
+        latest_percentage = float(indicator_data.iloc[-1]['percentage'])
+        
+        # Определяем сигнал и условие
+        if latest_percentage >= 80:
+            signal = "🔴"
+            condition = "Overbought"
+        elif latest_percentage <= 20:
+            signal = "🟢"
+            condition = "Oversold"
+        else:
+            signal = "🟡"
+            condition = "Neutral"
+        
+        return {
+            'status': 'success',
+            'data': {
+                'signal': signal,
+                'condition': condition,
+                'percentage': round(latest_percentage, 1),
+                'current_value': latest_percentage,
+                'timestamp': str(indicator_data.index[-1])
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Ошибка в get_market_breadth_data_no_cache: {str(e)}")
+        return None
 
 @app.route('/test-full-message', methods=['POST'])
 def test_full_message():

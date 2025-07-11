@@ -94,18 +94,17 @@ class SensorTowerScheduler:
                 update_rank = False
                 run_rnk = False
                 
-                # Проверяем, не нужно ли запустить rnk.py (в 10:59 MSK = 7:59 UTC)
-                if (now.hour == 7 and now.minute == 59):
+                # ИСПРАВЛЕНИЕ 3: Точная проверка времени для rnk.py (10:59 MSK = 7:59 UTC)
+                if (now.hour == 7 and now.minute == 59 and now.second < 30):
                     if self.last_rnk_update_date is None or self.last_rnk_update_date < today:
                         run_rnk = True
-                        logger.info(f"Запланирован запуск rnk.py в {now} (UTC 7:59 = MSK 10:59)")
+                        logger.info(f"ИСПРАВЛЕНИЕ: Запланирован запуск rnk.py в {now} (UTC 7:59 = MSK 10:59)")
                 
-                # Проверяем, не нужно ли обновить данные о рейтинге Coinbase, 
-                # Fear & Greed Index и Altcoin Season Index (в 11:01 MSK = 8:01 UTC)
-                if (now.hour == 8 and now.minute == 1):
+                # ИСПРАВЛЕНИЕ 3: Точная проверка времени для отправки (11:01 MSK = 8:01 UTC)
+                if (now.hour == 8 and now.minute == 1 and now.second < 30):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"Запланировано комплексное обновление данных в {now} (UTC 8:01 = MSK 11:01)")
+                        logger.info(f"ИСПРАВЛЕНИЕ: Запланировано комплексное обновление данных в {now} (UTC 8:01 = MSK 11:01)")
                 
                 # Механизм проверки файла блокировки удален, так как он вызывал проблемы
                 # и приводил к тому, что плановые задания не выполнялись
