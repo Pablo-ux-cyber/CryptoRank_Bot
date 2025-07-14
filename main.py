@@ -2444,17 +2444,22 @@ def test_full_message():
     try:
         from telegram_bot import TelegramBot
         from config import TELEGRAM_TEST_CHANNEL_ID
-        from scheduler import SensorTowerScheduler
         
-        # Создаем планировщик
-        scheduler = SensorTowerScheduler()
+        # ИСПРАВЛЕНИЕ: Используем глобальный планировщик и его метод run_now
+        global scheduler
+        if not scheduler:
+            return jsonify({
+                "success": False, 
+                "message": "Планировщик не инициализирован"
+            }), 500
         
-        # Временно меняем канал на тестовый
+        # Временно меняем канал на тестовый для тестирования
         original_channel = scheduler.telegram_bot.channel_id
         scheduler.telegram_bot.channel_id = TELEGRAM_TEST_CHANNEL_ID
         
-        # Выполняем задание планировщика
-        success = scheduler.run_scraping_job(force_refresh=True)
+        # ИСПРАВЛЕНИЕ: Используем метод run_now с принудительной отправкой
+        logger.info("ТЕСТ ПЛАНИРОВЩИКА: Принудительная отправка через scheduler.run_now()")
+        success = scheduler.run_now(force_send=True)
         
         # Возвращаем оригинальный канал
         scheduler.telegram_bot.channel_id = original_channel
@@ -2462,20 +2467,63 @@ def test_full_message():
         if success:
             return jsonify({
                 "success": True, 
-                "message": f"Полное тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
+                "message": f"✅ ПЛАНИРОВЩИК РАБОТАЕТ! Сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
             })
         else:
             return jsonify({
                 "success": False, 
-                "message": "Ошибка выполнения тестовой задачи"
+                "message": "❌ Планировщик не смог отправить сообщение"
             }), 500
             
     except Exception as e:
-        logger.error(f"Ошибка полного теста: {str(e)}")
+        logger.error(f"Ошибка теста планировщика: {str(e)}")
         return jsonify({
             "success": False, 
-            "message": f"Ошибка: {str(e)}"
+            "message": f"❌ Ошибка планировщика: {str(e)}"
         }), 500
+
+@app.route('/check-scheduler-status')
+def check_scheduler_status():
+    """Проверить статус планировщика и время следующего запуска"""
+    try:
+        global scheduler
+        if not scheduler:
+            return jsonify({
+                "status": "error",
+                "message": "Планировщик не инициализирован"
+            })
+        
+        from datetime import datetime, timezone
+        import pytz
+        
+        # Текущее время UTC и MSK
+        now_utc = datetime.now(timezone.utc)
+        msk_tz = pytz.timezone('Europe/Moscow')
+        now_msk = now_utc.astimezone(msk_tz)
+        
+        # Вычисляем следующее время запуска
+        next_run_utc = now_utc.replace(hour=8, minute=1, second=0, microsecond=0)
+        if next_run_utc <= now_utc:
+            next_run_utc = next_run_utc.replace(day=next_run_utc.day + 1)
+        
+        next_run_msk = next_run_utc.astimezone(msk_tz)
+        
+        return jsonify({
+            "status": "success", 
+            "scheduler_running": bool(scheduler),
+            "current_time_utc": now_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "current_time_msk": now_msk.strftime("%Y-%m-%d %H:%M:%S MSK"),
+            "next_run_utc": next_run_utc.strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "next_run_msk": next_run_msk.strftime("%Y-%m-%d %H:%M:%S MSK"),
+            "hours_until_next_run": round((next_run_utc - now_utc).total_seconds() / 3600, 1),
+            "last_sent_rank": getattr(scheduler, 'last_sent_rank', 'Unknown')
+        })
+            
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "message": f"Ошибка: {str(e)}"
+        })
 
 # Set up signal handler for graceful shutdown
 signal.signal(signal.SIGINT, signal_handler)

@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 from logger import logger
 from scraper import SensorTowerScraper
 from telegram_bot import TelegramBot
+from telegram_bot_sync import TelegramBotSync
 from fear_greed_index import FearGreedIndexTracker
 from altcoin_season_index import AltcoinSeasonIndex
 from market_breadth_indicator import MarketBreadthIndicator
@@ -18,7 +19,9 @@ class SensorTowerScheduler:
         self.thread = None
         self.stop_event = threading.Event()
         self.scraper = SensorTowerScraper()
-        self.telegram_bot = TelegramBot()
+        # ИСПРАВЛЕНИЕ: Используем синхронную версию для планировщика  
+        from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID
+        self.telegram_bot = TelegramBotSync(TELEGRAM_BOT_TOKEN, TELEGRAM_CHANNEL_ID)
         self.fear_greed_tracker = FearGreedIndexTracker()
         self.altcoin_season_index = AltcoinSeasonIndex()
         self.market_breadth = MarketBreadthIndicator()

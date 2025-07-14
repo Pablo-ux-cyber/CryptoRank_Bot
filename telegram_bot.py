@@ -68,12 +68,16 @@ class TelegramBot:
             asyncio.AbstractEventLoop: Активный event loop
         """
         try:
-            # Для threading безопасности всегда создаем новый loop
+            # ИСПРАВЛЕНИЕ: Для планировщика в отдельном потоке - всегда новый loop
+            import threading
+            current_thread = threading.current_thread()
+            logger.info(f"ИСПРАВЛЕНИЕ: Создаём event loop для потока {current_thread.name}")
+            
             loop = asyncio.new_event_loop()
             asyncio.set_event_loop(loop)
             return loop
         except Exception as e:
-            logger.error(f"Ошибка создания event loop: {str(e)}")
+            logger.error(f"ИСПРАВЛЕНИЕ: Ошибка создания event loop: {str(e)}")
             return None
     
     def send_message(self, message):
