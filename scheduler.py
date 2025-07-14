@@ -99,10 +99,12 @@ class SensorTowerScheduler:
                 # Теперь собираем все данные включая рейтинг НЕПОСРЕДСТВЕННО в момент отправки в 08:01
                 
                 # ИСПРАВЛЕНИЕ: Точная проверка времени для сбора данных И отправки (11:01 MSK = 8:01 UTC)
-                if (now.hour == 8 and now.minute == 1 and now.second < 30):
+                # ДОБАВЛЕНО: Также проверяем 05:01 UTC как указано в логах планировщика
+                if ((now.hour == 8 and now.minute == 1 and now.second < 30) or 
+                    (now.hour == 5 and now.minute == 1 and now.second < 30)):
                     if self.last_rank_update_date is None or self.last_rank_update_date < today:
                         update_rank = True
-                        logger.info(f"ИСПРАВЛЕНИЕ: Запланирован ПОЛНЫЙ сбор данных + отправка в {now} (UTC 8:01 = MSK 11:01)")
+                        logger.info(f"ИСПРАВЛЕНИЕ: Запланирован ПОЛНЫЙ сбор данных + отправка в {now} (UTC {now.hour}:01 = MSK {now.hour+3}:01)")
                 
                 # Обновляем все данные включая рейтинг, если пришло время
                 if update_rank:
@@ -184,9 +186,9 @@ class SensorTowerScheduler:
             self.thread.daemon = True
             self.thread.start()
             
-            # Рассчитываем время следующего запуска (5:01 UTC = 8:01 MSK)
+            # Рассчитываем время следующего запуска (8:01 UTC = 11:01 MSK)
             now = datetime.now()
-            next_run = now.replace(hour=5, minute=1, second=0, microsecond=0)
+            next_run = now.replace(hour=8, minute=1, second=0, microsecond=0)
             
             # Если время уже прошло сегодня, планируем на завтра
             if next_run <= now:
@@ -403,58 +405,9 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # Получаем данные о ширине рынка БЕЗ кеша (ИСПРАВЛЕНИЕ для многопоточности)
+            # ИСПРАВЛЕНИЕ: Отключаем Market Breadth в планировщике из-за threading проблем  
             market_breadth_data = None
-            try:
-                logger.info("ИСПРАВЛЕНИЕ: Получение данных индикатора ширины рынка БЕЗ кеша (thread-safe)")
-                # Импортируем компоненты напрямую чтобы избежать matplotlib в потоке
-                from crypto_analyzer_cryptocompare import CryptoAnalyzer
-                import pandas as pd
-                
-                # Создание анализатора БЕЗ кеша
-                analyzer = CryptoAnalyzer(cache=None)
-                
-                # Получение топ монет
-                top_coins = analyzer.get_top_coins(50)
-                if not top_coins:
-                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить список топ монет")
-                else:
-                    # Загрузка исторических данных БЕЗ кеша
-                    historical_data = analyzer.load_historical_data(top_coins, 1400)  # 200 + 1095 + 100
-                    
-                    if historical_data:
-                        # Расчет индикатора
-                        indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
-                        
-                        if not indicator_data.empty:
-                            latest_percentage = indicator_data['percentage'].iloc[-1]
-                            
-                            # Определяем сигнал и условие
-                            if latest_percentage >= 80:
-                                signal = "🔴"
-                                condition = "Overbought"
-                            elif latest_percentage <= 20:
-                                signal = "🟢"  
-                                condition = "Oversold"
-                            else:
-                                signal = "🟡"
-                                condition = "Neutral"
-                            
-                            market_breadth_data = {
-                                'signal': signal,
-                                'condition': condition,
-                                'current_value': latest_percentage,
-                                'percentage': round(latest_percentage, 1)
-                            }
-                            
-                            logger.info(f"ИСПРАВЛЕНИЕ: Успешно получены СВЕЖИЕ данные ширины рынка: {signal} - {condition} ({latest_percentage:.1f}%)")
-                        else:
-                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные индикатора ширины рынка")
-                    else:
-                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные")
-                        
-            except Exception as e:
-                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка при получении данных ширины рынка БЕЗ кеша: {str(e)}")
+            logger.info("ИСПРАВЛЕНИЕ: Market Breadth отключен в планировщике для избежания threading проблем")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:

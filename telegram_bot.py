@@ -68,20 +68,13 @@ class TelegramBot:
             asyncio.AbstractEventLoop: Активный event loop
         """
         try:
-            # Сначала пытаемся получить текущий loop
-            loop = asyncio.get_event_loop()
-            if loop.is_closed():
-                raise RuntimeError("Loop is closed")
+            # Для threading безопасности всегда создаем новый loop
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
             return loop
-        except RuntimeError:
-            # Если в потоке нет loop или он закрыт, создаем новый
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                return loop
-            except Exception as e:
-                logger.error(f"Ошибка создания event loop: {str(e)}")
-                return None
+        except Exception as e:
+            logger.error(f"Ошибка создания event loop: {str(e)}")
+            return None
     
     def send_message(self, message):
         """
@@ -145,16 +138,18 @@ class TelegramBot:
                 logger.info(f"Сообщение, которое должно было быть отправлено: {message}")
                 return False
 
-        # Запустить асинхронную функцию в существующем или новом event loop
-        loop = self._get_event_loop()
-        if not loop:
-            logger.error("Не удалось получить event loop для отправки сообщения")
-            return False
-            
+        # Создаем новый event loop для threading безопасности
         try:
-            return loop.run_until_complete(_send_async())
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                result = loop.run_until_complete(_send_async())
+                return result
+            finally:
+                loop.close()
         except Exception as e:
-            logger.error(f"Ошибка в асинхронном выполнении: {str(e)}")
+            logger.error(f"Failed to connect to Telegram: {str(e)}")
             return False
     
     def test_connection(self):
@@ -178,14 +173,16 @@ class TelegramBot:
                 logger.error(f"Failed to connect to Telegram: {str(e)}")
                 return False
         
-        # Запустить асинхронную функцию в существующем или новом event loop
-        loop = self._get_event_loop()
-        if not loop:
-            logger.error("Не удалось получить event loop для тестирования соединения")
-            return False
-            
+        # Создаем новый event loop для threading безопасности
         try:
-            return loop.run_until_complete(_test_async())
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            
+            try:
+                result = loop.run_until_complete(_test_async())
+                return result
+            finally:
+                loop.close()
         except Exception as e:
             logger.error(f"Error in async execution: {str(e)}")
             return False
