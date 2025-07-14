@@ -333,10 +333,10 @@ class SensorTowerScheduler:
     def run_scraping_job(self, force_refresh=False):
         """
         Выполняет задание по скрапингу: получает данные SensorTower, Fear & Greed Index, 
-        Altcoin Season Index и отправляет в Telegram только если рейтинг изменился или это первый запуск
+        Altcoin Season Index и отправляет в Telegram КАЖДЫЙ ДЕНЬ независимо от изменения рейтинга
         
         Args:
-            force_refresh (bool): Если True, отправить сообщение даже если рейтинг не изменился
+            force_refresh (bool): Параметр больше не используется, сообщения отправляются всегда
         """
         logger.info(f"Выполняется запланированное задание скрапинга в {datetime.now()}")
         
@@ -466,10 +466,9 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"ИСПРАВЛЕНИЕ: Ошибка загрузки данных: {str(e)}")
             
-            # Подробная проверка на изменение рейтинга
+            # ИЗМЕНЕНО: Отправляем сообщение каждый день независимо от изменения рейтинга
             if self.last_sent_rank is None:
                 logger.info(f"Первый запуск, предыдущее значение отсутствует. Текущий рейтинг: {current_rank}")
-                need_to_send = True
                 # Для тестирования добавляем искусственный тренд, если есть числовое значение
                 if current_rank is not None:
                     rankings_data["trend"] = {"direction": "up", "previous": current_rank + 5}
@@ -489,90 +488,90 @@ class SensorTowerScheduler:
                 else:
                     # Если один из рейтингов None, просто показываем изменение
                     rankings_data["trend"] = {"direction": "same", "previous": self.last_sent_rank}
-                need_to_send = True
             else:
-                logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}). Сообщение не отправлено.")
-                need_to_send = False
+                logger.info(f"Рейтинг не изменился ({current_rank} = {self.last_sent_rank}), но сообщение будет отправлено согласно ежедневному расписанию.")
+                # Сохраняем последний рейтинг для показа тренда
+                rankings_data["trend"] = {"direction": "same", "previous": self.last_sent_rank}
             
-            # Отправляем сообщение только если нужно
-            if need_to_send:
-                # Отправляем сообщение только если рейтинг изменился или это первый запуск
-                result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data, market_breadth_data, chart_data)
+            # ИЗМЕНЕНО: Отправляем сообщение ВСЕГДА (каждый день в назначенное время)
+            logger.info("ИЗМЕНЕНО: Отправляем ежедневное сообщение независимо от изменения рейтинга")
+            
+            # ИЗМЕНЕНО: Отправляем ежедневное сообщение независимо от изменения рейтинга
+            result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data, market_breadth_data, chart_data)
+            
+            # Обновляем последний отправленный рейтинг независимо от результата отправки
+            # Это поможет избежать множественных сообщений при сбоях отправки
+            previous_rank = self.last_sent_rank
+            self.last_sent_rank = current_rank
+            logger.info(f"Обновлен последний отправленный рейтинг: {previous_rank} → {self.last_sent_rank}")
+            
+            # Сохраняем рейтинг в файл для восстановления при перезапуске
+            # Делаем это синхронно с обновлением переменной, чтобы избежать рассинхронизации
+            try:
+                with open(self.rank_history_file, "w") as f:
+                    f.write(str(current_rank) if current_rank is not None else "None")
+                logger.info(f"Рейтинг {current_rank} сохранен в файл {self.rank_history_file}")
                 
-                # Обновляем последний отправленный рейтинг независимо от результата отправки
-                # Это поможет избежать множественных сообщений при сбоях отправки
-                previous_rank = self.last_sent_rank
-                self.last_sent_rank = current_rank
-                logger.info(f"Обновлен последний отправленный рейтинг: {previous_rank} → {self.last_sent_rank}")
-                
-                # Сохраняем рейтинг в файл для восстановления при перезапуске
-                # Делаем это синхронно с обновлением переменной, чтобы избежать рассинхронизации
+                # Проверка записи в файл
+                if os.path.exists(self.rank_history_file):
+                    with open(self.rank_history_file, "r") as check_file:
+                        saved_value = check_file.read().strip()
+                        if saved_value != str(current_rank):
+                            logger.error(f"Ошибка записи: в файле {saved_value}, должно быть {current_rank}")
+                            
+                # Дополнительно, сохраняем в JSON-историю через HistoryAPI
                 try:
-                    with open(self.rank_history_file, "w") as f:
-                        f.write(str(current_rank) if current_rank is not None else "None")
-                    logger.info(f"Рейтинг {current_rank} сохранен в файл {self.rank_history_file}")
+                    # Импортируем API истории
+                    from history_api import HistoryAPI
                     
-                    # Проверка записи в файл
-                    if os.path.exists(self.rank_history_file):
-                        with open(self.rank_history_file, "r") as check_file:
-                            saved_value = check_file.read().strip()
-                            if saved_value != str(current_rank):
-                                logger.error(f"Ошибка записи: в файле {saved_value}, должно быть {current_rank}")
-                                
-                    # Дополнительно, сохраняем в JSON-историю через HistoryAPI
-                    try:
-                        # Импортируем API истории
-                        from history_api import HistoryAPI
-                        
-                        # Создаем экземпляр API и сохраняем данные
-                        history_api = HistoryAPI(self.data_dir)
-                        
-                        # Сохраняем рейтинг в историю с предыдущим значением для подсчета изменения
-                        history_api.save_rank_history(
-                            rank=current_rank, 
-                            previous_rank=previous_rank
+                    # Создаем экземпляр API и сохраняем данные
+                    history_api = HistoryAPI(self.data_dir)
+                    
+                    # Сохраняем рейтинг в историю с предыдущим значением для подсчета изменения
+                    history_api.save_rank_history(
+                        rank=current_rank, 
+                        previous_rank=previous_rank
+                    )
+                    
+                    # Если доступны данные индекса страха и жадности, сохраняем и их
+                    if fear_greed_data and 'value' in fear_greed_data and 'classification' in fear_greed_data:
+                        history_api.save_fear_greed_history(
+                            value=int(fear_greed_data['value']), 
+                            classification=fear_greed_data['classification']
                         )
                         
-                        # Если доступны данные индекса страха и жадности, сохраняем и их
-                        if fear_greed_data and 'value' in fear_greed_data and 'classification' in fear_greed_data:
-                            history_api.save_fear_greed_history(
-                                value=int(fear_greed_data['value']), 
-                                classification=fear_greed_data['classification']
+                    # Если доступны данные Altcoin Season Index, сохраняем их
+                    if (altseason_data and 
+                        'signal' in altseason_data and 
+                        'description' in altseason_data and 
+                        'status' in altseason_data and 
+                        'index' in altseason_data and 
+                        'btc_performance' in altseason_data and
+                        altseason_data['signal'] is not None):
+                        # Сохраняем данные Altcoin Season Index в историю
+                        try:
+                            history_api.save_altseason_index_history(
+                                signal=altseason_data['signal'],
+                                description=altseason_data['description'],
+                                status=altseason_data['status'],
+                                index=altseason_data['index'],
+                                btc_performance=altseason_data['btc_performance']
                             )
-                            
-                        # Если доступны данные Altcoin Season Index, сохраняем их
-                        if (altseason_data and 
-                            'signal' in altseason_data and 
-                            'description' in altseason_data and 
-                            'status' in altseason_data and 
-                            'index' in altseason_data and 
-                            'btc_performance' in altseason_data and
-                            altseason_data['signal'] is not None):
-                            # Сохраняем данные Altcoin Season Index в историю
-                            try:
-                                history_api.save_altseason_index_history(
-                                    signal=altseason_data['signal'],
-                                    description=altseason_data['description'],
-                                    status=altseason_data['status'],
-                                    index=altseason_data['index'],
-                                    btc_performance=altseason_data['btc_performance']
-                                )
-                                logger.info(f"Сохранены данные Altcoin Season Index в историю: {altseason_data['signal']} - {altseason_data['status']}")
-                            except Exception as e:
-                                logger.warning(f"Ошибка при сохранении Altcoin Season Index в историю: {str(e)}")
-                            
-                        logger.info(f"История данных успешно сохранена в JSON-файлы")
-                    except ImportError:
-                        # API истории недоступен, пропускаем сохранение в историю
-                        logger.debug("API истории недоступен. История рейтинга сохранена только в файл.")
-                    except Exception as history_error:
-                        logger.error(f"Ошибка при сохранении истории в JSON-файлы: {str(history_error)}")
+                            logger.info(f"Сохранены данные Altcoin Season Index в историю: {altseason_data['signal']} - {altseason_data['status']}")
+                        except Exception as e:
+                            logger.warning(f"Ошибка при сохранении Altcoin Season Index в историю: {str(e)}")
                         
-                except Exception as e:
-                    logger.error(f"Ошибка при сохранении рейтинга в файл: {str(e)}")
-                return result
-            else:
-                return True  # Работа выполнена успешно, сообщение не требовалось отправлять
+                    logger.info(f"История данных успешно сохранена в JSON-файлы")
+                except ImportError:
+                    # API истории недоступен, пропускаем сохранение в историю
+                    logger.debug("API истории недоступен. История рейтинга сохранена только в файл.")
+                except Exception as history_error:
+                    logger.error(f"Ошибка при сохранении истории в JSON-файлы: {str(history_error)}")
+                    
+            except Exception as e:
+                logger.error(f"Ошибка при сохранении рейтинга в файл: {str(e)}")
+            
+            return result
                 
         except Exception as e:
             error_message = f"❌ Произошла ошибка во время задания скрапинга: {str(e)}"

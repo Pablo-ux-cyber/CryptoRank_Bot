@@ -376,5 +376,14 @@
     "description": "Some altcoins outperform Bitcoin",
     "index": 0.38,
     "btc_performance": 15.01
+  },
+  {
+    "timestamp": "2025-07-14T15:18:46.773778",
+    "date": "2025-07-14",
+    "signal": "\ud83d\udfe0",
+    "status": "Weak Altseason",
+    "description": "Some altcoins outperform Bitcoin",
+    "index": 0.38,
+    "btc_performance": 14.97
   }
 ]
