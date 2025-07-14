@@ -403,22 +403,56 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # Получаем данные о ширине рынка БЕЗ кеша (ИСПРАВЛЕНИЕ)
+            # Получаем данные о ширине рынка БЕЗ кеша (ИСПРАВЛЕНИЕ для многопоточности)
             market_breadth_data = None
             try:
-                logger.info("ИСПРАВЛЕНИЕ: Получение данных индикатора ширины рынка БЕЗ кеша")
-                # Импортируем исправленную функцию БЕЗ кеша
-                import sys
-                import os
-                sys.path.append(os.getcwd())
-                from main import get_market_breadth_data_no_cache
+                logger.info("ИСПРАВЛЕНИЕ: Получение данных индикатора ширины рынка БЕЗ кеша (thread-safe)")
+                # Импортируем компоненты напрямую чтобы избежать matplotlib в потоке
+                from crypto_analyzer_cryptocompare import CryptoAnalyzer
+                import pandas as pd
                 
-                result = get_market_breadth_data_no_cache()
-                if result and result.get('status') == 'success':
-                    market_breadth_data = result['data']
-                    logger.info(f"ИСПРАВЛЕНИЕ: Успешно получены СВЕЖИЕ данные ширины рынка: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                # Создание анализатора БЕЗ кеша
+                analyzer = CryptoAnalyzer(cache=None)
+                
+                # Получение топ монет
+                top_coins = analyzer.get_top_coins(50)
+                if not top_coins:
+                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить список топ монет")
                 else:
-                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить данные индикатора ширины рынка БЕЗ кеша")
+                    # Загрузка исторических данных БЕЗ кеша
+                    historical_data = analyzer.load_historical_data(top_coins, 1400)  # 200 + 1095 + 100
+                    
+                    if historical_data:
+                        # Расчет индикатора
+                        indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
+                        
+                        if not indicator_data.empty:
+                            latest_percentage = indicator_data['percentage'].iloc[-1]
+                            
+                            # Определяем сигнал и условие
+                            if latest_percentage >= 80:
+                                signal = "🔴"
+                                condition = "Overbought"
+                            elif latest_percentage <= 20:
+                                signal = "🟢"  
+                                condition = "Oversold"
+                            else:
+                                signal = "🟡"
+                                condition = "Neutral"
+                            
+                            market_breadth_data = {
+                                'signal': signal,
+                                'condition': condition,
+                                'current_value': latest_percentage,
+                                'percentage': round(latest_percentage, 1)
+                            }
+                            
+                            logger.info(f"ИСПРАВЛЕНИЕ: Успешно получены СВЕЖИЕ данные ширины рынка: {signal} - {condition} ({latest_percentage:.1f}%)")
+                        else:
+                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные индикатора ширины рынка")
+                    else:
+                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные")
+                        
             except Exception as e:
                 logger.error(f"ИСПРАВЛЕНИЕ: Ошибка при получении данных ширины рынка БЕЗ кеша: {str(e)}")
             
