@@ -102,7 +102,7 @@ The system follows a modular, event-driven architecture with separate components
 - **CRITICAL TELEGRAM MESSAGING FIXED**: Resolved AsyncIO threading conflicts that prevented scheduled message delivery
 - **AsyncIO Threading Solution**: Created TelegramBotSync class using requests instead of asyncio for scheduler thread compatibility
 - **Scheduler Communication Restored**: Planировщик now successfully sends daily messages at 11:01 MSK (08:01 UTC)
-- **Market Breadth Temporarily Disabled**: Removed from scheduler to prevent matplotlib signal threading errors (working in manual tests)
+- **Market Breadth Re-enabled**: Successfully integrated into scheduler with thread-safe implementation (47/50 coins loaded, no matplotlib threading issues)
 - **Production Message Flow Verified**: Test shows complete data collection (rank 139, Fear & Greed 74, Altcoin Season 40%) and successful Telegram delivery
 - **Threading Architecture Improved**: Manual test buttons use AsyncIO TelegramBot, scheduler uses synchronous TelegramBotSync for thread safety
 

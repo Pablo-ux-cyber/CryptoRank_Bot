@@ -260,48 +260,12 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # Добавляем данные индикатора ширины рынка со ссылкой на график
+            # ИСПРАВЛЕНИЕ: Добавляем Market Breadth БЕЗ графика для избежания threading проблем
             if market_breadth_data:
-                # Создаем график и загружаем на внешний сервис (как в Test Real Message)
-                try:
-                    # Избегаем circular import - импортируем здесь
-                    import matplotlib
-                    matplotlib.use('Agg')  # Используем non-interactive backend для избежания threading проблем
-                    
-                    # Импортируем функции для создания и загрузки графика
-                    import sys
-                    import os
-                    sys.path.append(os.getcwd())
-                    from main import create_quick_chart
-                    from image_uploader import image_uploader
-                    
-                    # Создаем PNG данные графика
-                    png_data = create_quick_chart()
-                    if png_data:
-                        # Загружаем на внешний сервис
-                        external_url = image_uploader.upload_chart(png_data)
-                        if external_url:
-                            # Формируем сообщение со ссылкой встроенной в статус
-                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['current_value']:.1f}%"
-                            combined_message += f"\n\n{market_breadth_message}"
-                            logger.info(f"Добавлены данные ширины рынка с внешним графиком: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
-                        else:
-                            # Fallback без ссылки
-                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                            combined_message += f"\n\n{market_breadth_message}"
-                            logger.info(f"Добавлены данные ширины рынка без графика (загрузка не удалась): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
-                    else:
-                        # Fallback без ссылки
-                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                        combined_message += f"\n\n{market_breadth_message}"
-                        logger.info(f"Добавлены данные ширины рынка без графика (создание не удалось): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
-                    
-                except Exception as e:
-                    logger.error(f"Ошибка при создании графика для Market Breadth: {str(e)}")
-                    # Fallback без ссылки
-                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
-                    combined_message += f"\n\n{market_breadth_message}"
-                    logger.info(f"Добавлены данные ширины рынка без графика (ошибка): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
+                # Простое текстовое сообщение без ссылки на график
+                market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
+                combined_message += f"\n\n{market_breadth_message}"
+                logger.info(f"ИСПРАВЛЕНИЕ: Добавлены данные Market Breadth БЕЗ графика: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['percentage']}%)")
             else:
                 logger.info("Данные индикатора ширины рынка недоступны")
             
@@ -408,9 +372,59 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # ИСПРАВЛЕНИЕ: Отключаем Market Breadth в планировщике из-за threading проблем  
+            # ИСПРАВЛЕНИЕ: Включаем Market Breadth БЕЗ matplotlib для планировщика
             market_breadth_data = None
-            logger.info("ИСПРАВЛЕНИЕ: Market Breadth отключен в планировщике для избежания threading проблем")
+            try:
+                logger.info("ИСПРАВЛЕНИЕ: Получение Market Breadth данных БЕЗ matplotlib для планировщика")
+                from crypto_analyzer_cryptocompare import CryptoAnalyzer
+                
+                # Создание анализатора БЕЗ кеша для планировщика
+                analyzer = CryptoAnalyzer(cache=None)
+                
+                # Получение топ монет (исключаем стейблкоины)
+                top_coins = analyzer.get_top_coins(50)
+                if top_coins:
+                    stablecoins = ['USDT', 'USDC', 'DAI']
+                    filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
+                    
+                    # Загрузка исторических данных БЕЗ кеша
+                    historical_data = analyzer.load_historical_data(filtered_coins, 1400)
+                    
+                    if historical_data:
+                        # Расчет индикатора БЕЗ графиков
+                        indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
+                        
+                        if not indicator_data.empty:
+                            latest_percentage = indicator_data['percentage'].iloc[-1]
+                            
+                            # Определяем сигнал и условие
+                            if latest_percentage >= 80:
+                                signal = "🔴"
+                                condition = "Overbought"
+                            elif latest_percentage <= 20:
+                                signal = "🟢"  
+                                condition = "Oversold"
+                            else:
+                                signal = "🟡"
+                                condition = "Neutral"
+                            
+                            market_breadth_data = {
+                                'signal': signal,
+                                'condition': condition,
+                                'current_value': latest_percentage,
+                                'percentage': round(latest_percentage, 1)
+                            }
+                            
+                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth для планировщика: {signal} - {condition} ({latest_percentage:.1f}%)")
+                        else:
+                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные Market Breadth для планировщика")
+                    else:
+                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные для планировщика")
+                else:
+                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет для планировщика")
+                        
+            except Exception as e:
+                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка Market Breadth для планировщика: {str(e)}")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
