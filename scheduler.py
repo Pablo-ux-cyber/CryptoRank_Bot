@@ -225,7 +225,7 @@ class SensorTowerScheduler:
                     logger.error(f"Ошибка при освобождении блокировки файла: {str(e)}")
             logger.info("Scheduler stopped")
     
-    def _send_combined_message(self, rankings_data, fear_greed_data=None, altseason_data=None, market_breadth_data=None):
+    def _send_combined_message(self, rankings_data, fear_greed_data=None, altseason_data=None, market_breadth_data=None, chart_data=None):
         """
         Отправляет комбинированное сообщение с данными о рейтинге, индексе страха и жадности,
         Altcoin Season Index и ширине рынка в упрощенном формате
@@ -260,116 +260,41 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # ИСПРАВЛЕНИЕ: Добавляем Market Breadth СО ССЫЛКОЙ на график для планировщика
+            # ИСПРАВЛЕНИЕ: Используем ТУ ЖЕ функцию создания графика что и в Test Real Message
             if market_breadth_data:
                 try:
-                    # Создаем график используя тот же метод что и в Test Real Message
+                    # Импортируем функцию создания графика из main.py
                     import sys
                     import os
-                    import tempfile
                     sys.path.append(os.getcwd())
-                    
-                    # Импортируем необходимые модули
-                    from crypto_analyzer_cryptocompare import CryptoAnalyzer
+                    from main import create_quick_chart
                     from image_uploader import image_uploader
-                    import matplotlib
-                    matplotlib.use('Agg')  # Non-interactive backend для threads
-                    import matplotlib.pyplot as plt
-                    import matplotlib.dates as mdates
-                    import io
                     
-                    # Создаем анализатор для получения полных данных для графика
-                    analyzer = CryptoAnalyzer(cache=None)
-                    top_coins = analyzer.get_top_coins(50)
-                    
-                    if top_coins:
-                        stablecoins = ['USDT', 'USDC', 'DAI']
-                        filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
+                    # Создаем график используя УЖЕ ЗАГРУЖЕННЫЕ данные (БЕЗ повторной загрузки)
+                    if chart_data:
+                        png_data = create_quick_chart(existing_data=chart_data)
+                    else:
+                        logger.warning("ИСПРАВЛЕНИЕ: chart_data недоступен, используем fallback")
+                        png_data = create_quick_chart()
+                    if png_data:
+                        # Загружаем на внешний сервис
+                        external_url = image_uploader.upload_chart(png_data)
                         
-                        # Загружаем исторические данные
-                        historical_data = analyzer.load_historical_data(filtered_coins, 1400)
-                        
-                        if historical_data:
-                            # Рассчитываем индикатор для графика
-                            indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
-                            
-                            if not indicator_data.empty:
-                                # Создаем график
-                                fig, ax = plt.subplots(1, 1, figsize=(12, 6))
-                                
-                                # График Market Breadth
-                                ax.plot(indicator_data.index, indicator_data['percentage'], 
-                                       color='#2E86C1', linewidth=2, label='Market Breadth')
-                                
-                                # Зоны перекупленности/перепроданности
-                                ax.axhline(y=80, color='red', linestyle='--', alpha=0.7, linewidth=1)
-                                ax.axhline(y=20, color='green', linestyle='--', alpha=0.7, linewidth=1)
-                                ax.axhline(y=50, color='gray', linestyle='-', alpha=0.3, linewidth=1)
-                                
-                                # Заливка зон
-                                ax.fill_between(indicator_data.index, 80, 100, alpha=0.1, color='red')
-                                ax.fill_between(indicator_data.index, 0, 20, alpha=0.1, color='green')
-                                
-                                # Подписи зон
-                                ax.text(indicator_data.index[-1], 90, 'OVERBOUGHT', 
-                                       ha='right', va='center', fontweight=600, color='red',
-                                       bbox=dict(boxstyle="round,pad=0.3", facecolor='white', alpha=0.8))
-                                ax.text(indicator_data.index[-1], 10, 'OVERSOLD',
-                                       ha='right', va='center', fontweight=600, color='green',
-                                       bbox=dict(boxstyle="round,pad=0.3", facecolor='white', alpha=0.8))
-                                ax.text(indicator_data.index[-1], 50, 'NEUTRAL',
-                                       ha='right', va='center', fontweight=600, color='gray',
-                                       bbox=dict(boxstyle="round,pad=0.3", facecolor='white', alpha=0.8))
-                                
-                                # Настройки осей
-                                ax.set_title('% Of Cryptocurrencies Above 200-Day Moving Average', 
-                                           fontsize=14, fontweight='bold', pad=20)
-                                ax.set_ylabel('Percentage (%)', fontsize=12)
-                                ax.set_ylim(0, 100)
-                                ax.grid(True, alpha=0.3)
-                                
-                                # Форматирование дат
-                                ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
-                                ax.xaxis.set_major_locator(mdates.MonthLocator(interval=3))
-                                plt.xticks(rotation=45)
-                                
-                                plt.tight_layout()
-                                
-                                # Сохраняем график в PNG
-                                png_buffer = io.BytesIO()
-                                plt.savefig(png_buffer, format='png', dpi=150, bbox_inches='tight')
-                                png_buffer.seek(0)
-                                png_data = png_buffer.getvalue()
-                                plt.close()
-                                
-                                # Загружаем на внешний сервис
-                                external_url = image_uploader.upload_chart(png_data)
-                                
-                                if external_url:
-                                    # Сообщение со ссылкой встроенной в статус
-                                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['percentage']}%"
-                                    combined_message += f"\n\n{market_breadth_message}"
-                                    logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth с графиком: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['percentage']}%) - {external_url}")
-                                else:
-                                    # Fallback без ссылки
-                                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
-                                    combined_message += f"\n\n{market_breadth_message}"
-                                    logger.warning("ИСПРАВЛЕНИЕ: График создан но загрузка не удалась")
-                            else:
-                                # Fallback без ссылки
-                                market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
-                                combined_message += f"\n\n{market_breadth_message}"
-                                logger.warning("ИСПРАВЛЕНИЕ: Пустые данные для графика")
+                        if external_url:
+                            # Сообщение со ссылкой встроенной в статус
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['percentage']}%"
+                            combined_message += f"\n\n{market_breadth_message}"
+                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth с графиком (create_quick_chart): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['percentage']}%) - {external_url}")
                         else:
                             # Fallback без ссылки
                             market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
                             combined_message += f"\n\n{market_breadth_message}"
-                            logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные для графика")
+                            logger.warning("ИСПРАВЛЕНИЕ: График создан но загрузка не удалась")
                     else:
                         # Fallback без ссылки
                         market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
                         combined_message += f"\n\n{market_breadth_message}"
-                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет для графика")
+                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось создать график")
                         
                 except Exception as e:
                     logger.error(f"ИСПРАВЛЕНИЕ: Ошибка создания графика для планировщика: {str(e)}")
@@ -482,26 +407,25 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # ИСПРАВЛЕНИЕ: Включаем Market Breadth БЕЗ matplotlib для планировщика
+            # ИСПРАВЛЕНИЕ: Загружаем данные ОДИН РАЗ и используем для расчета и графика
             market_breadth_data = None
+            chart_data = None
             try:
-                logger.info("ИСПРАВЛЕНИЕ: Получение Market Breadth данных БЕЗ matplotlib для планировщика")
+                logger.info("ИСПРАВЛЕНИЕ: Загружаем свежие данные ОДИН РАЗ для Market Breadth и графика")
                 from crypto_analyzer_cryptocompare import CryptoAnalyzer
                 
-                # Создание анализатора БЕЗ кеша для планировщика
                 analyzer = CryptoAnalyzer(cache=None)
-                
-                # Получение топ монет (исключаем стейблкоины)
                 top_coins = analyzer.get_top_coins(50)
+                
                 if top_coins:
                     stablecoins = ['USDT', 'USDC', 'DAI']
                     filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
                     
-                    # Загрузка исторических данных БЕЗ кеша
+                    # Загружаем исторические данные ОДИН РАЗ
                     historical_data = analyzer.load_historical_data(filtered_coins, 1400)
                     
                     if historical_data:
-                        # Расчет индикатора БЕЗ графиков
+                        # Рассчитываем индикатор ОДИН РАЗ
                         indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
                         
                         if not indicator_data.empty:
@@ -525,16 +449,22 @@ class SensorTowerScheduler:
                                 'percentage': round(latest_percentage, 1)
                             }
                             
-                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth для планировщика: {signal} - {condition} ({latest_percentage:.1f}%)")
+                            # Сохраняем данные для создания графика БЕЗ ПОВТОРНОЙ ЗАГРУЗКИ
+                            chart_data = {
+                                'historical_data': historical_data,
+                                'indicator_data': indicator_data
+                            }
+                            
+                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth рассчитан ОДИН РАЗ: {signal} - {condition} ({latest_percentage:.1f}%)")
                         else:
-                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные Market Breadth для планировщика")
+                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные индикатора")
                     else:
-                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные для планировщика")
+                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные")
                 else:
-                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет для планировщика")
+                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет")
                         
             except Exception as e:
-                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка Market Breadth для планировщика: {str(e)}")
+                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка загрузки данных: {str(e)}")
             
             # Подробная проверка на изменение рейтинга
             if self.last_sent_rank is None:
@@ -567,7 +497,7 @@ class SensorTowerScheduler:
             # Отправляем сообщение только если нужно
             if need_to_send:
                 # Отправляем сообщение только если рейтинг изменился или это первый запуск
-                result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data, market_breadth_data)
+                result = self._send_combined_message(rankings_data, fear_greed_data, altseason_data, market_breadth_data, chart_data)
                 
                 # Обновляем последний отправленный рейтинг независимо от результата отправки
                 # Это поможет избежать множественных сообщений при сбоях отправки

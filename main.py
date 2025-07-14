@@ -1734,7 +1734,7 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         logger.error(f"Полная ошибка: {traceback.format_exc()}")
         return None
 
-def create_quick_chart():
+def create_quick_chart(existing_data=None):
     """
     Создает график с сокращенным периодом для быстрой отправки
     """
@@ -1753,33 +1753,39 @@ def create_quick_chart():
         ma_period = 200
         history_days = 1095  # 3 года данных как в продакшене
         
-        # Инициализация без кеширования
-        analyzer = CryptoAnalyzer(cache=None)
-        
-        # Получение данных
-        top_coins = analyzer.get_top_coins(top_n)
-        if not top_coins:
-            logger.error("Не удалось получить топ монеты")
-            return None
+        # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
+        if existing_data and 'historical_data' in existing_data and 'indicator_data' in existing_data:
+            logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика")
+            historical_data = existing_data['historical_data']
+            indicator_data = existing_data['indicator_data']
+        else:
+            # Инициализация без кеширования (fallback)
+            analyzer = CryptoAnalyzer(cache=None)
             
-        # Загружаем меньше данных
-        total_days_needed = ma_period + history_days + 50
-        historical_data = analyzer.load_historical_data(top_coins, total_days_needed)
-        
-        if not historical_data:
-            logger.error("Не удалось загрузить исторические данные")
-            return None
-        
-        # Расчет индикатора
-        indicator_data = analyzer.calculate_market_breadth(
-            historical_data, 
-            ma_period, 
-            history_days
-        )
-        
-        if indicator_data.empty:
-            logger.error("Не удалось рассчитать индикатор")
-            return None
+            # Получение данных
+            top_coins = analyzer.get_top_coins(top_n)
+            if not top_coins:
+                logger.error("Не удалось получить топ монеты")
+                return None
+                
+            # Загружаем меньше данных
+            total_days_needed = ma_period + history_days + 50
+            historical_data = analyzer.load_historical_data(top_coins, total_days_needed)
+            
+            if not historical_data:
+                logger.error("Не удалось загрузить исторические данные")
+                return None
+            
+            # Расчет индикатора
+            indicator_data = analyzer.calculate_market_breadth(
+                historical_data, 
+                ma_period, 
+                history_days
+            )
+            
+            if indicator_data.empty:
+                logger.error("Не удалось рассчитать индикатор")
+                return None
         
         logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
         
