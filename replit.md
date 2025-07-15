@@ -122,6 +122,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Efficient Scheduling Algorithm**: Replaced constant polling with precise time calculation that sleeps exactly until target time
 - **Resource Optimization**: New scheduler calculates time until 08:01 UTC and sleeps efficiently instead of checking every minute
 - **Production Fix Delivered**: Updated scheduler eliminates timing gaps and guarantees execution at exact 11:01 MSK daily
+- **CRITICAL SYSTEMD SERVICE FIX**: Created standalone scheduler file to eliminate double scheduler startup conflict
+- **Service Architecture Improved**: Separated systemd service (scheduler_standalone.py) from Flask web interface (main.py) 
+- **Double Scheduler Issue Resolved**: SystemD now runs dedicated scheduler, Flask runs only web interface without scheduler conflicts
 
 ### July 11, 2025
 - **CRITICAL PRODUCTION FIXES COMPLETED**: All three production failures identified in server logs completely resolved
