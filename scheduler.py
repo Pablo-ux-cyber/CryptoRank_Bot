@@ -95,42 +95,50 @@ class SensorTowerScheduler:
                 # Текущее время и дата
                 now = datetime.now()
                 today = now.date()
-                update_rank = False
-                run_rnk = False
                 
-                # ИСПРАВЛЕНИЕ: Убираем предварительный сбор данных в 07:59
-                # Теперь собираем все данные включая рейтинг НЕПОСРЕДСТВЕННО в момент отправки в 08:01
+                # Вычисляем время до следующего запуска (08:01 UTC = 11:01 MSK)
+                target_hour = 8
+                target_minute = 1
                 
-                # ИСПРАВЛЕНИЕ: Точная проверка времени для сбора данных И отправки (11:01 MSK = 8:01 UTC)
-                # ДОБАВЛЕНО: Также проверяем 05:01 UTC как указано в логах планировщика
-                if ((now.hour == 8 and now.minute == 1 and now.second < 30) or 
-                    (now.hour == 5 and now.minute == 1 and now.second < 30)):
-                    if self.last_rank_update_date is None or self.last_rank_update_date < today:
-                        update_rank = True
-                        logger.info(f"ИСПРАВЛЕНИЕ: Запланирован ПОЛНЫЙ сбор данных + отправка в {now} (UTC {now.hour}:01 = MSK {now.hour+3}:01)")
+                # Создаем целевое время на сегодня
+                target_time = now.replace(hour=target_hour, minute=target_minute, second=0, microsecond=0)
                 
-                # Обновляем все данные включая рейтинг, если пришло время
-                if update_rank:
+                # Если целевое время уже прошло сегодня, планируем на завтра
+                if now >= target_time:
+                    target_time = target_time.replace(day=target_time.day + 1)
+                
+                # Вычисляем количество секунд до целевого времени
+                time_diff = (target_time - now).total_seconds()
+                
+                logger.info(f"Следующий запуск запланирован на: {target_time} (через {int(time_diff/3600)} часов {int((time_diff%3600)/60)} минут)")
+                
+                # Проверяем, не пора ли уже отправлять (если время подошло в течение последней минуты)
+                if time_diff <= 60 and (self.last_rank_update_date is None or self.last_rank_update_date < today):
+                    logger.info(f"ВРЕМЯ ОТПРАВКИ: Запуск полного сбора данных и отправки в {now}")
                     try:
-                        time_type = "основное"
-                        logger.info(f"Получение данных о рейтинге Coinbase ({time_type} обновление в {now.hour}:{now.minute})")
                         self.run_scraping_job()
                         self.last_rank_update_date = today
-                        logger.info(f"Данные о рейтинге Coinbase успешно обновлены: {now}")
+                        logger.info(f"Данные успешно собраны и отправлены: {now}")
                     except Exception as e:
-                        logger.error(f"Ошибка при получении данных о рейтинге Coinbase: {str(e)}")
+                        logger.error(f"Ошибка при отправке данных: {str(e)}")
+                    
+                    # После отправки спим до следующего дня
+                    time_diff = 24 * 60 * 60  # 24 часа
+                
+                # Спим до целевого времени, но не более 1 часа за раз (для возможности остановки)
+                sleep_time = min(time_diff, 3600)  # максимум 1 час
+                logger.info(f"Планировщик спит {int(sleep_time/60)} минут до следующей проверки")
+                
+                # Спим с возможностью прерывания
+                for _ in range(int(sleep_time)):
+                    if self.stop_event.is_set():
+                        break
+                    time.sleep(1)
+                    
             except Exception as e:
-                logger.error(f"Error in scheduler loop: {str(e)}")
-            
-            # Sleep for 5 minutes
-            seconds_to_sleep = 5 * 60  # 5 minutes in seconds
-            logger.info(f"Scheduler sleeping for {seconds_to_sleep} seconds (5 minutes)")
-            
-            # Wait with checking for stop event
-            for _ in range(seconds_to_sleep):
-                if self.stop_event.is_set():
-                    break
-                time.sleep(1)
+                logger.error(f"Ошибка в циле планировщика: {str(e)}")
+                # При ошибке спим 5 минут перед повтором
+                time.sleep(300)
     
     def start(self):
         """Start the scheduler"""

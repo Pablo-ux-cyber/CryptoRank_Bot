@@ -1,0 +1,155 @@
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl status coinbasebot
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor p>
+     Active: active (running) since Mon 2025-07-14 18:27:31 MSK; 16h ago
+   Main PID: 4065009 (python)
+      Tasks: 6 (limit: 4580)
+     Memory: 26.9M
+        CPU: 11min 39.453s
+     CGroup: /system.slice/coinbasebot.service
+             ├─4065009 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+             └─4065013 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+
+Jul 15 10:58:32 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 10:58:32,340 - s>
+Jul 15 10:58:32 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 11:03:32 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 11:03:32,645 - s>
+Jul 15 11:03:32 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 11:08:32 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 11:08:32,963 - s>
+Jul 15 11:08:32 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 11:13:33 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 11:13:33,275 - s>
+Jul 15 11:13:33 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 11:18:33 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 11:18:33,602 - s>
+Jul 15 11:18:33 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+
+(venv) root@imm1:~/coinbaserank_bot# sudo journalctl -u coinbasebot --since "2025-07-15 08:00:00"
+Jul 15 08:03:21 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:03:21,791 - s>
+Jul 15 08:03:21 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:08:22 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:08:22,085 - s>
+Jul 15 08:08:22 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:13:22 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:13:22,391 - s>
+Jul 15 08:13:22 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:18:22 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:18:22,702 - s>
+Jul 15 08:18:22 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:23:23 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:23:23,019 - s>
+Jul 15 08:23:23 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:28:23 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:28:23,328 - s>
+Jul 15 08:28:23 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,263 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,265 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,265 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,266 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:  1. Д>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,266 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:  2. Д>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,266 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:  3. Д>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 08:32:19,266 - s>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: 184.105.139.68 - - [15/Jul/>
+Jul 15 08:32:19 imm1.dinet.fvds.ru python[4065013]: INFO:werkzeug:184.105.139.6>
+Jul 15 08:32:33 imm1.dinet.fvds.ru python[4065013]: 184.105.139.68 - - [15/Jul/>
+Jul 15 08:32:33 imm1.dinet.fvds.ru python[4065013]: INFO:werkzeug:184.105.139.6>
+Jul 15 08:33:23 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:33:23,588 - s>
+Jul 15 08:33:23 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:38:23 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:38:23,882 - s>
+Jul 15 08:38:23 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:43:24 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:43:24,189 - s>
+Jul 15 08:43:24 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:48:24 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:48:24,515 - s>
+Jul 15 08:48:24 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:53:24 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:53:24,802 - s>
+Jul 15 08:53:24 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 08:58:25 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 08:58:25,103 - s>
+Jul 15 08:58:25 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:03:25 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:03:25,396 - s>
+Jul 15 09:03:25 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:08:25 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:08:25,696 - s>
+Jul 15 09:08:25 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:13:25 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:13:25,977 - s>
+Jul 15 09:13:25 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:18:26 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:18:26,303 - s>
+Jul 15 09:18:26 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:23:26 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:23:26,610 - s>
+Jul 15 09:23:26 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:28:26 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:28:26,916 - s>
+Jul 15 09:28:26 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:33:27 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:33:27,225 - s>
+Jul 15 09:33:27 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:38:27 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:38:27,533 - s>
+Jul 15 09:38:27 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:43:27 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:43:27,838 - s>
+Jul 15 09:43:27 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:48:28 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:48:28,144 - s>
+Jul 15 09:48:28 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:53:28 imm1.dinet.fvds.ru python[4065009]: 2025-07-15 09:53:28,421 - s>
+Jul 15 09:53:28 imm1.dinet.fvds.ru python[4065009]: INFO:sensortower_bot:Schedu>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 09:55:53,787 - s>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 09:55:53,787 - s>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 09:55:53,787 - s>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:ИСПРАВ>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 09:55:53,787 - s>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: INFO:sensortower_bot:  1. Д>
+Jul 15 09:55:53 imm1.dinet.fvds.ru python[4065013]: 2025-07-15 09:55:53,787 - s>
+
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# tail -50 /root/coinbaserank_bot/sensortower_bot.log
+2025-07-15 08:58:25,103 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:03:25,396 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:08:25,696 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:13:25,977 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:18:26,303 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:23:26,610 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:28:26,916 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:33:27,225 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:38:27,533 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:43:27,838 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:48:28,144 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:53:28,421 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 09:55:53,787 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Принудительно читаем parsed_ranks.json для получения последних данных
+2025-07-15 09:55:53,787 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Загружено 31 записей из JSON файла
+2025-07-15 09:55:53,787 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Последние записи в JSON:
+2025-07-15 09:55:53,787 - sensortower_bot - INFO -   1. Дата: 2025-07-14, Рейтинг: 176
+2025-07-15 09:55:53,787 - sensortower_bot - INFO -   2. Дата: 2025-07-13, Рейтинг: 182
+2025-07-15 09:55:53,787 - sensortower_bot - INFO -   3. Дата: 2025-07-12, Рейтинг: 160
+2025-07-15 09:55:53,787 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Возвращаем ПОСЛЕДНИЙ рейтинг 176 на дату 2025-07-14
+2025-07-15 09:58:28,716 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:03:29,044 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:05:03,651 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Принудительно читаем parsed_ranks.json для получения последних данных
+2025-07-15 10:05:03,652 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Загружено 31 записей из JSON файла
+2025-07-15 10:05:03,652 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Последние записи в JSON:
+2025-07-15 10:05:03,652 - sensortower_bot - INFO -   1. Дата: 2025-07-14, Рейтинг: 176
+2025-07-15 10:05:03,652 - sensortower_bot - INFO -   2. Дата: 2025-07-13, Рейтинг: 182
+2025-07-15 10:05:03,652 - sensortower_bot - INFO -   3. Дата: 2025-07-12, Рейтинг: 160
+2025-07-15 10:05:03,652 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Возвращаем ПОСЛЕДНИЙ рейтинг 176 на дату 2025-07-14
+2025-07-15 10:08:29,339 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:13:29,637 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:18:29,957 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:23:30,247 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:26:33,668 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Принудительно читаем parsed_ranks.json для получения последних данных
+2025-07-15 10:26:33,668 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Загружено 31 записей из JSON файла
+2025-07-15 10:26:33,668 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Последние записи в JSON:
+2025-07-15 10:26:33,668 - sensortower_bot - INFO -   1. Дата: 2025-07-14, Рейтинг: 176
+2025-07-15 10:26:33,668 - sensortower_bot - INFO -   2. Дата: 2025-07-13, Рейтинг: 182
+2025-07-15 10:26:33,668 - sensortower_bot - INFO -   3. Дата: 2025-07-12, Рейтинг: 160
+2025-07-15 10:26:33,668 - sensortower_bot - INFO - ИСПРАВЛЕНИЕ: Возвращаем ПОСЛЕДНИЙ рейтинг 176 на дату 2025-07-14
+2025-07-15 10:28:30,571 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:33:30,837 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:38:31,122 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:43:31,429 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:48:31,749 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:53:32,033 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 10:58:32,340 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 11:03:32,645 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 11:08:32,963 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 11:13:33,275 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+2025-07-15 11:18:33,602 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+(venv) root@imm1:~/coinbaserank_bot# grep -E "2025-07-15 08:0[0-5]" /root/coinbaserank_bot/sensortower_bot.log
+2025-07-14 18:27:33,349 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-15 08:01:00
+2025-07-15 08:03:21,791 - sensortower_bot - INFO - Scheduler sleeping for 300 seconds (5 minutes)
+(venv) root@imm1:~/coinbaserank_bot# 

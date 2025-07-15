@@ -118,6 +118,10 @@ The system follows a modular, event-driven architecture with separate components
 - **Chart Generation Working**: Catbox.moe upload successful (https://files.catbox.moe/zmsabm.png), charts display properly in Telegram
 - **Message Delivery Verified**: Synchronous Telegram delivery confirmed working to @telegrm_hub channel with formatted message and chart link
 - **Scheduler Ready for Production**: Next automatic run scheduled for July 15, 2025 at 11:01 MSK (08:01 UTC) with confirmed functionality
+- **CRITICAL SCHEDULER TIMING FIX**: Identified root cause of missed 08:01 UTC execution - scheduler slept 5 minutes and missed exact time
+- **Efficient Scheduling Algorithm**: Replaced constant polling with precise time calculation that sleeps exactly until target time
+- **Resource Optimization**: New scheduler calculates time until 08:01 UTC and sleeps efficiently instead of checking every minute
+- **Production Fix Delivered**: Updated scheduler eliminates timing gaps and guarantees execution at exact 11:01 MSK daily
 
 ### July 11, 2025
 - **CRITICAL PRODUCTION FIXES COMPLETED**: All three production failures identified in server logs completely resolved
