@@ -1,0 +1,35 @@
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# chmod +x /root/coinbaserank_bot/scheduler_standalone.py
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl stop coinbasebot
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# sudo nano /etc/systemd/system/coinbasebot.service
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl daemon-reload
+sudo systemctl start coinbasebot
+sudo systemctl status coinbasebot
+tail -f /root/coinbaserank_bot/sensortower_bot.log
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor p>
+     Active: active (running) since Tue 2025-07-15 11:42:07 MSK; 39ms ago
+   Main PID: 4112931 (python)
+      Tasks: 1 (limit: 4580)
+     Memory: 3.9M
+        CPU: 18ms
+     CGroup: /system.slice/coinbasebot.service
+             └─4112931 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+
+Jul 15 11:42:07 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram B>
+
+2025-07-15 11:42:09,926 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-07-15 11:42:09,933 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 139
+2025-07-15 11:42:09,933 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-07-15 11:42:09,933 - sensortower_bot - INFO - Получена блокировка файла. Этот экземпляр бота будет единственным запущенным.
+2025-07-15 11:42:09,934 - sensortower_bot - INFO - ИСПРАВЛЕНО: Планировщик запущен, ПОЛНЫЙ сбор данных + отправка в 11:01 MSK (без предварительного сбора в 10:59)
+2025-07-15 11:42:09,934 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:42:09,934 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 18 минут)
+2025-07-15 11:42:09,935 - sensortower_bot - INFO - Планировщик успешно запущен
+2025-07-15 11:42:09,935 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 11:42:09,935 - sensortower_bot - INFO - Для остановки используйте Ctrl+C или sudo systemctl stop coinbasebot
+
