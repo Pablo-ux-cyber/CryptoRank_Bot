@@ -1,0 +1,35 @@
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl status coinbasebot
+tail -f /root/coinbaserank_bot/sensortower_bot.log
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor p>
+     Active: active (running) since Tue 2025-07-15 11:35:33 MSK; 5s ago
+   Main PID: 4112523 (python)
+      Tasks: 6 (limit: 4580)
+     Memory: 144.9M
+        CPU: 1.681s
+     CGroup: /system.slice/coinbasebot.service
+             ├─4112523 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+             └─4112527 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: 2025-07-15 11:35:36,258 - s>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: INFO:sensortower_bot:Файл и>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: 2025-07-15 11:35:36,258 - s>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: INFO:sensortower_bot:Загруж>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: 2025-07-15 11:35:36,258 - s>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: INFO:sensortower_bot:Файл б>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: 2025-07-15 11:35:36,259 - s>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: ERROR:sensortower_bot:Друго>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: 2025-07-15 11:35:36,259 - s>
+Jul 15 11:35:36 imm1.dinet.fvds.ru python[4112527]: ERROR:sensortower_bot:Faile>
+ ^X
+2025-07-15 11:35:36,240 - sensortower_bot - INFO - Flask app initialized without starting scheduler - scheduler should be started externally
+2025-07-15 11:35:36,241 - sensortower_bot - INFO - Starting scheduler at app initialization
+2025-07-15 11:35:36,253 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла истории: 379
+2025-07-15 11:35:36,257 - sensortower_bot - INFO - Initialized Altcoin Season Index module with top 50 coins, 30d period
+2025-07-15 11:35:36,257 - sensortower_bot - INFO - Thresholds: Strong=0.75, Moderate=0.5, Weak=0.25
+2025-07-15 11:35:36,258 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-07-15 11:35:36,258 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 139
+2025-07-15 11:35:36,258 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-07-15 11:35:36,259 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:35:36,259 - sensortower_bot - ERROR - Failed to start the scheduler
+
