@@ -1,0 +1,38 @@
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl stop coinbasebot
+sudo rm -f /root/coinbaserank_bot/coinbasebot.lock  
+sudo systemctl start coinbasebot
+sudo systemctl status coinbasebot
+tail -20 /root/coinbaserank_bot/sensortower_bot.log
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor p>
+     Active: active (running) since Tue 2025-07-15 11:28:21 MSK; 47ms ago
+   Main PID: 4112128 (python)
+      Tasks: 1 (limit: 4580)
+     Memory: 8.2M
+        CPU: 21ms
+     CGroup: /system.slice/coinbasebot.service
+             └─4112128 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+
+Jul 15 11:28:21 imm1.dinet.fvds.ru systemd[1]: Started Coinbase Rank Telegram B>
+ ^X
+2025-07-15 11:28:24,741 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-07-15 11:28:24,741 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 139
+2025-07-15 11:28:24,741 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-07-15 11:28:24,741 - sensortower_bot - INFO - Получена блокировка файла. Этот экземпляр бота будет единственным запущенным.
+2025-07-15 11:28:24,742 - sensortower_bot - INFO - ИСПРАВЛЕНО: Планировщик запущен, ПОЛНЫЙ сбор данных + отправка в 11:01 MSK (без предварительного сбора в 10:59)
+2025-07-15 11:28:24,742 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 32 минут)
+2025-07-15 11:28:24,742 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 11:28:24,742 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:28:24,745 - sensortower_bot - INFO - Starting scheduler at app initialization
+2025-07-15 11:28:26,617 - sensortower_bot - INFO - Initialized Altcoin Season Index module with top 50 coins, 30d period
+2025-07-15 11:28:26,617 - sensortower_bot - INFO - Thresholds: Strong=0.75, Moderate=0.5, Weak=0.25
+2025-07-15 11:28:26,624 - sensortower_bot - INFO - Starting scheduler at app initialization
+2025-07-15 11:28:26,627 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла истории: 379
+2025-07-15 11:28:26,628 - sensortower_bot - INFO - Initialized Altcoin Season Index module with top 50 coins, 30d period
+2025-07-15 11:28:26,629 - sensortower_bot - INFO - Thresholds: Strong=0.75, Moderate=0.5, Weak=0.25
+2025-07-15 11:28:26,636 - sensortower_bot - INFO - Файл истории рейтинга будет храниться по пути: /root/coinbaserank_bot/rank_history.txt
+2025-07-15 11:28:26,636 - sensortower_bot - INFO - Загружен предыдущий рейтинг из файла: 139
+2025-07-15 11:28:26,636 - sensortower_bot - INFO - Файл блокировки будет храниться по пути: /root/coinbaserank_bot/coinbasebot.lock
+2025-07-15 11:28:26,636 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:28:26,636 - sensortower_bot - ERROR - Failed to start the scheduler
+(venv) root@imm1:~/coinbaserank_bot# 

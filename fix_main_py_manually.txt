@@ -1,0 +1,38 @@
+РУЧНОЕ ИСПРАВЛЕНИЕ MAIN.PY НА СЕРВЕРЕ
+
+Найдите в файле /root/coinbaserank_bot/main.py эти строки:
+
+# Initialize scheduler at startup - for both direct run and gunicorn
+scheduler_thread = threading.Thread(target=start_scheduler_thread)
+scheduler_thread.daemon = True
+scheduler_thread.start()
+logger.info("Starting scheduler at app initialization")
+
+ЗАМЕНИТЕ НА:
+
+# ИСПРАВЛЕНО: НЕ запускаем планировщик автоматически из Flask приложения
+# Планировщик должен запускаться только из main.py файла когда приложение запущено напрямую
+# или из отдельного systemd сервиса
+logger.info("Flask app initialized without starting scheduler - scheduler should be started externally")
+
+ЗАТЕМ НАЙДИТЕ:
+
+if __name__ == "__main__":
+    # Run the Flask app when called directly
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+ЗАМЕНИТЕ НА:
+
+if __name__ == "__main__":
+    # ИСПРАВЛЕНО: При запуске напрямую (python main.py) запускаем планировщик
+    # Initialize scheduler at startup - for both direct run and gunicorn
+    scheduler_thread = threading.Thread(target=start_scheduler_thread)
+    scheduler_thread.daemon = True
+    scheduler_thread.start()
+    logger.info("Starting scheduler at app initialization")
+    
+    # Run the Flask app when called directly
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+ПОСЛЕ ИЗМЕНЕНИЙ ВЫПОЛНИТЕ:
+sudo systemctl restart coinbasebot
