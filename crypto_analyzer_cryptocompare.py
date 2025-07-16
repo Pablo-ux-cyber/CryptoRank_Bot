@@ -18,7 +18,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 0.5  # 500ms между запросами для соблюдения лимитов API
+        self.request_delay = 0.2  # 200ms между запросами для ускорения
         self.api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
         
         # Настройка логирования
@@ -169,8 +169,8 @@ class CryptoAnalyzer:
         
         self.logger.info(f"Начинаем параллельную загрузку свежих данных для {total_coins} монет...")
         
-        # Параллельная загрузка с 3 потоками для соблюдения лимитов API
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+        # Параллельная загрузка с 5 потоками для ускорения
+        with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
             # Запускаем все задачи
             future_to_coin = {
                 executor.submit(self._load_single_coin_data, coin, days): coin 
