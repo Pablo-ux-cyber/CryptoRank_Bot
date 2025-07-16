@@ -2151,7 +2151,7 @@ def create_web_interface_chart():
         return None
 
 # Тестовые эндпоинты
-@app.route('/test-telegram-message', methods=['POST'])
+@app.route('/test-telegram-message', methods=['POST', 'GET'])
 def test_telegram_message():
     """Отправить реальное сообщение в тестовую группу используя настоящие данные"""
     try:
