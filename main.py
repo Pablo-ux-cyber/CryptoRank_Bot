@@ -1813,9 +1813,13 @@ def create_quick_chart(existing_data=None):
         
         logger.info(f"Рассчитан индикатор для {len(indicator_data)} дней")
         
-        # Создание графика через matplotlib (быстрее)
-        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
-        fig.patch.set_facecolor('white')
+        # Создание графика через matplotlib (быстрее) с защитой от многопоточности
+        try:
+            fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 8))
+            fig.patch.set_facecolor('white')
+        except Exception as e:
+            logger.error(f"Ошибка создания matplotlib subplot: {e}")
+            return None
         
         # Bitcoin график - синхронизируем с market breadth данными
         if 'BTC' in historical_data:
@@ -1930,16 +1934,20 @@ def create_quick_chart(existing_data=None):
 
         plt.tight_layout()
         
-        # Сохранение
+        # Сохранение с защитой от ошибок
         img_buffer = BytesIO()
-        plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
-                   facecolor='white', edgecolor='none')
-        img_buffer.seek(0)
-        img_bytes = img_buffer.getvalue()
-        plt.close(fig)
-        
-        logger.info("Быстрый график создан успешно")
-        return img_bytes
+        try:
+            plt.savefig(img_buffer, format='png', dpi=150, bbox_inches='tight', 
+                       facecolor='white', edgecolor='none')
+            img_buffer.seek(0)
+            img_bytes = img_buffer.getvalue()
+            logger.info("Быстрый график создан успешно")
+            return img_bytes
+        except Exception as e:
+            logger.error(f"Ошибка сохранения matplotlib график: {e}")
+            return None
+        finally:
+            plt.close(fig)
         
     except Exception as e:
         logger.error(f"Ошибка создания быстрого графика: {str(e)}")
@@ -2443,9 +2451,9 @@ def quick_test_message():
             # Создаем график и получаем ссылку
             chart_link = create_chart_from_web_endpoint()
             
-            # Формируем сообщение с кликабельной ссылкой на график
+            # Формируем сообщение с кликабельной ссылкой на график (исправлено форматирование)
             if chart_link:
-                market_breadth_message = f"Market by 200MA: {breadth_signal} [{breadth_condition}]({chart_link}): {breadth_percentage}%"
+                market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%\n📊 [График]({chart_link})"
             else:
                 market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%"
         else:
@@ -2459,10 +2467,10 @@ def quick_test_message():
         # Составляем полное сообщение
         full_message = f"{rank_display}\n\n{fear_greed_message}\n\n{market_breadth_message}"
         
-        # Отправка в Telegram
+        # Отправка в Telegram с правильным форматированием
         from telegram_bot import TelegramBot
         telegram_bot = TelegramBot()
-        success = telegram_bot.send_message(full_message)
+        success = telegram_bot.send_message(full_message, parse_mode='Markdown')
         
         if success:
             logger.info("ИСПРАВЛЕННОЕ быстрое тестовое сообщение отправлено успешно")

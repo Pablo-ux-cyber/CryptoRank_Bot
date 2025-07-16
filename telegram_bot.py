@@ -80,12 +80,13 @@ class TelegramBot:
             logger.error(f"ИСПРАВЛЕНИЕ: Ошибка создания event loop: {str(e)}")
             return None
     
-    def send_message(self, message):
+    def send_message(self, message, parse_mode=None):
         """
         Отправить сообщение в указанный канал/группу Telegram
         
         Args:
             message (str): Текст сообщения
+            parse_mode (str): Режим парсинга ('Markdown', 'HTML', None)
             
         Returns:
             bool: True если сообщение отправлено успешно, иначе False
@@ -102,11 +103,11 @@ class TelegramBot:
                 chat_type = "канал" if chat_id.startswith('@') else "группа"
                 
                 try:
-                    # Отправляем с Markdown форматированием для ссылок
+                    # Отправляем с указанным форматированием
                     await self.bot.send_message(
                         chat_id=chat_id,
                         text=message,
-                        parse_mode='Markdown',
+                        parse_mode=parse_mode,
                         disable_web_page_preview=True
                     )
                     logger.info(f"Сообщение отправлено в Telegram {chat_type}")
