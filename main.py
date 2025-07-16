@@ -2295,7 +2295,7 @@ def test_telegram_message():
             "Нейтральная зона": "Neutral"
         }
         english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%".replace(" ]", "]").replace("[ ", "[").replace(" )", ")").replace("( ", "(")
+        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%"
         
         # Собираем финальное сообщение в точном формате продакшена
         # Формат: 🔼 Coinbase Appstore Rank: 126
@@ -2304,7 +2304,7 @@ def test_telegram_message():
         combined_message += f"\n\n{fear_greed_message}"
         combined_message += f"\n\n{market_breadth_message}"
         
-        success = test_bot.send_message(combined_message)
+        success = test_bot.send_message(combined_message, parse_mode='Markdown')
         
         if success:
             return jsonify({
