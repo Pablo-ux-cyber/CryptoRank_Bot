@@ -2363,9 +2363,41 @@ def api_status():
     except Exception as e:
         return f"Ошибка проверки: {str(e)}", 500, {'Content-Type': 'text/plain; charset=utf-8'}
 
-# Завершение файла
+@app.route('/quick-status')
+def quick_status():
+    """Быстрая проверка текущих данных без тяжелых вычислений"""
+    try:
+        from scraper import SensorTowerScraper
+        from fear_greed_index import FearGreedIndexTracker
         
-        result = f"API ключ: {'НАЙДЕН (' + api_key[:20] + '...)' if api_key else 'НЕ НАЙДЕН'}\n"
+        scraper = SensorTowerScraper()
+        fear_greed = FearGreedIndexTracker()
+        
+        # Получаем текущие данные быстро
+        rankings_data = scraper.scrape_category_rankings()
+        fear_greed_data = fear_greed.get_fear_greed_index()
+        
+        current_rank = rankings_data.get('rank', 'N/A') if rankings_data else 'N/A'
+        current_fear_greed = fear_greed_data.get('value', 'N/A') if fear_greed_data else 'N/A'
+        fear_greed_class = fear_greed_data.get('value_classification', 'N/A') if fear_greed_data else 'N/A'
+        
+        result = f"""📊 ТЕКУЩИЕ ДАННЫЕ (быстро):
+
+🔼 Coinbase Rank: {current_rank}
+😏 Fear & Greed: {current_fear_greed} ({fear_greed_class})
+
+🎯 Статус: Данные получены без Market Breadth анализа
+⚡ Скорость: Быстро (без загрузки 50 монет)
+
+Для полного анализа с графиками используйте /test-telegram-message
+(требует время для загрузки 46-48/50 монет)"""
+
+        return result, 200, {'Content-Type': 'text/plain; charset=utf-8'}
+        
+    except Exception as e:
+        return f"Ошибка: {str(e)}", 500, {'Content-Type': 'text/plain; charset=utf-8'}
+
+# Завершение файла
         
         if api_key:
             # Тест простого API запроса

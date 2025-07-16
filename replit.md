@@ -111,6 +111,7 @@ The system follows a modular, event-driven architecture with separate components
 - **Data Consistency Achieved**: Eliminated previous server inconsistencies (45%-60% jumps) with proper API key configuration
 - **Real-Time Data Loading**: All market analysis uses fresh data from CryptoCompare API without cache dependencies
 - **Comprehensive Monitoring**: Added /api-status endpoint for quick system health checks
+- **Quick Data Endpoint**: Added /quick-status for instant current data without heavy Market Breadth processing
 - **SystemD Service Stable**: Production service running smoothly with gunicorn, scheduler, and web interface
 
 ### July 14, 2025
