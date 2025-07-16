@@ -1780,7 +1780,10 @@ def create_quick_chart(existing_data=None):
         history_days = 547  # 1.5 года данных
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
-        if existing_data and existing_data.get('historical_data') and existing_data.get('indicator_data'):
+        if (existing_data and 
+            existing_data.get('historical_data') is not None and 
+            existing_data.get('indicator_data') is not None and
+            not existing_data.get('indicator_data').empty):
             logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика - НЕ ЗАГРУЖАЕМ ПОВТОРНО")
             historical_data = existing_data['historical_data']
             indicator_data = existing_data['indicator_data']
@@ -1825,7 +1828,7 @@ def create_quick_chart(existing_data=None):
             return None
         
         # Bitcoin график - синхронизируем с market breadth данными
-        if 'BTC' in historical_data:
+        if 'BTC' in historical_data and historical_data['BTC'] is not None:
             btc_data = historical_data['BTC'].copy()
             btc_data['date'] = pd.to_datetime(btc_data['date'])
             
