@@ -18,7 +18,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 0.2  # 200ms между запросами для ускорения
+        self.request_delay = 0.5  # 500ms между запросами для стабильности
         self.api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
         
         # Настройка логирования
@@ -51,8 +51,8 @@ class CryptoAnalyzer:
             response = requests.get(url, params=params, timeout=15)
             
             if response.status_code == 429:
-                self.logger.warning("Превышен лимит запросов, ожидание 15 секунд...")
-                time.sleep(15)
+                self.logger.warning("Превышен лимит запросов, ожидание 30 секунд...")
+                time.sleep(30)
                 return self._make_request(url, params)
             
             response.raise_for_status()
@@ -65,8 +65,8 @@ class CryptoAnalyzer:
                 
                 # Если превышен лимит, ждем дольше
                 if "rate limit" in error_msg.lower() or "upgrade your account" in error_msg.lower():
-                    self.logger.warning("Превышен лимит API, ждем 30 секунд...")
-                    time.sleep(30)
+                    self.logger.warning("Превышен лимит API, ждем 60 секунд...")
+                    time.sleep(60)
                     return self._make_request(url, params)
                     
                 return None
