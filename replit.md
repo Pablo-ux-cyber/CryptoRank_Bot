@@ -98,6 +98,13 @@ The system follows a modular, event-driven architecture with separate components
 
 ## Recent Changes
 
+### July 16, 2025
+- **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py in production systemd service
+- **SystemD Service Updated**: Changed ExecStart from scheduler_standalone.py to main.py for unified architecture
+- **Service Running Successfully**: Production service active since 16:19:17 MSK with proper scheduler initialization and memory usage (65.0M)
+- **Automated Cron Scripts Ready**: Created complete set of portable scripts with dynamic IP detection for any server deployment
+- **Server Portability Achieved**: All scripts now automatically detect server IP, eliminating manual configuration on server migrations
+
 ### July 14, 2025
 - **CRITICAL TELEGRAM MESSAGING FIXED**: Resolved AsyncIO threading conflicts that prevented scheduled message delivery
 - **AsyncIO Threading Solution**: Created TelegramBotSync class using requests instead of asyncio for scheduler thread compatibility
