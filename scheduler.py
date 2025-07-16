@@ -96,7 +96,7 @@ class SensorTowerScheduler:
                 now = datetime.now()
                 today = now.date()
                 
-                # Время запуска: 08:01 UTC (11:01 MSK)
+                # Вычисляем время до следующего запуска (08:01 UTC = 11:01 MSK)
                 target_hour = 8
                 target_minute = 1
                 
@@ -112,9 +112,8 @@ class SensorTowerScheduler:
                 
                 logger.info(f"Следующий запуск запланирован на: {target_time} (через {int(time_diff/3600)} часов {int((time_diff%3600)/60)} минут)")
                 
-                # ИСПРАВЛЕНО: Проверяем точное время - если сейчас 08:01:XX и еще не отправляли сегодня
-                current_time_match = (now.hour == target_hour and now.minute == target_minute)
-                if current_time_match and (self.last_rank_update_date is None or self.last_rank_update_date < today):
+                # Проверяем, не пора ли уже отправлять (если время подошло в течение последней минуты)
+                if time_diff <= 60 and (self.last_rank_update_date is None or self.last_rank_update_date < today):
                     logger.info(f"ВРЕМЯ ОТПРАВКИ: Запуск полного сбора данных и отправки в {now}")
                     try:
                         self.run_scraping_job()
@@ -126,9 +125,9 @@ class SensorTowerScheduler:
                     # После отправки спим до следующего дня
                     time_diff = 24 * 60 * 60  # 24 часа
                 
-                # ИСПРАВЛЕНО: Проверяем время каждую минуту, чтобы не пропустить 08:01
-                sleep_time = 60  # Проверяем каждую минуту
-                logger.info(f"Планировщик спит {sleep_time} секунд до следующей проверки времени")
+                # Спим до целевого времени, но не более 1 часа за раз (для возможности остановки)
+                sleep_time = min(time_diff, 3600)  # максимум 1 час
+                logger.info(f"Планировщик спит {int(sleep_time/60)} минут до следующей проверки")
                 
                 # Спим с возможностью прерывания
                 for _ in range(int(sleep_time)):
@@ -416,78 +415,64 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # ИСПРАВЛЕНИЕ: Market Breadth с тайм-аутом для предотвращения зависания
+            # ИСПРАВЛЕНИЕ: Загружаем данные ОДИН РАЗ и используем для расчета и графика
             market_breadth_data = None
             chart_data = None
             try:
-                logger.info("ИСПРАВЛЕНИЕ: Запуск Market Breadth с тайм-аутом 120 секунд")
-                import signal
+                logger.info("ИСПРАВЛЕНИЕ: Загружаем свежие данные ОДИН РАЗ для Market Breadth и графика")
+                from crypto_analyzer_cryptocompare import CryptoAnalyzer
                 
-                def timeout_handler(signum, frame):
-                    raise TimeoutError("Market Breadth превысил тайм-аут 120 секунд")
+                analyzer = CryptoAnalyzer(cache=None)
+                top_coins = analyzer.get_top_coins(50)
                 
-                signal.signal(signal.SIGALRM, timeout_handler)
-                signal.alarm(120)  # 2 минуты максимум
-                
-                try:
-                    from crypto_analyzer_cryptocompare import CryptoAnalyzer
+                if top_coins:
+                    stablecoins = ['USDT', 'USDC', 'DAI']
+                    filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
                     
-                    analyzer = CryptoAnalyzer(cache=None)
-                    top_coins = analyzer.get_top_coins(50)
+                    # Загружаем исторические данные ОДИН РАЗ
+                    historical_data = analyzer.load_historical_data(filtered_coins, 1400)
                     
-                    if top_coins:
-                        stablecoins = ['USDT', 'USDC', 'DAI']
-                        filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
+                    if historical_data:
+                        # Рассчитываем индикатор ОДИН РАЗ
+                        indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
                         
-                        # Загружаем исторические данные ОДИН РАЗ
-                        historical_data = analyzer.load_historical_data(filtered_coins, 1400)
-                        
-                        if historical_data:
-                            # Рассчитываем индикатор ОДИН РАЗ
-                            indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
+                        if not indicator_data.empty:
+                            latest_percentage = indicator_data['percentage'].iloc[-1]
                             
-                            if not indicator_data.empty:
-                                latest_percentage = indicator_data['percentage'].iloc[-1]
-                                
-                                # Определяем сигнал и условие
-                                if latest_percentage >= 80:
-                                    signal = "🔴"
-                                    condition = "Overbought"
-                                elif latest_percentage <= 20:
-                                    signal = "🟢"  
-                                    condition = "Oversold"
-                                else:
-                                    signal = "🟡"
-                                    condition = "Neutral"
-                                
-                                market_breadth_data = {
-                                    'signal': signal,
-                                    'condition': condition,
-                                    'current_value': latest_percentage,
-                                    'percentage': round(latest_percentage, 1)
-                                }
-                                
-                                # Сохраняем данные для создания графика БЕЗ ПОВТОРНОЙ ЗАГРУЗКИ
-                                chart_data = {
-                                    'historical_data': historical_data,
-                                    'indicator_data': indicator_data
-                                }
-                                
-                                logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth рассчитан: {signal} - {condition} ({latest_percentage:.1f}%)")
+                            # Определяем сигнал и условие
+                            if latest_percentage >= 80:
+                                signal = "🔴"
+                                condition = "Overbought"
+                            elif latest_percentage <= 20:
+                                signal = "🟢"  
+                                condition = "Oversold"
                             else:
-                                logger.warning("ИСПРАВЛЕНИЕ: Пустые данные индикатора")
+                                signal = "🟡"
+                                condition = "Neutral"
+                            
+                            market_breadth_data = {
+                                'signal': signal,
+                                'condition': condition,
+                                'current_value': latest_percentage,
+                                'percentage': round(latest_percentage, 1)
+                            }
+                            
+                            # Сохраняем данные для создания графика БЕЗ ПОВТОРНОЙ ЗАГРУЗКИ
+                            chart_data = {
+                                'historical_data': historical_data,
+                                'indicator_data': indicator_data
+                            }
+                            
+                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth рассчитан ОДИН РАЗ: {signal} - {condition} ({latest_percentage:.1f}%)")
                         else:
-                            logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные")
+                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные индикатора")
                     else:
-                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет")
+                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные")
+                else:
+                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет")
                         
-                finally:
-                    signal.alarm(0)  # Отключаем тайм-аут
-                    
-            except TimeoutError:
-                logger.error("ИСПРАВЛЕНИЕ: Market Breadth превысил тайм-аут, отправляем сообщение без него")
             except Exception as e:
-                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка Market Breadth: {str(e)}, продолжаем без него")
+                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка загрузки данных: {str(e)}")
             
             # ИЗМЕНЕНО: Отправляем сообщение каждый день независимо от изменения рейтинга
             if self.last_sent_rank is None:
