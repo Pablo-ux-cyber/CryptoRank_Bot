@@ -2258,18 +2258,24 @@ def test_telegram_message():
             return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index", "api_status": api_status}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
-        # 3. Market Breadth с графиком (используем полный режим с 26 монетами)
+        # 3. Market Breadth с графиком - используем функцию без кеша
         logger.info("Загрузка Market Breadth данных с API ключом...")
-        market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
-        if not market_breadth_data:
+        market_breadth_result = get_market_breadth_data_no_cache()
+        if not market_breadth_result or market_breadth_result.get('status') != 'success':
             return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth", "api_status": api_status}), 500
+        
+        market_breadth_data = market_breadth_result['data']
             
         # Логируем результат загрузки
         logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/26 монет загружено")
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
-        # Создаем график и загружаем
-        png_data = create_quick_chart()
+        # Создаем график используя уже загруженные данные
+        existing_data = {
+            'historical_data': market_breadth_result.get('historical_data'),
+            'indicator_data': market_breadth_result.get('indicator_data')
+        }
+        png_data = create_quick_chart(existing_data=existing_data)
         if not png_data:
             return jsonify({"success": False, "message": "Не удалось создать график Market Breadth", "api_status": api_status}), 500
             
