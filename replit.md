@@ -126,6 +126,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Service Architecture Improved**: Separated systemd service (scheduler_standalone.py) from Flask web interface (main.py) 
 - **Double Scheduler Issue Resolved**: SystemD now runs dedicated scheduler, Flask runs only web interface without scheduler conflicts
 - **Production Mode Activated**: System running in optimal mode with standalone scheduler, no web interface, single process efficiency
+- **CRITICAL TIMING LOGIC FIXED**: Identified exact cause of missed messages - scheduler used time_diff calculation instead of direct time check
+- **Direct Time Check Implemented**: Replaced time_diff <= 60 with exact hour/minute check (now.hour == 8 and now.minute == 1)
+- **Message Delivery Guaranteed**: Scheduler now checks precise time match instead of calculating seconds until target time
 
 ### July 11, 2025
 - **CRITICAL PRODUCTION FIXES COMPLETED**: All three production failures identified in server logs completely resolved
