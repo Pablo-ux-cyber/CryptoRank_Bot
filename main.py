@@ -2239,20 +2239,25 @@ def test_telegram_message():
             return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index", "api_status": api_status}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
-        # 3. Market Breadth с графиком (используем полный режим с 50 монетами)
-        logger.info("Загрузка Market Breadth данных с API ключом...")
-        market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
+        # 3. Market Breadth с графиком (используем полный режим с 50 монетами за 2 года)
+        logger.info("Загрузка Market Breadth данных с API ключом за 2 года...")
+        
+        # Создаем экземпляр MarketBreadthIndicator с 2-летним периодом
+        market_breadth_2y = MarketBreadthIndicator()
+        market_breadth_2y.analysis_days = 730  # 2 года для анализа
+        
+        market_breadth_data = market_breadth_2y.get_market_breadth_data(fast_mode=False)
         if not market_breadth_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth", "api_status": api_status}), 500
+            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth за 2 года", "api_status": api_status}), 500
             
         # Логируем результат загрузки
         logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/50 монет загружено")
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
-        # Создаем график и загружаем
-        png_data = create_quick_chart()
+        # Создаем график с 2-летними данными
+        png_data = create_chart_2_years()
         if not png_data:
-            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth", "api_status": api_status}), 500
+            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth за 2 года", "api_status": api_status}), 500
             
         chart_url = image_uploader.upload_chart(png_data)
         if not chart_url:
