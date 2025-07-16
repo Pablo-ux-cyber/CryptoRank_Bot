@@ -1,0 +1,52 @@
+|  № | Символ | Название                                                                |
+| -: | :----: | ----------------------------------------------------------------------- |
+|  1 |   BTC  | Bitcoin                                                                 |
+|  2 |   ETH  | Ethereum                                                                |
+|  3 |   BNB  | Binance Coin                                                            |
+|  4 |   XRP  | XRP                                                                     |
+|  5 |   SOL  | Solana                                                                  |
+|  6 |   ADA  | Cardano                                                                 |
+|  7 |  DOGE  | Dogecoin                                                                |
+|  8 |   DOT  | Polkadot                                                                |
+|  9 |  MATIC | Polygon                                                                 |
+| 10 |   LTC  | Litecoin                                                                |
+| 11 |  LINK  | Chainlink                                                               |
+| 12 |   BCH  | Bitcoin Cash                                                            |
+| 13 |   XLM  | Stellar                                                                 |
+| 14 |  ALGO  | Algorand                                                                |
+| 15 |  AVAX  | Avalanche                                                               |
+| 16 |  ATOM  | Cosmos                                                                  |
+| 17 |   TRX  | TRON                                                                    |
+| 18 |   FIL  | Filecoin                                                                |
+| 19 |   ICP  | Internet Computer                                                       |
+| 20 |  NEAR  | NEAR Protocol                                                           |
+| 21 |   VET  | VeChain                                                                 |
+| 22 |   TON  | Toncoin                                                                 |
+| 23 |   EOS  | EOS                                                                     |
+| 24 |   XMR  | Monero                                                                  |
+| 25 |   APT  | Aptos                                                                   |
+| 26 |   AXS  | Axie Infinity                                                           |
+| 27 |   FTM  | Fantom                                                                  |
+| 28 |   SUI  | Sui                                                                     |
+| 29 |  THETA | Theta Network                                                           |
+| 30 |   XTZ  | Tezos                                                                   |
+| 31 |  HBAR  | Hedera                                                                  |
+| 32 |  FLOW  | Flow                                                                    |
+| 33 |   CRO  | Cronos                                                                  |
+| 34 |   OP   | Optimism                                                                |
+| 35 |   STX  | Stacks                                                                  |
+| 36 |  EGLD  | Elrond                                                                  |
+| 37 |  KLAY  | Klaytn                                                                  |
+| 38 |   CHZ  | Chiliz                                                                  |
+| 39 |   APE  | ApeCoin                                                                 |
+| 40 |  NEAR  | NEAR\* (повторяется? возможно дубликат; можно заменить на AR — Arweave) |
+| 41 |   AR   | Arweave                                                                 |
+| 42 |   GRT  | The Graph                                                               |
+| 43 |   ZEC  | Zcash                                                                   |
+| 44 |   MKR  | Maker                                                                   |
+| 45 |   ENJ  | Enjin Coin                                                              |
+| 46 |   XDC  | XDC Network                                                             |
+| 47 |   RPL  | Rocket Pool                                                             |
+| 48 |   BTT  | BitTorrent                                                              |
+| 49 |  SAND  | The Sandbox                                                             |
+| 50 |  MANA  | Decentraland                                                            |

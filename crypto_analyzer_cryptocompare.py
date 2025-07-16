@@ -25,11 +25,13 @@ class CryptoAnalyzer:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Список топ криптовалют (символы) - обновленный список из 26 монет по вашему файлу
+        # Список топ криптовалют (символы) - обновленный список из 50 монет по вашему файлу (убираем дубликат NEAR в строке 40)
         self.top_cryptos = [
             'BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'ADA', 'DOGE', 'DOT', 'MATIC', 'LTC',
             'LINK', 'BCH', 'XLM', 'ALGO', 'AVAX', 'ATOM', 'TRX', 'FIL', 'ICP', 'NEAR',
-            'VET', 'TON', 'EOS', 'XMR', 'APT', 'AXS'
+            'VET', 'TON', 'EOS', 'XMR', 'APT', 'AXS', 'FTM', 'SUI', 'THETA', 'XTZ',
+            'HBAR', 'FLOW', 'CRO', 'OP', 'STX', 'EGLD', 'KLAY', 'CHZ', 'APE', 'AR',
+            'GRT', 'ZEC', 'MKR', 'ENJ', 'XDC', 'RPL', 'BTT', 'SAND', 'MANA'
         ]
     
     def _make_request(self, url: str, params: dict = None) -> Optional[dict]:
