@@ -2438,8 +2438,12 @@ def quick_test_message():
             breadth_percentage = market_breadth_data['data']['percentage']
             breadth_signal = market_breadth_data['data']['signal']
             
-            # Создаем график и получаем ссылку
-            chart_link = create_chart_from_web_endpoint()
+            # Создаем график используя уже загруженные данные
+            existing_data = {
+                'historical_data': market_breadth_data.get('historical_data'),
+                'indicator_data': market_breadth_data.get('indicator_data')
+            }
+            chart_link = create_quick_chart(existing_data)
             
             # Формируем сообщение с кликабельной ссылкой на график (исправлено форматирование)
             if chart_link:
@@ -2539,7 +2543,9 @@ def get_market_breadth_data_no_cache():
                 'percentage': round(latest_percentage, 1),
                 'current_value': latest_percentage,
                 'timestamp': str(indicator_data.index[-1])
-            }
+            },
+            'historical_data': historical_data,
+            'indicator_data': indicator_data
         }
         
     except Exception as e:
