@@ -25,11 +25,11 @@ class CryptoAnalyzer:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Список топ криптовалют (символы) - обновленный список из 26 монет (убрали MNT - не работает в CryptoCompare)
+        # Список топ криптовалют (символы) - обновленный список из 26 монет по вашему файлу
         self.top_cryptos = [
-            'BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'ADA', 'DOGE', 'TRX', 'HYPE', 'XLM', 
-            'SUI', 'LINK', 'HBAR', 'BCH', 'AVAX', 'SHIB', 'TON', 'LTC', 'DOT', 'XMR',
-            'UNI', 'PEPE', 'AAVE', 'APT', 'NEAR', 'ONDO'
+            'BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'ADA', 'DOGE', 'DOT', 'MATIC', 'LTC',
+            'LINK', 'BCH', 'XLM', 'ALGO', 'AVAX', 'ATOM', 'TRX', 'FIL', 'ICP', 'NEAR',
+            'VET', 'TON', 'EOS', 'XMR', 'APT', 'AXS'
         ]
     
     def _make_request(self, url: str, params: dict = None) -> Optional[dict]:
