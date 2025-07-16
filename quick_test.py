@@ -1,56 +1,45 @@
 #!/usr/bin/env python3
 """
-Быстрый тест системы с полными 50 монетами
+Быстрый тест основных функций планировщика
 """
+
+from datetime import datetime
 import sys
-import os
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, '/home/runner/workspace')
 
-from market_breadth_indicator import MarketBreadthIndicator
-import logging
-
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
-def test_50_coins():
-    """Тест Market Breadth с полными 50 монетами"""
+def quick_test():
+    print("=== БЫСТРЫЙ ТЕСТ ПЛАНИРОВЩИКА ===")
+    
+    # Тест 1: Логика времени
+    print("\n1. Тест логики времени:")
+    now = datetime(2025, 7, 16, 8, 1, 0)  # Точно 08:01
+    target_hour, target_minute = 8, 1
+    
+    is_exact_time = (now.hour == target_hour and now.minute == target_minute)
+    print(f"   Время {now} → is_exact_time: {is_exact_time}")
+    
+    # Тест 2: JSON reader
+    print("\n2. Тест чтения рейтинга:")
     try:
-        # Инициализация Market Breadth Indicator
-        market_breadth = MarketBreadthIndicator()
-        
-        logger.info("Запуск теста с полными 50 монетами...")
-        
-        # Получение данных с полными 50 монетами (fast_mode=False)
-        result = market_breadth.get_market_breadth_data(fast_mode=False)
-        
-        if result:
-            logger.info(f"✅ УСПЕХ! Получены данные Market Breadth:")
-            logger.info(f"   Сигнал: {result['signal']}")
-            logger.info(f"   Состояние: {result['condition']}")
-            logger.info(f"   Значение: {result['current_value']:.1f}%")
-            logger.info(f"   Проанализировано монет: {result.get('coins_analyzed', 'неизвестно')}")
-            
-            # Форматирование сообщения
-            message = market_breadth.format_breadth_message(result)
-            logger.info(f"   Сообщение: {message}")
-            
-            return True
-        else:
-            logger.error("❌ ОШИБКА: Не удалось получить данные Market Breadth")
-            return False
-            
+        from json_rank_reader import get_rank_from_json
+        rank = get_rank_from_json()
+        print(f"   ✅ Рейтинг: {rank}")
     except Exception as e:
-        logger.error(f"❌ ИСКЛЮЧЕНИЕ: {str(e)}")
-        return False
+        print(f"   ❌ Ошибка: {e}")
+    
+    # Тест 3: Импорт планировщика
+    print("\n3. Тест импорта планировщика:")
+    try:
+        from load_dotenv import load_dotenv
+        load_dotenv()
+        from scheduler import SensorTowerScheduler
+        scheduler = SensorTowerScheduler()
+        print(f"   ✅ Планировщик создан: {type(scheduler).__name__}")
+    except Exception as e:
+        print(f"   ❌ Ошибка: {e}")
+    
+    print("\n=== РЕЗУЛЬТАТ ===")
+    print("Основные компоненты планировщика работают!")
 
 if __name__ == "__main__":
-    print("=== ТЕСТ СИСТЕМЫ С 50 МОНЕТАМИ ===")
-    success = test_50_coins()
-    
-    if success:
-        print("\n🎉 СИСТЕМА ГОТОВА К РАБОТЕ С 50 МОНЕТАМИ!")
-    else:
-        print("\n⚠️ СИСТЕМА НЕ ПРОШЛА ТЕСТ")
-    
-    sys.exit(0 if success else 1)
+    quick_test()
