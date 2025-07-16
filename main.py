@@ -1772,7 +1772,10 @@ def create_quick_chart(existing_data=None):
         history_days = 547  # 1.5 года данных
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
-        if existing_data and existing_data.get('historical_data') and existing_data.get('indicator_data'):
+        if (existing_data and 
+            existing_data.get('historical_data') is not None and 
+            existing_data.get('indicator_data') is not None and
+            not existing_data.get('indicator_data').empty):
             logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика - НЕ ЗАГРУЖАЕМ ПОВТОРНО")
             historical_data = existing_data['historical_data']
             indicator_data = existing_data['indicator_data']
@@ -2283,14 +2286,9 @@ def test_telegram_message():
         if not chart_url:
             return jsonify({"success": False, "message": "Не удалось загрузить график на Catbox", "api_status": api_status}), 500
             
-        # Переводим на английский для ссылки
-        condition_map = {
-            "Перекупленность": "Overbought",
-            "Перепроданность": "Oversold", 
-            "Нейтральная зона": "Neutral"
-        }
-        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%"
+        # Создаем правильное сообщение с ссылкой на показатель
+        english_condition = market_breadth_data['condition']  # Уже на английском
+        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}: {market_breadth_data['current_value']:.1f}%]({chart_url})"
         
         # Собираем финальное сообщение в точном формате продакшена
         combined_message = rankings_message
