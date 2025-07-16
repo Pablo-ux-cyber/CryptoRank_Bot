@@ -1773,11 +1773,12 @@ def create_quick_chart(existing_data=None):
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
         if existing_data and existing_data.get('historical_data') and existing_data.get('indicator_data'):
-            logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика")
+            logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика - НЕ ЗАГРУЖАЕМ ПОВТОРНО")
             historical_data = existing_data['historical_data']
             indicator_data = existing_data['indicator_data']
         else:
-            # Инициализация без кеширования (fallback)
+            # Инициализация без кеширования (fallback) - только если данные не переданы
+            logger.warning("FALLBACK: Загружаем данные заново, так как existing_data не переданы")
             analyzer = CryptoAnalyzer(cache=None)
             
             # Получение данных (все 49 монет)
