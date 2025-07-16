@@ -2258,9 +2258,9 @@ def test_telegram_message():
         # Отправляем в Telegram
         success = test_bot.send_message(combined_message)
         if success:
-            return jsonify({
+            response = jsonify({
                 "success": True, 
-                "message": "Тестовое сообщение отправлено успешно!",
+                "message": "Test message sent successfully!",
                 "api_diagnostics": {
                     "api_key_status": api_status,
                     "api_test_result": api_test_result,
@@ -2273,14 +2273,20 @@ def test_telegram_message():
                     "chart_url": chart_url
                 }
             })
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return response
         else:
-            return jsonify({"success": False, "message": "Ошибка отправки в Telegram"}), 500
+            response = jsonify({"success": False, "message": "Telegram sending error"})
+            response.headers['Content-Type'] = 'application/json; charset=utf-8'
+            return response, 500
             
     except Exception as e:
         logger.error(f"Ошибка в тестовом сообщении: {str(e)}")
         import traceback
         logger.error(f"Полная ошибка: {traceback.format_exc()}")
-        return jsonify({"success": False, "message": f"Ошибка: {str(e)}"}), 500
+        response = jsonify({"success": False, "message": f"Error: {str(e)}"})
+        response.headers['Content-Type'] = 'application/json; charset=utf-8'
+        return response, 500
 
 @app.route('/api-test')
 def api_test():
