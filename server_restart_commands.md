@@ -1,48 +1,66 @@
-# КОМАНДЫ ДЛЯ ПЕРЕЗАПУСКА ПОСЛЕ КОПИРОВАНИЯ ФАЙЛОВ
+# КОМАНДЫ ДЛЯ ПЕРЕЗАПУСКА СЕРВЕРА
 
-## 1. Остановить сервис
+## Проблема
+Вы добавили API ключ в .env, но система все еще показывает "API ключ: НЕ НАЙДЕН".
+
+## Решение - перезапустить SystemD сервис
+
+На сервере выполните:
+
 ```bash
+# 1. Остановить сервис
 sudo systemctl stop coinbasebot
+
+# 2. Перезагрузить конфигурацию systemd (если изменялся .service файл)
+sudo systemctl daemon-reload
+
+# 3. Запустить сервис снова
+sudo systemctl start coinbasebot
+
+# 4. Проверить статус
+sudo systemctl status coinbasebot
+
+# 5. Проверить что API ключ теперь найден
+python3 -c "
+import os
+from dotenv import load_dotenv
+load_dotenv()
+key = os.getenv('CRYPTOCOMPARE_API_KEY', 'НЕ НАЙДЕН')
+print(f'API ключ: {key[:10]}...' if len(key) > 10 else f'API ключ: {key}')
+"
 ```
 
-## 2. Удалить файл блокировки
-```bash
-sudo rm -f /root/coinbaserank_bot/coinbasebot.lock
-```
+## Альтернативные команды
 
-## 3. Запустить сервис
+Если простой restart не помогает:
+
 ```bash
+# Полная перезагрузка сервиса
+sudo systemctl stop coinbasebot
+sudo systemctl disable coinbasebot
+sudo systemctl enable coinbasebot
 sudo systemctl start coinbasebot
 ```
 
-## 4. Проверить статус
+## Проверка результата
+
+После перезапуска повторите тест:
 ```bash
-sudo systemctl status coinbasebot
+python3 server_api_limit_fix.py
 ```
 
-## 5. Посмотреть логи
+Должно показать:
+- "API ключ: 14fdb7e37c..." вместо "НЕ НАЙДЕН"
+- 48-49/50 монет вместо 11/50
+- Нет ошибок "rate limit exceeded"
+
+## Если все еще не работает
+
+Проверьте переменные окружения напрямую:
 ```bash
-tail -f /root/coinbaserank_bot/sensortower_bot.log
-```
+# Проверить .env файл
+cat .env | grep CRYPTOCOMPARE
 
-## Что должно быть в логах (правильный результат):
-
-✅ **ОДИН планировщик без ошибок:**
+# Проверить переменные окружения процесса
+sudo systemctl show coinbasebot --property=Environment
 ```
-Следующий запуск запланирован на: 2025-07-16 08:01:00 (через X часов Y минут)
-Планировщик спит 60 минут до следующей проверки
-```
-
-✅ **Flask приложение БЕЗ планировщика:**
-```
-Flask app initialized without starting scheduler - scheduler should be started externally
-```
-
-❌ **НЕ должно быть:**
-```
-Другой экземпляр бота уже запущен. Завершение работы.
-Failed to start the scheduler
-```
-
-## Результат
-После этих команд планировщик будет работать правильно и завтра в 11:01 MSK отправит сообщение.

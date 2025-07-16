@@ -106,6 +106,8 @@ The system follows a modular, event-driven architecture with separate components
 - **API Limit Monitoring**: Created diagnostic tools to detect and handle rate limit exhaustion on production servers
 - **Critical Fix Required**: Production server needs CRYPTOCOMPARE_API_KEY environment variable configuration to restore full 50-coin analysis capability
 - **Server Setup Script Created**: Automated solution `server_setup_api_key.sh` ready for immediate deployment to configure missing API key
+- **API Key Added to .env**: User successfully added CRYPTOCOMPARE_API_KEY to .env file but SystemD service requires restart to load new environment variables
+- **Server Restart Required**: Created `server_restart_commands.md` with instructions to restart SystemD service and load new API key
 - **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
 - **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
 - **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service

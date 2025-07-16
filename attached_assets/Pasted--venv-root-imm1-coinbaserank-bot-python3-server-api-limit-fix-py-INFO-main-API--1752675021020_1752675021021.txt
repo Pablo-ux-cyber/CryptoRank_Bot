@@ -1,0 +1,166 @@
+(venv) root@imm1:~/coinbaserank_bot# python3 server_api_limit_fix.py
+INFO:__main__:ПРОВЕРКА API ЛИМИТОВ CRYPTOCOMPARE
+INFO:__main__:==================================================
+INFO:__main__:API ключ: НЕ НАЙДЕН
+INFO:__main__:Тест загрузки BTC...
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для BTC: 31 записей
+INFO:__main__:✅ API работает - BTC загружен
+INFO:__main__:Записей: 31
+INFO:__main__:
+Тест полной загрузки 50 монет...
+INFO:market_breadth_indicator:Начинаем анализ ширины рынка...
+INFO:crypto_analyzer_cryptocompare:Получено 50 топ монет
+INFO:market_breadth_indicator:Получено 50 топ монет
+INFO:crypto_analyzer_cryptocompare:Начинаем параллельную загрузку свежих данных для 50 монет...
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для ETH: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ ETH (1/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для DOGE: 281 записей
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для TON: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ DOGE (2/50)
+INFO:crypto_analyzer_cryptocompare:✅ TON (3/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для ADA: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ ADA (4/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для BNB: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ BNB (5/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для SOL: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ SOL (6/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для XRP: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ XRP (7/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для TRX
+WARNING:crypto_analyzer_cryptocompare:❌ TRX - недостаточно данных (8/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для AVAX: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ AVAX (9/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для BCH
+WARNING:crypto_analyzer_cryptocompare:❌ BCH - недостаточно данных (10/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для SHIB: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ SHIB (11/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для NEAR
+WARNING:crypto_analyzer_cryptocompare:❌ NEAR - недостаточно данных (12/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для MATIC
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для ICP
+WARNING:crypto_analyzer_cryptocompare:❌ MATIC - недостаточно данных (13/50)
+WARNING:crypto_analyzer_cryptocompare:❌ ICP - недостаточно данных (14/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для DOT
+WARNING:crypto_analyzer_cryptocompare:❌ DOT - недостаточно данных (15/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для LINK
+WARNING:crypto_analyzer_cryptocompare:❌ LINK - недостаточно данных (16/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для UNI
+WARNING:crypto_analyzer_cryptocompare:❌ UNI - недостаточно данных (17/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для ETC
+WARNING:crypto_analyzer_cryptocompare:❌ ETC - недостаточно данных (18/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для FIL
+WARNING:crypto_analyzer_cryptocompare:❌ FIL - недостаточно данных (19/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для LTC
+WARNING:crypto_analyzer_cryptocompare:❌ LTC - недостаточно данных (20/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для ATOM
+WARNING:crypto_analyzer_cryptocompare:❌ ATOM - недостаточно данных (21/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для OKB
+WARNING:crypto_analyzer_cryptocompare:❌ OKB - недостаточно данных (22/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для APT
+WARNING:crypto_analyzer_cryptocompare:❌ APT - недостаточно данных (23/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для ARB
+WARNING:crypto_analyzer_cryptocompare:❌ ARB - недостаточно данных (24/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для BTC
+WARNING:crypto_analyzer_cryptocompare:❌ BTC - недостаточно данных (25/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для STX
+WARNING:crypto_analyzer_cryptocompare:❌ STX - недостаточно данных (26/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для IMX
+WARNING:crypto_analyzer_cryptocompare:❌ IMX - недостаточно данных (27/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для VET
+WARNING:crypto_analyzer_cryptocompare:❌ VET - недостаточно данных (28/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для RNDR
+WARNING:crypto_analyzer_cryptocompare:❌ RNDR - недостаточно данных (29/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для OP
+WARNING:crypto_analyzer_cryptocompare:❌ OP - недостаточно данных (30/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для ALGO
+WARNING:crypto_analyzer_cryptocompare:❌ ALGO - недостаточно данных (31/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для CRO
+WARNING:crypto_analyzer_cryptocompare:❌ CRO - недостаточно данных (32/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для MANA
+WARNING:crypto_analyzer_cryptocompare:❌ MANA - недостаточно данных (33/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для XMR
+WARNING:crypto_analyzer_cryptocompare:❌ XMR - недостаточно данных (34/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для FLOW
+WARNING:crypto_analyzer_cryptocompare:❌ FLOW - недостаточно данных (35/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для SAND
+WARNING:crypto_analyzer_cryptocompare:❌ SAND - недостаточно данных (36/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для EGLD
+WARNING:crypto_analyzer_cryptocompare:❌ EGLD - недостаточно данных (37/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для AXS
+WARNING:crypto_analyzer_cryptocompare:❌ AXS - недостаточно данных (38/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для MNT
+WARNING:crypto_analyzer_cryptocompare:❌ MNT - недостаточно данных (39/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для XTZ
+WARNING:crypto_analyzer_cryptocompare:❌ XTZ - недостаточно данных (40/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для AAVE
+WARNING:crypto_analyzer_cryptocompare:❌ AAVE - недостаточно данных (41/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для FTM
+WARNING:crypto_analyzer_cryptocompare:❌ FTM - недостаточно данных (42/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для PEPE
+WARNING:crypto_analyzer_cryptocompare:❌ PEPE - недостаточно данных (43/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для WIF
+WARNING:crypto_analyzer_cryptocompare:❌ WIF - недостаточно данных (44/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для RUNE
+WARNING:crypto_analyzer_cryptocompare:❌ RUNE - недостаточно данных (45/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для GRT
+WARNING:crypto_analyzer_cryptocompare:❌ GRT - недостаточно данных (46/50)
+ERROR:crypto_analyzer_cryptocompare:CryptoCompare API Error: You are over your rate limit please upgrade your account!
+WARNING:crypto_analyzer_cryptocompare:Не удалось получить данные для INJ
+WARNING:crypto_analyzer_cryptocompare:❌ INJ - недостаточно данных (47/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для HBAR: 281 записей
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для THETA: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ HBAR (48/50)
+INFO:crypto_analyzer_cryptocompare:✅ THETA (49/50)
+INFO:crypto_analyzer_cryptocompare:Загружены свежие данные для KAVA: 281 записей
+INFO:crypto_analyzer_cryptocompare:✅ KAVA (50/50)
+INFO:crypto_analyzer_cryptocompare:Параллельная загрузка завершена: 12 успешно, 38 неудачно из 50 монет
+INFO:market_breadth_indicator:Загружены данные для 12 монет
+INFO:crypto_analyzer_cryptocompare:Рассчитан индикатор для 31 дней
+INFO:__main__:Загружено монет: 12/50
+WARNING:__main__:❌ Недостаточно монет: 12/50
+WARNING:__main__:Проблема: API лимиты исчерпаны
+INFO:__main__:
+ВОЗМОЖНЫЕ РЕШЕНИЯ:
+INFO:__main__:1. Подождать восстановления лимитов (обычно 24 часа)
+INFO:__main__:2. Обновить план CryptoCompare API
+INFO:__main__:3. Использовать другой API ключ
+INFO:__main__:4. Добавить задержки между запросами
+INFO:__main__:5. Реализовать кеширование с TTL на короткий период
+
