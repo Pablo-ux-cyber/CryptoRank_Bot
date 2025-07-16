@@ -4,8 +4,13 @@
 # Отправляет POST запрос к эндпоинту test-telegram-message
 
 # Настройки
-# Замените на реальный IP адрес вашего сервера
-SERVER_URL="http://172.31.128.39:5000"
+# Автоматическое определение IP адреса сервера
+SERVER_IP=$(hostname -I | awk '{print $1}')
+if [ -z "$SERVER_IP" ]; then
+    # Fallback: попробуем получить IP через другие методы
+    SERVER_IP=$(curl -s ifconfig.me 2>/dev/null || curl -s icanhazip.com 2>/dev/null || echo "localhost")
+fi
+SERVER_URL="http://$SERVER_IP:5000"
 ENDPOINT="/test-telegram-message"
 LOG_FILE="/tmp/test_message_cron.log"
 
