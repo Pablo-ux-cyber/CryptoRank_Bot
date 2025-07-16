@@ -99,11 +99,13 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
-- **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py in production systemd service
-- **SystemD Service Updated**: Changed ExecStart from scheduler_standalone.py to main.py for unified architecture
-- **Service Running Successfully**: Production service active since 16:19:17 MSK with proper scheduler initialization and memory usage (65.0M)
+- **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service
+- **SystemD Service Updated**: Changed ExecStart to use gunicorn with main:app for both web interface and scheduler functionality
+- **Web Interface Restored**: Production service now accessible at http://91.132.58.97:5000 with both scheduler and web interface active
+- **Service Running Successfully**: Production service active with proper scheduler initialization and web server on port 5000
 - **Automated Cron Scripts Ready**: Created complete set of portable scripts with dynamic IP detection for any server deployment
 - **Server Portability Achieved**: All scripts now automatically detect server IP, eliminating manual configuration on server migrations
+- **Unified Architecture**: Single main.py now handles both scheduled messaging and web interface through gunicorn deployment
 
 ### July 14, 2025
 - **CRITICAL TELEGRAM MESSAGING FIXED**: Resolved AsyncIO threading conflicts that prevented scheduled message delivery
