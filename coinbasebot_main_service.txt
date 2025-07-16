@@ -1,0 +1,13 @@
+[Unit]
+Description=Coinbase Rank Telegram Bot
+After=network.target
+
+[Service]
+User=root
+WorkingDirectory=/root/coinbaserank_bot
+ExecStart=/root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/main.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
