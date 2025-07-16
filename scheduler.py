@@ -96,14 +96,9 @@ class SensorTowerScheduler:
                 now = datetime.now()
                 today = now.date()
                 
-                # ТЕСТИРОВАНИЕ: Временно устанавливаем время на пару минут вперед для проверки
-                from datetime import datetime
-                test_time = datetime.now()
-                target_hour = test_time.hour
-                target_minute = test_time.minute + 2  # Через 2 минуты
-                if target_minute >= 60:
-                    target_hour += 1
-                    target_minute -= 60
+                # Вычисляем время до следующего запуска (08:01 UTC = 11:01 MSK)
+                target_hour = 8
+                target_minute = 1
                 
                 # Создаем целевое время на сегодня
                 target_time = now.replace(hour=target_hour, minute=target_minute, second=0, microsecond=0)
