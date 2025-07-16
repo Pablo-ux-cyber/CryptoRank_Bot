@@ -18,7 +18,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 0.5  # 500ms между запросами для предотвращения блокировок
+        self.request_delay = 0.2  # 200ms между запросами для ускорения
         self.api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
         
         # Настройка логирования

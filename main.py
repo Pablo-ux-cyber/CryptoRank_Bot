@@ -1772,10 +1772,7 @@ def create_quick_chart(existing_data=None):
         history_days = 547  # 1.5 года данных
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
-        if (existing_data and 
-            existing_data.get('historical_data') is not None and 
-            existing_data.get('indicator_data') is not None and
-            not existing_data.get('indicator_data').empty):
+        if existing_data and existing_data.get('historical_data') and existing_data.get('indicator_data'):
             logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика - НЕ ЗАГРУЖАЕМ ПОВТОРНО")
             historical_data = existing_data['historical_data']
             indicator_data = existing_data['indicator_data']
@@ -2261,24 +2258,18 @@ def test_telegram_message():
             return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index", "api_status": api_status}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
-        # 3. Market Breadth с графиком - используем функцию без кеша
+        # 3. Market Breadth с графиком (используем полный режим с 26 монетами)
         logger.info("Загрузка Market Breadth данных с API ключом...")
-        market_breadth_result = get_market_breadth_data_no_cache()
-        if not market_breadth_result or market_breadth_result.get('status') != 'success':
+        market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
+        if not market_breadth_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth", "api_status": api_status}), 500
-        
-        market_breadth_data = market_breadth_result['data']
             
         # Логируем результат загрузки
         logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/26 монет загружено")
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
-        # Создаем график используя уже загруженные данные
-        existing_data = {
-            'historical_data': market_breadth_result.get('historical_data'),
-            'indicator_data': market_breadth_result.get('indicator_data')
-        }
-        png_data = create_quick_chart(existing_data=existing_data)
+        # Создаем график и загружаем
+        png_data = create_quick_chart()
         if not png_data:
             return jsonify({"success": False, "message": "Не удалось создать график Market Breadth", "api_status": api_status}), 500
             
@@ -2286,9 +2277,14 @@ def test_telegram_message():
         if not chart_url:
             return jsonify({"success": False, "message": "Не удалось загрузить график на Catbox", "api_status": api_status}), 500
             
-        # Создаем правильное сообщение с ссылкой на показатель
-        english_condition = market_breadth_data['condition']  # Уже на английском
-        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}: {market_breadth_data['current_value']:.1f}%]({chart_url})"
+        # Переводим на английский для ссылки
+        condition_map = {
+            "Перекупленность": "Overbought",
+            "Перепроданность": "Oversold", 
+            "Нейтральная зона": "Neutral"
+        }
+        english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
+        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%"
         
         # Собираем финальное сообщение в точном формате продакшена
         combined_message = rankings_message
