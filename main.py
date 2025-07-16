@@ -2200,8 +2200,8 @@ def test_telegram_message():
         fear_greed = FearGreedIndexTracker()
         market_breadth = MarketBreadthIndicator()
         
-        # ИСПРАВЛЕНИЕ: Сначала запускаем rnk.py для получения свежих данных рейтинга
-        logger.info("Запуск rnk.py для получения актуальных данных рейтинга...")
+        # ИСПРАВЛЕНИЕ: Запускаем rnk.py и сразу читаем свежие данные из JSON
+        logger.info("Запуск rnk.py для получения свежих данных рейтинга...")
         try:
             import subprocess
             result = subprocess.run([
@@ -2222,28 +2222,36 @@ def test_telegram_message():
         
         # Небольшая пауза чтобы данные успели записаться
         import time
-        time.sleep(3)
-        
-        # ПРИНУДИТЕЛЬНО очищаем кеш JSON файла для получения свежих данных
-        logger.info("Принудительно очищаем кеш JSON файла для получения свежих данных...")
-        try:
-            from json_rank_reader import clear_rank_cache
-            clear_rank_cache()
-            logger.info("Кеш JSON файла очищен успешно")
-        except Exception as e:
-            logger.warning(f"Ошибка очистки кеша JSON: {str(e)}")
+        time.sleep(2)
         
         # Собираем все данные
         logger.info("Получение данных для тестового сообщения...")
         
-        # 1. Coinbase рейтинг (теперь с СВЕЖИМИ данными)
-        rankings_data = scraper.scrape_category_rankings()
-        if not rankings_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга", "api_status": api_status}), 500
+        # 1. Coinbase рейтинг - читаем напрямую из обновленного JSON
+        from json_rank_reader import get_rank_from_json, get_latest_rank_date
+        
+        fresh_rank = get_rank_from_json()
+        rank_date = get_latest_rank_date()
+        
+        if fresh_rank:
+            logger.info(f"Получен свежий рейтинг из JSON: {fresh_rank} на дату {rank_date}")
+            # Создаем данные в формате SensorTower
+            rankings_data = {
+                'coinbase_rank': fresh_rank,
+                'rank_date': rank_date,
+                'source': 'JSON после rnk.py'
+            }
+            rankings_message = f"Coinbase: #{fresh_rank}"
+        else:
+            logger.warning("Не удалось получить свежий рейтинг из JSON, используем scraper")
+            rankings_data = scraper.scrape_category_rankings()
+            if not rankings_data:
+                return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга", "api_status": api_status}), 500
+            rankings_message = scraper.format_rankings_message(rankings_data)
         
         # Логируем полученные данные рейтинга
-        logger.info(f"Получены данные рейтинга: {rankings_data}")
-        rankings_message = scraper.format_rankings_message(rankings_data)
+        logger.info(f"Итоговые данные рейтинга: {rankings_data}")
+        logger.info(f"Сообщение рейтинга: {rankings_message}")
         
         # 2. Fear & Greed Index
         fear_greed_data = fear_greed.get_fear_greed_index()
