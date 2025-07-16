@@ -358,17 +358,24 @@ class SensorTowerScraper:
         category = rankings_data["categories"][0]
         rank = category.get("rank", "N/A")
         
-        # ИСПРАВЛЕНИЕ: Всегда показываем 🔼 как требует пользователь
-        message = f"🔼 Coinbase Appstore Rank: {rank}"
+        # Create message with trend indicator at the beginning as per user request
+        message = "Coinbase Appstore Rank: " + str(rank)
         
-        # Если есть тренд, можем показать дополнительную информацию в логах
+        # Add trend indicator at the beginning if available
         if "trend" in rankings_data:
             trend = rankings_data["trend"]
             direction = trend.get("direction")
-            logger.info(f"Rank trend direction: {direction}")
             
-            # Можно изменить эмодзи в зависимости от тренда, но по умолчанию 🔼
-            if direction == "down":
-                message = f"🔽 Coinbase Appstore Rank: {rank}"
+            if direction and direction != "same":
+                try:
+                    if direction == "up":
+                        # Improved ranking (lower number is better)
+                        message = f"🔼 Coinbase Appstore Rank: {rank}"
+                    elif direction == "down":
+                        # Declined ranking
+                        message = f"🔽 Coinbase Appstore Rank: {rank}"
+                except (ValueError, TypeError):
+                    # If any error, use default message without indicator
+                    pass
         
         return message
