@@ -375,7 +375,26 @@ def test_message():
         return jsonify({"status": "error", "message": "Scheduler not initialized"}), 500
     
     try:
-        # Get fresh app rankings data from JSON file
+        # ИСПРАВЛЕНИЕ: Сначала запускаем rnk.py для получения свежих данных рейтинга
+        logger.info("Запуск rnk.py для получения актуальных данных рейтинга...")
+        try:
+            import subprocess
+            result = subprocess.run([
+                "python3", "rnk.py"
+            ], capture_output=True, text=True, timeout=120)
+            
+            if result.returncode == 0:
+                logger.info("rnk.py выполнен успешно")
+            else:
+                logger.warning(f"rnk.py завершился с ошибкой (код {result.returncode})")
+        except Exception as e:
+            logger.warning(f"Ошибка при запуске rnk.py: {str(e)}")
+        
+        # Небольшая пауза чтобы данные успели записаться
+        import time
+        time.sleep(2)
+        
+        # Get fresh app rankings data from JSON file (теперь с СВЕЖИМИ данными)
         rankings_data = scheduler.scraper.scrape_category_rankings()
         
         # Get fresh Fear & Greed Index data
@@ -2152,10 +2171,34 @@ def test_telegram_message():
         fear_greed = FearGreedIndexTracker()
         market_breadth = MarketBreadthIndicator()
         
+        # ИСПРАВЛЕНИЕ: Сначала запускаем rnk.py для получения свежих данных рейтинга
+        logger.info("Запуск rnk.py для получения актуальных данных рейтинга...")
+        try:
+            import subprocess
+            result = subprocess.run([
+                "python3", "rnk.py"
+            ], capture_output=True, text=True, timeout=120)
+            
+            if result.returncode == 0:
+                logger.info("rnk.py выполнен успешно")
+                if result.stdout:
+                    logger.info(f"Вывод rnk.py: {result.stdout.strip()}")
+            else:
+                logger.warning(f"rnk.py завершился с ошибкой (код {result.returncode})")
+                if result.stderr:
+                    logger.warning(f"Ошибка rnk.py: {result.stderr.strip()}")
+                    
+        except Exception as e:
+            logger.warning(f"Ошибка при запуске rnk.py: {str(e)}")
+        
+        # Небольшая пауза чтобы данные успели записаться
+        import time
+        time.sleep(2)
+        
         # Собираем все данные
         logger.info("Получение данных для тестового сообщения...")
         
-        # 1. Coinbase рейтинг
+        # 1. Coinbase рейтинг (теперь с СВЕЖИМИ данными)
         rankings_data = scraper.scrape_category_rankings()
         if not rankings_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга"}), 500
