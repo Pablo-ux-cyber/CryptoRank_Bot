@@ -711,7 +711,7 @@ def run_market_analysis():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
+        history_days = data.get('history_days', 730)  # 2 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -813,7 +813,7 @@ def run_market_analysis_plotly():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
+        history_days = data.get('history_days', 730)  # 2 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -1118,7 +1118,7 @@ def create_market_chart_screenshot():
         # Параметры анализа
         top_n = 50
         ma_period = 200
-        history_days = 1095  # 3 года для Telegram графика
+        history_days = 730  # 2 года для Telegram графика
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1364,7 +1364,7 @@ def create_web_ui_chart_screenshot():
         # ТОЧНО ТЕ ЖЕ параметры что в веб-интерфейсе
         top_n = 50
         ma_period = 200
-        history_days = 1095  # 3 года
+        history_days = 730  # 2 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -1588,7 +1588,7 @@ def create_chart_from_web_endpoint():
         # Точные параметры веб-интерфейса
         top_n = 50
         ma_period = 200
-        history_days = 1095  # 3 года как в веб-интерфейсе
+        history_days = 730  # 2 года как в веб-интерфейсе
         
         # Создаем график с точными параметрами веб-интерфейса
         return create_exact_web_interface_chart(top_n, ma_period, history_days)
@@ -1775,7 +1775,7 @@ def create_quick_chart(existing_data=None):
         # Полные параметры как требуется пользователем
         top_n = 50  # ОБЯЗАТЕЛЬНО 50 МОНЕТ как требует пользователь
         ma_period = 200
-        history_days = 1095  # 3 года данных как в продакшене
+        history_days = 730  # 2 года данных
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
         if existing_data and 'historical_data' in existing_data and 'indicator_data' in existing_data:
@@ -1792,7 +1792,7 @@ def create_quick_chart(existing_data=None):
                 logger.error("Не удалось получить топ монеты")
                 return None
                 
-            # Загружаем меньше данных
+            # Загружаем данные для 2 лет
             total_days_needed = ma_period + history_days + 50
             historical_data = analyzer.load_historical_data(top_coins, total_days_needed)
             
@@ -2015,7 +2015,7 @@ def create_web_interface_chart():
         # Точно такие же параметры как в веб-интерфейсе
         top_n = 47
         ma_period = 200
-        history_days = 1095  # 3 года
+        history_days = 730  # 2 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)

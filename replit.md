@@ -99,6 +99,7 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
+- **CHART DISPLAY PERIOD UPDATED**: Changed graph display period from 3 years (1095 days) to 2 years (730 days) per user request for more focused analysis
 - **CRITICAL API KEY ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API key not configured on production server
 - **Server API Diagnostics**: Production server lacks API key configuration ("API ключ: НЕ НАЙДЕН"), causing rate limit errors with only 15/50 coins loaded
 - **Replit Environment Stable**: Continues working perfectly with 49/50 coins loaded, producing consistent 40.8% Market Breadth results
