@@ -2298,7 +2298,9 @@ def test_telegram_message():
         market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%"
         
         # Собираем финальное сообщение в точном формате продакшена
-        combined_message = rankings_message
+        # Формат: 🔼 Coinbase Appstore Rank: 126
+        coinbase_rank = rankings_data.get('coinbase_rank', 'N/A')
+        combined_message = f"🔼 Coinbase Appstore Rank: {coinbase_rank}"
         combined_message += f"\n\n{fear_greed_message}"
         combined_message += f"\n\n{market_breadth_message}"
         
