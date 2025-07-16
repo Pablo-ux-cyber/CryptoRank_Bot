@@ -101,7 +101,10 @@ class MarketBreadthIndicator:
                 'min_value': summary.get('min_value', 0),
                 'total_coins': len(historical_data),
                 'analysis_period': self.analysis_days,
-                'ma_period': self.ma_period
+                'ma_period': self.ma_period,
+                # ИСПРАВЛЕНИЕ: Добавляем данные для повторного использования в create_quick_chart
+                'historical_data': historical_data,
+                'indicator_data': indicator_data
             }
             
         except Exception as e:

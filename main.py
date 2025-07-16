@@ -2276,8 +2276,8 @@ def test_telegram_message():
         logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/26 монет загружено")
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
-        # Создаем график и загружаем
-        png_data = create_quick_chart()
+        # Создаем график используя уже загруженные данные (избегаем двойную загрузку)
+        png_data = create_quick_chart(existing_data=market_breadth_data)
         if not png_data:
             return jsonify({"success": False, "message": "Не удалось создать график Market Breadth", "api_status": api_status}), 500
             
