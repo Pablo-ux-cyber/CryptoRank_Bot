@@ -384,7 +384,7 @@ def test_message():
         # Get fresh Market Breadth data (полные данные для всех монет)
         market_breadth_data = None
         if scheduler.market_breadth:
-            market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
+            market_breadth_data = scheduler.market_breadth.get_market_breadth_data_no_cache(fast_mode=False)
         
         # Format individual messages using proper formatting
         rankings_message = scheduler.scraper.format_rankings_message(rankings_data)
@@ -444,7 +444,7 @@ def test_market_breadth():
         
         # Используем полный режим с 50 монетами как требуется
         logger.info("Starting Market Breadth data loading with full mode (50 coins)...")
-        market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
+        market_breadth_data = scheduler.market_breadth.get_market_breadth_data_no_cache(fast_mode=False)
         
         if market_breadth_data:
             message = scheduler.market_breadth.format_breadth_message(market_breadth_data)
@@ -2168,7 +2168,7 @@ def test_telegram_message():
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
         # 3. Market Breadth с графиком (используем полный режим с 50 монетами)
-        market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
+        market_breadth_data = market_breadth.get_market_breadth_data_no_cache(fast_mode=False)
         if not market_breadth_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth"}), 500
             
