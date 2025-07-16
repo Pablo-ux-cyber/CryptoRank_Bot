@@ -410,64 +410,19 @@ class SensorTowerScheduler:
             except Exception as e:
                 logger.error(f"Ошибка при получении данных Altcoin Season Index: {str(e)}")
             
-            # ИСПРАВЛЕНИЕ: Загружаем данные ОДИН РАЗ и используем для расчета и графика
+            # КОПИЯ РАБОЧЕЙ ЛОГИКИ из /test-message
             market_breadth_data = None
             chart_data = None
             try:
-                logger.info("ИСПРАВЛЕНИЕ: Загружаем свежие данные ОДИН РАЗ для Market Breadth и графика")
-                from crypto_analyzer_cryptocompare import CryptoAnalyzer
-                
-                analyzer = CryptoAnalyzer(cache=None)
-                top_coins = analyzer.get_top_coins(50)
-                
-                if top_coins:
-                    stablecoins = ['USDT', 'USDC', 'DAI']
-                    filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
-                    
-                    # Загружаем исторические данные ОДИН РАЗ
-                    historical_data = analyzer.load_historical_data(filtered_coins, 1400)
-                    
-                    if historical_data:
-                        # Рассчитываем индикатор ОДИН РАЗ
-                        indicator_data = analyzer.calculate_market_breadth(historical_data, 200, 1095)
-                        
-                        if not indicator_data.empty:
-                            latest_percentage = indicator_data['percentage'].iloc[-1]
-                            
-                            # Определяем сигнал и условие
-                            if latest_percentage >= 80:
-                                signal = "🔴"
-                                condition = "Overbought"
-                            elif latest_percentage <= 20:
-                                signal = "🟢"  
-                                condition = "Oversold"
-                            else:
-                                signal = "🟡"
-                                condition = "Neutral"
-                            
-                            market_breadth_data = {
-                                'signal': signal,
-                                'condition': condition,
-                                'current_value': latest_percentage,
-                                'percentage': round(latest_percentage, 1)
-                            }
-                            
-                            # Сохраняем данные для создания графика БЕЗ ПОВТОРНОЙ ЗАГРУЗКИ
-                            chart_data = {
-                                'historical_data': historical_data,
-                                'indicator_data': indicator_data
-                            }
-                            
-                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth рассчитан ОДИН РАЗ: {signal} - {condition} ({latest_percentage:.1f}%)")
-                        else:
-                            logger.warning("ИСПРАВЛЕНИЕ: Пустые данные индикатора")
-                    else:
-                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось загрузить исторические данные")
+                logger.info("Загружаем Market Breadth данные как в рабочем test-message")
+                market_breadth_data = self.market_breadth.get_market_breadth_data(fast_mode=False)
+                if market_breadth_data:
+                    logger.info(f"Market Breadth успешно загружен: {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['current_value']:.1f}%)")
                 else:
-                    logger.warning("ИСПРАВЛЕНИЕ: Не удалось получить топ монет")
-                        
+                    logger.warning("Market Breadth данные недоступны")
             except Exception as e:
-                logger.error(f"ИСПРАВЛЕНИЕ: Ошибка загрузки данных: {str(e)}")
+                logger.error(f"Ошибка при загрузке Market Breadth в планировщике: {str(e)}")
+                market_breadth_data = None
             
             # ИЗМЕНЕНО: Отправляем сообщение каждый день независимо от изменения рейтинга
             if self.last_sent_rank is None:
