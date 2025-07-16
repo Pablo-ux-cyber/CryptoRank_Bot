@@ -167,35 +167,31 @@ class CryptoAnalyzer:
         successful_loads = 0
         failed_loads = 0
         
-        self.logger.info(f"Начинаем параллельную загрузку свежих данных для {total_coins} монет...")
+        self.logger.info(f"Начинаем последовательную загрузку свежих данных для {total_coins} монет...")
         
-        # Параллельная загрузка с 3 потоками для избежания блоков
-        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-            # Запускаем все задачи
-            future_to_coin = {
-                executor.submit(self._load_single_coin_data, coin, days): coin 
-                for coin in coins
-            }
+        # Последовательная загрузка с паузами между запросами
+        for i, coin in enumerate(coins):
+            coin_symbol, df, success = self._load_single_coin_data(coin, days)
+            completed = i + 1
             
-            completed = 0
-            for future in concurrent.futures.as_completed(future_to_coin):
-                coin_symbol, df, success = future.result()
-                completed += 1
-                
-                # Обновление прогресса
-                if progress_callback:
-                    progress = (completed / total_coins) * 100
-                    progress_callback(progress)
-                
-                if success and df is not None:
-                    historical_data[coin_symbol] = df
-                    successful_loads += 1
-                    self.logger.info(f"✅ {coin_symbol} ({completed}/{total_coins})")
-                else:
-                    failed_loads += 1
-                    self.logger.warning(f"❌ {coin_symbol} - недостаточно данных ({completed}/{total_coins})")
+            # Обновление прогресса
+            if progress_callback:
+                progress = (completed / total_coins) * 100
+                progress_callback(progress)
+            
+            if success and df is not None:
+                historical_data[coin_symbol] = df
+                successful_loads += 1
+                self.logger.info(f"✅ {coin_symbol} ({completed}/{total_coins})")
+            else:
+                failed_loads += 1
+                self.logger.warning(f"❌ {coin_symbol} - недостаточно данных ({completed}/{total_coins})")
+            
+            # Пауза между монетами (дополнительная к паузе в _make_request)
+            if completed < total_coins:
+                time.sleep(0.2)  # Дополнительная пауза 200мс между монетами
         
-        self.logger.info(f"Параллельная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
+        self.logger.info(f"Последовательная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
         return historical_data
     
     def calculate_moving_average(self, prices: pd.Series, window: int) -> pd.Series:
