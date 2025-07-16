@@ -114,6 +114,8 @@ The system follows a modular, event-driven architecture with separate components
 - **Test Script Issue**: Created `check_systemd_env.py` to properly test SystemD environment variables vs dotenv-based testing which was showing false negatives
 - **REPLIT API SUCCESS CONFIRMED**: API key works perfectly on Replit - 49/50 coins loaded, 40.8% Market Breadth, 4.2 second loading time with stable results
 - **Server API Issue Identified**: Server timeout on /test-telegram-message indicates API key not properly passed to Python process through SystemD Environment
+- **Server API Key Not Found**: Confirmed API key missing from server environment variables - SystemD Environment configuration not working properly
+- **SystemD Fix Required**: Created `fix_systemd_env.md` with instructions to properly configure Environment variable in SystemD service
 - **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
 - **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
 - **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service
