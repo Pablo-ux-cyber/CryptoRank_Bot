@@ -2444,23 +2444,26 @@ def quick_test_message():
                 'historical_data': market_breadth_data.get('historical_data'),
                 'indicator_data': market_breadth_data.get('indicator_data')
             }
-            chart_link = create_quick_chart(existing_data)
+            chart_bytes = create_quick_chart(existing_data)
+            chart_link = None
+            if chart_bytes:
+                from image_uploader import ImageUploader
+                uploader = ImageUploader()
+                chart_link = uploader.upload_image(chart_bytes)
             
-            # Формируем сообщение с кликабельной ссылкой на график (исправлено форматирование)
+            # Формируем сообщение с кликабельной ссылкой на график - только 200MA кликабельно
             if chart_link:
-                market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%\n📊 [График]({chart_link})"
+                market_breadth_message = f"[Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%]({chart_link})"
             else:
                 market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%"
         else:
             market_breadth_message = "Market by 200MA: ⚪ Data unavailable"
         
-        # Формирование итогового сообщения
-        rank_display = f"Coinbase Appstore Rank: {rank}"
-        
+        # Формирование итогового сообщения БЕЗ строки Coinbase Appstore Rank
         fear_greed_message = fear_greed_tracker.format_fear_greed_message(fear_greed_data) if fear_greed_data else "Fear & Greed: Data unavailable"
         
         # Составляем полное сообщение
-        full_message = f"{rank_display}\n\n{fear_greed_message}\n\n{market_breadth_message}"
+        full_message = f"{fear_greed_message}\n\n{market_breadth_message}"
         
         # Отправка в Telegram с правильным форматированием
         from telegram_bot import TelegramBot
