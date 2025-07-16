@@ -100,7 +100,7 @@ The system follows a modular, event-driven architecture with separate components
 
 ### July 16, 2025
 - **CRYPTOCURRENCY LIST UPDATED**: Changed from 50 to 33 cryptocurrencies per user request - removed less relevant coins for more focused analysis
-- **CHART DISPLAY PERIOD UPDATED**: Changed graph display period from 3 years (1095 days) to 2 years (730 days) per user request for more focused analysis
+- **CHART DISPLAY PERIOD UPDATED**: Changed graph display period from 2 years (730 days) to 1.5 years (547 days) per user request for more focused analysis
 - **CRITICAL API KEY ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API key not configured on production server
 - **Server API Diagnostics**: Production server lacks API key configuration ("API ключ: НЕ НАЙДЕН"), causing rate limit errors with only 15/50 coins loaded
 - **Replit Environment Stable**: Continues working perfectly with 49/50 coins loaded, producing consistent 40.8% Market Breadth results
