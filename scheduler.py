@@ -112,8 +112,12 @@ class SensorTowerScheduler:
                 
                 logger.info(f"Следующий запуск запланирован на: {target_time} (через {int(time_diff/3600)} часов {int((time_diff%3600)/60)} минут)")
                 
-                # Проверяем, не пора ли уже отправлять (если время подошло в течение последней минуты)
-                if time_diff <= 60 and (self.last_rank_update_date is None or self.last_rank_update_date < today):
+                # ИСПРАВЛЕНО: Проверяем точное время или окно в 1 минуту
+                is_exact_time = (now.hour == target_hour and now.minute == target_minute)
+                is_time_window = time_diff <= 60
+                not_sent_today = (self.last_rank_update_date is None or self.last_rank_update_date < today)
+                
+                if (is_exact_time or is_time_window) and not_sent_today:
                     logger.info(f"ВРЕМЯ ОТПРАВКИ: Запуск полного сбора данных и отправки в {now}")
                     try:
                         self.run_scraping_job()
