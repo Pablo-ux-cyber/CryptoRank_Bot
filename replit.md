@@ -99,12 +99,14 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
-- **CRITICAL DATA CONSISTENCY ISSUE RESOLVED**: Fixed 200MA calculation differences between Replit and server environments by completely eliminating caching
-- **Cache System Removed**: Deleted cache/ directory and confirmed CryptoAnalyzer(cache=None) loads fresh data from CryptoCompare API every time
-- **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API
-- **API-Only Data Loading**: System now guarantees fresh cryptocurrency data on every request without any local storage dependencies
-- **Data Consistency Achieved**: Identical 200MA calculations now possible between Replit and server when run at same time with same parameters
-- **Full 50-Coin Testing Confirmed**: Production system uses full 50-coin dataset yielding 40.8% Market Breadth indicator
+- **CRITICAL API LIMIT ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API rate limits exceeded on production server
+- **Server API Diagnostics**: Production server can only load 9/50 coins due to "You are over your rate limit please upgrade your account!" errors
+- **Replit Environment Stable**: Continues working perfectly with 49/50 coins loaded, producing consistent 40.8% Market Breadth results
+- **Data Inconsistency Explained**: Server results jumping from 45% to 60% caused by varying number of successfully loaded cryptocurrencies (9-20 coins vs required 50)
+- **API Limit Monitoring**: Created diagnostic tools to detect and handle rate limit exhaustion on production servers
+- **Critical Fix Required**: Production server needs API plan upgrade or rate limit recovery to restore full 50-coin analysis capability
+- **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
+- **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
 - **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service
 - **SystemD Service Updated**: Changed ExecStart to use gunicorn with main:app for both web interface and scheduler functionality
 - **Web Interface Restored**: Production service now accessible at http://91.132.58.97:5000 with both scheduler and web interface active
