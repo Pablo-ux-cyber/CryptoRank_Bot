@@ -689,7 +689,7 @@ def market_breadth():
             'current_value': 0,
             'timestamp': 'Ready to start',
             'coins_above_ma': 'N/A',
-            'total_coins': '26',
+            'total_coins': '49',
             'cache_info': {'cache_size_mb': 0, 'cached_coins_count': 0, 'status': 'Кеширование отключено'}
         }
         
@@ -709,15 +709,14 @@ def run_market_analysis():
         
         # Получение параметров из запроса
         data = request.get_json() or {}
-        top_n = data.get('top_n', 26)
         ma_period = data.get('ma_period', 200) 
         history_days = data.get('history_days', 547)  # 1.5 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
         
-        # Получение топ монет (ваш код)
-        top_coins = analyzer.get_top_coins(top_n)
+        # Получение топ монет (все 49 монет)
+        top_coins = analyzer.get_top_coins()
         if not top_coins:
             return jsonify({"status": "error", "message": "Не удалось получить список топ монет"})
         
@@ -811,15 +810,14 @@ def run_market_analysis_plotly():
         
         # Получение параметров из запроса
         data = request.get_json() or {}
-        top_n = data.get('top_n', 26)
         ma_period = data.get('ma_period', 200) 
         history_days = data.get('history_days', 547)  # 1.5 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
         
-        # Получение топ монет (ваш код)
-        top_coins = analyzer.get_top_coins(top_n)
+        # Получение топ монет (все 49 монет)
+        top_coins = analyzer.get_top_coins()
         if not top_coins:
             return jsonify({"status": "error", "message": "Не удалось получить список топ монет"})
         
@@ -1116,12 +1114,11 @@ def create_market_chart_screenshot():
         analyzer = CryptoAnalyzer(cache=None)
         
         # Параметры анализа
-        top_n = 26
         ma_period = 200
         history_days = 547  # 1.5 года для Telegram графика
         
-        # Получение данных
-        top_coins = analyzer.get_top_coins(top_n)
+        # Получение данных (все 49 монет)
+        top_coins = analyzer.get_top_coins()
         if not top_coins:
             logger.error("Не удалось получить список топ монет для скриншота")
             return None
@@ -1362,15 +1359,14 @@ def create_web_ui_chart_screenshot():
         logger.info("Создание графика с параметрами веб-интерфейса...")
         
         # ТОЧНО ТЕ ЖЕ параметры что в веб-интерфейсе
-        top_n = 26
         ma_period = 200
         history_days = 547  # 1.5 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
         
-        # Получение данных
-        top_coins = analyzer.get_top_coins(top_n)
+        # Получение данных (все 49 монет)
+        top_coins = analyzer.get_top_coins()
         if not top_coins:
             logger.error("Не удалось получить топ монеты")
             return None
@@ -1586,18 +1582,17 @@ def create_chart_from_web_endpoint():
         logger.info("Создаем график точно как в веб-интерфейсе...")
         
         # Точные параметры веб-интерфейса
-        top_n = 26
         ma_period = 200
         history_days = 547  # 1.5 года как в веб-интерфейсе
         
         # Создаем график с точными параметрами веб-интерфейса
-        return create_exact_web_interface_chart(top_n, ma_period, history_days)
+        return create_exact_web_interface_chart(ma_period, history_days)
             
     except Exception as e:
         logger.error(f"Ошибка создания графика веб-интерфейса: {str(e)}")
         return None
 
-def create_exact_web_interface_chart(top_n, ma_period, history_days):
+def create_exact_web_interface_chart(ma_period, history_days):
     """
     Создает график точно такой же как в веб-интерфейсе
     """
@@ -1611,13 +1606,13 @@ def create_exact_web_interface_chart(top_n, ma_period, history_days):
         import matplotlib.pyplot as plt
         import matplotlib.dates as mdates
         
-        logger.info(f"Создаем точную копию веб-интерфейса: {top_n} монет, {ma_period}MA, {history_days} дней")
+        logger.info(f"Создаем точную копию веб-интерфейса: 49 монет, {ma_period}MA, {history_days} дней")
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
         
-        # Получение данных
-        top_coins = analyzer.get_top_coins(top_n)
+        # Получение данных (все 49 монет)
+        top_coins = analyzer.get_top_coins()
         if not top_coins:
             logger.error("Не удалось получить топ монеты")
             return None
@@ -1773,7 +1768,6 @@ def create_quick_chart(existing_data=None):
         logger.info("Создаем быстрый график...")
         
         # Полные параметры как требуется пользователем
-        top_n = 26  # Обновленный список из 33 монет
         ma_period = 200
         history_days = 547  # 1.5 года данных
         
@@ -1786,8 +1780,8 @@ def create_quick_chart(existing_data=None):
             # Инициализация без кеширования (fallback)
             analyzer = CryptoAnalyzer(cache=None)
             
-            # Получение данных
-            top_coins = analyzer.get_top_coins(top_n)
+            # Получение данных (все 49 монет)
+            top_coins = analyzer.get_top_coins()
             if not top_coins:
                 logger.error("Не удалось получить топ монеты")
                 return None
@@ -2021,21 +2015,17 @@ def create_web_interface_chart():
         import pandas as pd
         
         # Точно такие же параметры как в веб-интерфейсе
-        top_n = 47
         ma_period = 200
         history_days = 547  # 1.5 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
         
-        # Получение топ монет и исключение стейблкоинов
-        coins = analyzer.get_top_coins(limit=26)
-        if not coins:
+        # Получение топ монет (все 49 монет, стейблкоины уже исключены)
+        filtered_coins = analyzer.get_top_coins()
+        if not filtered_coins:
             logger.error("Не удалось получить список монет")
             return None
-        
-        excluded_stablecoins = ['USDT', 'USDC', 'DAI']
-        filtered_coins = [coin for coin in coins if coin['symbol'] not in excluded_stablecoins][:top_n]
         
         logger.info(f"Анализируем {len(filtered_coins)} криптовалют за {history_days} дней")
         
@@ -2495,13 +2485,13 @@ def get_market_breadth_data_no_cache():
         ma_period = 200
         history_days = 547  # 1.5 года данных
         
-        # Получаем топ криптовалют
-        top_coins = analyzer.get_top_coins(26)
+        # Получаем топ криптовалют (все 49 монет)
+        top_coins = analyzer.get_top_coins()
         if not top_coins:
             logger.error("Не удалось получить список топ криптовалют")
             return None
         
-        # Используем все 26 монет - стейблкоины уже исключены из списка
+        # Используем все 49 монет - стейблкоины уже исключены из списка
         filtered_coins = top_coins
         logger.info(f"Используем {len(filtered_coins)} монет из обновленного списка")
         

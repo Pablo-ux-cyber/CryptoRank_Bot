@@ -80,20 +80,20 @@ class CryptoAnalyzer:
             self.logger.error(f"Неожиданная ошибка: {e}")
             return None
     
-    def get_top_coins(self, limit: int = 50) -> List[Dict]:
+    def get_top_coins(self, limit: int = 49) -> List[Dict]:
         """
-        Получение списка топ криптовалют
+        Получение списка топ криптовалют (используем полный список из 49 монет)
         """
-        # Используем предопределенный список топ монет
+        # Используем предопределенный список топ монет - всегда все 49 монет
         coins = []
-        for i, symbol in enumerate(self.top_cryptos[:limit]):
+        for i, symbol in enumerate(self.top_cryptos):
             coins.append({
                 'symbol': symbol,
                 'name': symbol,  # Для упрощения
                 'market_cap_rank': i + 1
             })
         
-        self.logger.info(f"Получено {len(coins)} топ монет")
+        self.logger.info(f"Получено {len(coins)} топ монет из предопределенного списка")
         return coins
     
     def get_coin_history(self, coin_symbol: str, days: int) -> Optional[pd.DataFrame]:
