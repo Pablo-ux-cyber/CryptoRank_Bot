@@ -99,8 +99,7 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
-- **API PROVIDER SWITCHED**: Changed from CryptoCompare to CoinMarketCap API due to persistent timeout issues
-- **NEW API KEY ADDED**: CoinMarketCap API key: 681113ad-e2ec-40c9-9714-f7a4cd77e4cd
+- **API KEY UPDATED**: Changed to working CryptoCompare API key: b9d82133ef53b0a0ec058f1d83a33c25a73759bc24c2b0b5c9fbb99aeaf9cb93
 - **DUPLICATE LOADING FIXED**: Eliminated multiple data loading - system now loads 49 coins exactly once per operation
 - **THREADING ISSUE RESOLVED**: Removed ThreadPoolExecutor parallel processing causing batch requests without proper delays
 - **PERFORMANCE OPTIMIZED**: Removed parallel threading, implemented sequential loading with 1000ms delays to avoid API rate limits
