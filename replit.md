@@ -99,6 +99,10 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
+- **API KEY UPDATED**: Changed to working CryptoCompare API key: b9d82133ef53b0a0ec058f1d83a33c25a73759bc24c2b0b5c9fbb99aeaf9cb93
+- **DUPLICATE LOADING FIXED**: Eliminated multiple data loading - system now loads 49 coins exactly once per operation
+- **PERFORMANCE OPTIMIZED**: Reduced threads to 3 and delays to 500ms to avoid API rate limits
+- **MESSAGE FORMAT IMPROVED**: Made "Market by 200MA" clickable link to chart, removed "Coinbase Appstore Rank" line
 - **CRYPTOCURRENCY LIST UPDATED**: Changed from 26 to 49 cryptocurrencies per user request - using complete user-provided list for comprehensive analysis
 - **NEW CRYPTOCURRENCY LIST**: Updated to 49 coins from user's provided list (removed duplicate NEAR): BTC, ETH, BNB, XRP, SOL, ADA, DOGE, DOT, MATIC, LTC, LINK, BCH, XLM, ALGO, AVAX, ATOM, TRX, FIL, ICP, NEAR, VET, TON, EOS, XMR, APT, AXS, FTM, SUI, THETA, XTZ, HBAR, FLOW, CRO, OP, STX, EGLD, KLAY, CHZ, APE, AR, GRT, ZEC, MKR, ENJ, XDC, RPL, BTT, SAND, MANA
 - **FAST TEST MODE DISABLED**: System now always loads all coins, no fast testing with reduced datasets per user requirement
