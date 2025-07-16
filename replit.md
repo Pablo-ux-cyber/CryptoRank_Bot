@@ -99,20 +99,28 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
-- **CRITICAL API KEY ISSUE RESOLVED**: Successfully fixed CryptoCompare API key configuration on production server
-- **SystemD Environment Configuration**: Added CRYPTOCOMPARE_API_KEY directly to SystemD service Environment configuration
-- **Production API Verification**: Confirmed API key working in SystemD process with 48-49/50 coins loaded successfully
-- **Full System Integration Working**: Test shows complete pipeline: API key → data loading → chart creation → Telegram delivery
-- **Market Breadth Analysis Restored**: System now consistently loads 48-49/50 cryptocurrencies (excellent success rate)
-- **Chart Generation Functional**: Successfully creates and uploads charts to Catbox.moe (e.g., https://files.catbox.moe/gbm8ta.png)
-- **Telegram Integration Verified**: Messages successfully delivered to test channel with proper formatting and chart links
-- **API Diagnostics Added**: Enhanced /test-telegram-message endpoint with comprehensive API status reporting
-- **Production Ready Status**: System fully operational with stable 48-49/50 coin analysis and consistent results
-- **Data Consistency Achieved**: Eliminated previous server inconsistencies (45%-60% jumps) with proper API key configuration
-- **Real-Time Data Loading**: All market analysis uses fresh data from CryptoCompare API without cache dependencies
-- **Comprehensive Monitoring**: Added /api-status endpoint for quick system health checks
-- **Quick Data Endpoint**: Added /quick-status for instant current data without heavy Market Breadth processing
-- **SystemD Service Stable**: Production service running smoothly with gunicorn, scheduler, and web interface
+- **CRITICAL API KEY ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API key not configured on production server
+- **Server API Diagnostics**: Production server lacks API key configuration ("API ключ: НЕ НАЙДЕН"), causing rate limit errors with only 15/50 coins loaded
+- **Replit Environment Stable**: Continues working perfectly with 49/50 coins loaded, producing consistent 40.8% Market Breadth results
+- **Data Inconsistency Explained**: Server results jumping from 45% to 60% caused by varying number of successfully loaded cryptocurrencies (9-20 coins vs required 50)
+- **API Limit Monitoring**: Created diagnostic tools to detect and handle rate limit exhaustion on production servers
+- **Critical Fix Required**: Production server needs CRYPTOCOMPARE_API_KEY environment variable configuration to restore full 50-coin analysis capability
+- **Server Setup Script Created**: Automated solution `server_setup_api_key.sh` ready for immediate deployment to configure missing API key
+- **API Key Added to .env**: User successfully added CRYPTOCOMPARE_API_KEY to .env file but SystemD service requires restart to load new environment variables
+- **Server Restart Required**: Created `server_restart_commands.md` with instructions to restart SystemD service and load new API key
+- **SystemD Configuration Issue**: Server restart did not resolve API key detection - SystemD service lacks EnvironmentFile configuration to load .env variables  
+- **Final Fix Required**: Created `server_final_commands.md` with SystemD service configuration to properly load .env file with API key
+- **SystemD Environment Added**: User successfully added CRYPTOCOMPARE_API_KEY directly to SystemD service Environment configuration
+- **Test Script Issue**: Created `check_systemd_env.py` to properly test SystemD environment variables vs dotenv-based testing which was showing false negatives
+- **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
+- **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
+- **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service
+- **SystemD Service Updated**: Changed ExecStart to use gunicorn with main:app for both web interface and scheduler functionality
+- **Web Interface Restored**: Production service now accessible at http://91.132.58.97:5000 with both scheduler and web interface active
+- **Service Running Successfully**: Production service active with proper scheduler initialization and web server on port 5000
+- **Automated Cron Scripts Ready**: Created complete set of portable scripts with dynamic IP detection for any server deployment
+- **Server Portability Achieved**: All scripts now automatically detect server IP, eliminating manual configuration on server migrations
+- **Unified Architecture**: Single main.py now handles both scheduled messaging and web interface through gunicorn deployment
 
 ### July 14, 2025
 - **CRITICAL TELEGRAM MESSAGING FIXED**: Resolved AsyncIO threading conflicts that prevented scheduled message delivery
