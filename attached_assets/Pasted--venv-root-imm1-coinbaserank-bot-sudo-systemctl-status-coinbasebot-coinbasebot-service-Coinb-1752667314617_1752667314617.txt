@@ -1,0 +1,149 @@
+(venv) root@imm1:~/coinbaserank_bot# sudo systemctl status coinbasebot
+● coinbasebot.service - Coinbase Rank Telegram Bot
+     Loaded: loaded (/etc/systemd/system/coinbasebot.service; enabled; vendor p>
+     Active: active (running) since Tue 2025-07-15 11:42:07 MSK; 1 day 3h ago
+   Main PID: 4112931 (python)
+      Tasks: 3 (limit: 4580)
+     Memory: 5.3M
+        CPU: 11.568s
+     CGroup: /system.slice/coinbasebot.service
+             └─4112931 /root/coinbaserank_bot/venv/bin/python /root/coinbaseran>
+
+Jul 16 12:01:15 imm1.dinet.fvds.ru python[4112931]: 2025-07-16 12:01:15,337 - s>
+Jul 16 12:01:15 imm1.dinet.fvds.ru python[4112931]: INFO:sensortower_bot:Планир>
+Jul 16 13:01:18 imm1.dinet.fvds.ru python[4112931]: 2025-07-16 13:01:18,969 - s>
+Jul 16 13:01:18 imm1.dinet.fvds.ru python[4112931]: INFO:sensortower_bot:Следую>
+Jul 16 13:01:18 imm1.dinet.fvds.ru python[4112931]: 2025-07-16 13:01:18,970 - s>
+Jul 16 13:01:18 imm1.dinet.fvds.ru python[4112931]: INFO:sensortower_bot:Планир>
+Jul 16 14:01:22 imm1.dinet.fvds.ru python[4112931]: 2025-07-16 14:01:22,510 - s>
+Jul 16 14:01:22 imm1.dinet.fvds.ru python[4112931]: INFO:sensortower_bot:Следую>
+Jul 16 14:01:22 imm1.dinet.fvds.ru python[4112931]: 2025-07-16 14:01:22,511 - s>
+Jul 16 14:01:22 imm1.dinet.fvds.ru python[4112931]: INFO:sensortower_bot:Планир>
+ ^X
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# grep "2025-07-16 08:01" /root/coinbaserank_bot/sensortower_bot.log
+grep "2025-07-16 11:01" /root/coinbaserank_bot/sensortower_bot.log
+2025-07-15 11:24:37,500 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:24:37,500 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 36 минут)
+2025-07-15 11:24:46,463 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:24:46,463 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 36 минут)
+2025-07-15 11:28:24,742 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 32 минут)
+2025-07-15 11:28:24,742 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:33:07,724 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:33:07,727 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 27 минут)
+2025-07-15 11:34:51,620 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:34:51,621 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 26 минут)
+2025-07-15 11:35:34,986 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:35:34,986 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 25 минут)
+2025-07-15 11:40:55,124 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 20 минут)
+2025-07-15 11:40:55,125 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:42:09,934 - sensortower_bot - INFO - Scheduler started. Next run at: 2025-07-16 08:01:00
+2025-07-15 11:42:09,934 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 20 часов 18 минут)
+2025-07-15 12:42:13,350 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 19 часов 18 минут)
+2025-07-15 13:42:16,898 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 18 часов 18 минут)
+2025-07-15 14:42:20,515 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 17 часов 18 минут)
+2025-07-15 15:42:24,098 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 16 часов 18 минут)
+2025-07-15 16:42:27,723 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 15 часов 18 минут)
+2025-07-15 17:42:31,291 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 14 часов 18 минут)
+2025-07-15 18:42:34,587 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 13 часов 18 минут)
+2025-07-15 19:42:38,176 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 12 часов 18 минут)
+2025-07-15 20:42:41,787 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 11 часов 18 минут)
+2025-07-15 21:42:45,402 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 10 часов 18 минут)
+2025-07-15 22:42:48,980 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 9 часов 18 минут)
+2025-07-15 23:42:52,580 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 8 часов 18 минут)
+2025-07-16 00:42:56,152 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 7 часов 18 минут)
+2025-07-16 01:42:59,728 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 6 часов 18 минут)
+2025-07-16 02:43:03,169 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 5 часов 17 минут)
+2025-07-16 03:43:06,766 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 4 часов 17 минут)
+2025-07-16 04:43:10,260 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 3 часов 17 минут)
+2025-07-16 05:43:13,802 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 2 часов 17 минут)
+2025-07-16 06:43:17,356 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 1 часов 17 минут)
+2025-07-16 07:43:20,898 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 0 часов 17 минут)
+2025-07-16 08:01:00,878 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 23 часов 59 минут)
+2025-07-16 08:01:00,886 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 11:01:11,691 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 20 часов 59 минут)
+2025-07-16 11:01:11,692 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# tail -50 /root/coinbaserank_bot/sensortower_bot.log
+2025-07-15 14:42:20,515 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 17 часов 18 минут)
+2025-07-15 14:42:20,516 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 15:42:24,098 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 16 часов 18 минут)
+2025-07-15 15:42:24,100 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 16:42:27,723 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 15 часов 18 минут)
+2025-07-15 16:42:27,724 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 17:42:31,291 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 14 часов 18 минут)
+2025-07-15 17:42:31,292 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 18:42:34,587 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 13 часов 18 минут)
+2025-07-15 18:42:34,588 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 19:42:38,176 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 12 часов 18 минут)
+2025-07-15 19:42:38,177 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 20:42:41,787 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 11 часов 18 минут)
+2025-07-15 20:42:41,788 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 21:42:45,402 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 10 часов 18 минут)
+2025-07-15 21:42:45,403 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 22:42:48,980 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 9 часов 18 минут)
+2025-07-15 22:42:48,980 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-15 23:42:52,580 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 8 часов 18 минут)
+2025-07-15 23:42:52,581 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 00:42:56,152 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 7 часов 18 минут)
+2025-07-16 00:42:56,154 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 01:42:59,728 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 6 часов 18 минут)
+2025-07-16 01:42:59,729 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 02:43:03,169 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 5 часов 17 минут)
+2025-07-16 02:43:03,170 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 03:43:06,766 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 4 часов 17 минут)
+2025-07-16 03:43:06,767 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 04:43:10,260 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 3 часов 17 минут)
+2025-07-16 04:43:10,261 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 05:43:13,802 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 2 часов 17 минут)
+2025-07-16 05:43:13,803 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 06:43:17,356 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 1 часов 17 минут)
+2025-07-16 06:43:17,357 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 07:43:20,898 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-16 08:01:00 (через 0 часов 17 минут)
+2025-07-16 07:43:20,900 - sensortower_bot - INFO - Планировщик спит 17 минут до следующей проверки
+2025-07-16 08:01:00,878 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 23 часов 59 минут)
+2025-07-16 08:01:00,886 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 09:01:04,522 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 22 часов 59 минут)
+2025-07-16 09:01:04,523 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 10:01:08,068 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 21 часов 59 минут)
+2025-07-16 10:01:08,069 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 11:01:11,691 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 20 часов 59 минут)
+2025-07-16 11:01:11,692 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 12:01:15,336 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 19 часов 59 минут)
+2025-07-16 12:01:15,337 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 13:01:18,969 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 18 часов 59 минут)
+2025-07-16 13:01:18,970 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+2025-07-16 14:01:22,510 - sensortower_bot - INFO - Следующий запуск запланирован на: 2025-07-17 08:01:00 (через 17 часов 59 минут)
+2025-07-16 14:01:22,511 - sensortower_bot - INFO - Планировщик спит 60 минут до следующей проверки
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# grep -i "error\|exception\|failed" /root/coinbaserank_bot/sensortower_bot.log | tail -10
+2025-07-15 11:28:26,636 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:28:26,636 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-15 11:33:09,071 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:33:09,071 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-15 11:34:52,825 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:34:52,826 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-15 11:35:36,259 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:35:36,259 - sensortower_bot - ERROR - Failed to start the scheduler
+2025-07-15 11:40:56,547 - sensortower_bot - ERROR - Другой экземпляр бота уже запущен. Завершение работы.
+2025-07-15 11:40:56,547 - sensortower_bot - ERROR - Failed to start the scheduler
+(venv) root@imm1:~/coinbaserank_bot# 
+(venv) root@imm1:~/coinbaserank_bot# ps aux | grep python
+root         941  0.0  0.4 248332 17696 ?        Ssl  Mar28  32:04 /root/telegram_monitorbot_new/venv/bin/python bot_handler.py
+root         947  0.5  1.8 421104 73016 ?        Ssl  Mar28 890:50 /root/ExChanger/venv/bin/python app.py
+root         949  0.1  0.5 900832 22680 ?        Ssl  Mar28 182:09 /usr/bin/python3 /usr/bin/fail2ban-server -xf start
+root         979  0.0  1.6 466680 62976 ?        Ssl  Mar28 119:56 /root/telegram_bot_project/venv/bin/python /root/telegram_bot_project/bot.py
+root         985  0.0  0.0 112736  3304 ?        Ssl  Mar28   0:00 /usr/bin/python3 /usr/share/unattended-upgrades/unattended-upgrade-shutdown --wait-for-signal
+root     2229199  0.0  0.0  33812  1604 ?        Ss   Jun17   6:13 /var/www/html/di_index_new/venv/bin/python /var/www/html/di_index_new/venv/bin/gunicorn --bind 127.0.0.1:5001 main:app
+root     3304867  0.0  0.1 264344  4912 ?        Ssl  May08  14:30 /usr/bin/python3 -Es /usr/sbin/tuned -l -P
+root     3440866  0.0  1.0  69836 41764 ?        Ss   May10  10:12 /root/telegram_monitorbot_new/venv/bin/python read_and_send.py
+root     3608573  0.0  0.4 251908 17808 ?        Sl   May12  18:09 python bot_handler.py
+root     3608574  0.0  0.5 450548 20752 ?        Sl   May12  25:24 python bot.py
+root     3608575  0.0  0.4 149900 19156 ?        Sl   May12  12:08 python app.py
+root     3608579  0.5  1.8 419864 73472 ?        Sl   May12 526:41 python app.py
+www-data 3609425  0.0  0.4 490996 17496 ?        Ssl  May12  30:04 /var/www/html/CurrencyTelegramInformer/venv/bin/python main.py
+www-data 3704698 67.7  2.0 1144044 81024 ?       Ssl  Jul09 6631:01 /var/www/html/200ma/venv/bin/python3 /var/www/html/200ma/venv/bin/streamlit run app.py --server.port 8501 --server.address 0.0.0.0
+root     3808247  0.0  2.4 471108 95616 ?        Sl   Jul11   1:39 /var/www/html/di_index_new/venv/bin/python /var/www/html/di_index_new/venv/bin/gunicorn --bind 127.0.0.1:5001 main:app
+root     4112931  0.0  0.1 314324  4908 ?        Ssl  Jul15   0:11 /root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/scheduler_standalone.py
+root     4189956  0.0  0.0   9560  2272 pts/1    S+   15:01   0:00 grep --color=auto python
+(venv) root@imm1:~/coinbaserank_bot# 
