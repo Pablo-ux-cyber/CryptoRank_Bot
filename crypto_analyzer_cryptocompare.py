@@ -18,7 +18,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 1.0  # 1000ms между запросами для стабильности
+        self.request_delay = 0.2  # 200ms между запросами для скорости
         self.api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
         
         # Настройка логирования
@@ -167,31 +167,46 @@ class CryptoAnalyzer:
         successful_loads = 0
         failed_loads = 0
         
-        self.logger.info(f"Начинаем последовательную загрузку свежих данных для {total_coins} монет...")
+        self.logger.info(f"Начинаем пачечную загрузку свежих данных для {total_coins} монет (пачки по 7)...")
         
-        # Последовательная загрузка с паузами между запросами
-        for i, coin in enumerate(coins):
-            coin_symbol, df, success = self._load_single_coin_data(coin, days)
-            completed = i + 1
+        # Пачечная загрузка по 7 монет с паузами между пачками
+        batch_size = 7
+        for batch_start in range(0, total_coins, batch_size):
+            batch_end = min(batch_start + batch_size, total_coins)
+            batch_coins = coins[batch_start:batch_end]
             
-            # Обновление прогресса
-            if progress_callback:
-                progress = (completed / total_coins) * 100
-                progress_callback(progress)
+            self.logger.info(f"Загружаем пачку {batch_start//batch_size + 1} ({batch_start + 1}-{batch_end} из {total_coins})")
             
-            if success and df is not None:
-                historical_data[coin_symbol] = df
-                successful_loads += 1
-                self.logger.info(f"✅ {coin_symbol} ({completed}/{total_coins})")
-            else:
-                failed_loads += 1
-                self.logger.warning(f"❌ {coin_symbol} - недостаточно данных ({completed}/{total_coins})")
+            # Параллельная загрузка внутри пачки
+            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+                future_to_coin = {
+                    executor.submit(self._load_single_coin_data, coin, days): coin 
+                    for coin in batch_coins
+                }
+                
+                for future in concurrent.futures.as_completed(future_to_coin):
+                    coin_symbol, df, success = future.result()
+                    completed = successful_loads + failed_loads + 1
+                    
+                    # Обновление прогресса
+                    if progress_callback:
+                        progress = (completed / total_coins) * 100
+                        progress_callback(progress)
+                    
+                    if success and df is not None:
+                        historical_data[coin_symbol] = df
+                        successful_loads += 1
+                        self.logger.info(f"✅ {coin_symbol} ({completed}/{total_coins})")
+                    else:
+                        failed_loads += 1
+                        self.logger.warning(f"❌ {coin_symbol} - недостаточно данных ({completed}/{total_coins})")
             
-            # Пауза между монетами (дополнительная к паузе в _make_request)
-            if completed < total_coins:
-                time.sleep(0.2)  # Дополнительная пауза 200мс между монетами
+            # Пауза между пачками (но не после последней)
+            if batch_end < total_coins:
+                time.sleep(1.0)  # Пауза 1 секунда между пачками
+                self.logger.info("Пауза между пачками...")
         
-        self.logger.info(f"Последовательная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
+        self.logger.info(f"Пачечная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")
         return historical_data
     
     def calculate_moving_average(self, prices: pd.Series, window: int) -> pd.Series:
