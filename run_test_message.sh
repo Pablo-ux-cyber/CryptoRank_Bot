@@ -4,7 +4,8 @@
 # Отправляет POST запрос к эндпоинту test-telegram-message
 
 # Настройки
-SERVER_URL="http://localhost:5000"
+# Замените на реальный IP адрес вашего сервера
+SERVER_URL="http://172.31.128.39:5000"
 ENDPOINT="/test-telegram-message"
 LOG_FILE="/tmp/test_message_cron.log"
 

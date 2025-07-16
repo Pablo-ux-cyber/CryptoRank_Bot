@@ -4,7 +4,7 @@
 # Для проверки что система работает
 
 echo "🚀 Запуск Test Real Message..."
-echo "📍 URL: http://localhost:5000/test-telegram-message"
+echo "📍 URL: http://172.31.128.39:5000/test-telegram-message"
 echo ""
 
 # Показать текущее время
@@ -13,7 +13,7 @@ echo ""
 
 # Выполнить запрос в фоне и показать статус
 echo "📡 Отправка запроса..."
-response=$(timeout 300 curl -s "http://localhost:5000/test-telegram-message" 2>&1)
+response=$(timeout 300 curl -s "http://172.31.128.39:5000/test-telegram-message" 2>&1)
 exit_code=$?
 
 if [ $exit_code -eq 0 ]; then

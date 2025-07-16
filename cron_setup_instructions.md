@@ -5,11 +5,11 @@
 Теперь кнопку "Test Real Message" можно вызвать простым GET запросом:
 
 ```bash
-# Прямой вызов через curl
-curl http://localhost:5000/test-telegram-message
+# Прямой вызов через curl (замените 172.31.128.39 на реальный IP)
+curl http://172.31.128.39:5000/test-telegram-message
 
 # Или через браузер
-http://localhost:5000/test-telegram-message
+http://172.31.128.39:5000/test-telegram-message
 ```
 
 ## Вариант 2: Настройка cron для автоматического запуска
@@ -119,7 +119,7 @@ tail -f /tmp/test_message_cron.log
 ```
 
 ### Проверка работы через браузер
-Откройте в браузере: `http://localhost:5000/test-telegram-message`
+Откройте в браузере: `http://172.31.128.39:5000/test-telegram-message`
 
 ## Форматы времени для cron
 
