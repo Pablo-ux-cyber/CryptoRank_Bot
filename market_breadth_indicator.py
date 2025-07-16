@@ -14,7 +14,7 @@ class MarketBreadthIndicator:
         self.analyzer = CryptoAnalyzer(cache=None)  # Отключаем кеширование
         
         # Параметры по умолчанию
-        self.top_n = 27  # Обновленный список из 27 монет
+        self.top_n = 26  # Обновленный список из 26 монет (убрали MNT)
         self.ma_period = 200
         self.analysis_days = 30  # Возвращаем к нормальному периоду
         
@@ -31,8 +31,8 @@ class MarketBreadthIndicator:
         try:
             self.logger.info("Начинаем анализ ширины рынка...")
             
-            # Получение топ монет (для быстрого тестирования используем меньше монет)
-            coin_count = 10 if fast_mode else self.top_n
+            # Получение топ монет (всегда используем полный список - никаких быстрых тестов)
+            coin_count = self.top_n
             top_coins = self.analyzer.get_top_coins(coin_count)
             if not top_coins:
                 self.logger.error("Не удалось получить список топ монет")

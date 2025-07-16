@@ -25,11 +25,11 @@ class CryptoAnalyzer:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Список топ криптовалют (символы) - обновленный список из 27 монет
+        # Список топ криптовалют (символы) - обновленный список из 26 монет (убрали MNT - не работает в CryptoCompare)
         self.top_cryptos = [
             'BTC', 'ETH', 'BNB', 'XRP', 'SOL', 'ADA', 'DOGE', 'TRX', 'HYPE', 'XLM', 
             'SUI', 'LINK', 'HBAR', 'BCH', 'AVAX', 'SHIB', 'TON', 'LTC', 'DOT', 'XMR',
-            'UNI', 'PEPE', 'AAVE', 'APT', 'NEAR', 'ONDO', 'MNT'
+            'UNI', 'PEPE', 'AAVE', 'APT', 'NEAR', 'ONDO'
         ]
     
     def _make_request(self, url: str, params: dict = None) -> Optional[dict]:
@@ -108,7 +108,7 @@ class CryptoAnalyzer:
         
         # Обработка данных
         prices_data = data['Data']['Data']
-        if len(prices_data) < days * 0.6:  # Снижаем требование до 60%
+        if len(prices_data) < days * 0.3:  # Снижаем требование до 30% для загрузки всех монет
             self.logger.warning(f"Недостаточно данных для {coin_symbol}: {len(prices_data)} дней")
             return None
         
@@ -120,7 +120,7 @@ class CryptoAnalyzer:
                     'price': item['close']
                 })
         
-        if len(df_data) < days * 0.6:
+        if len(df_data) < days * 0.3:  # Снижаем требование до 30% для загрузки всех монет
             self.logger.warning(f"Недостаточно валидных данных для {coin_symbol}")
             return None
         
@@ -138,7 +138,7 @@ class CryptoAnalyzer:
         coin_symbol = coin['symbol']
         try:
             df = self.get_coin_history(coin_symbol, days)
-            if df is not None and len(df) >= days * 0.6:
+            if df is not None and len(df) >= days * 0.3:  # Снижаем требование до 30% для загрузки всех монет
                 return coin_symbol, df, True
             else:
                 return coin_symbol, None, False

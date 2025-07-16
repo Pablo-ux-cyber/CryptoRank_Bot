@@ -99,7 +99,8 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
-- **CRYPTOCURRENCY LIST UPDATED**: Changed from 33 to 27 cryptocurrencies per user request - using specific user-selected coins for focused analysis
+- **CRYPTOCURRENCY LIST UPDATED**: Changed from 33 to 26 cryptocurrencies per user request - using specific user-selected coins for focused analysis (removed MNT due to API incompatibility)
+- **FAST TEST MODE DISABLED**: System now always loads all coins, no fast testing with reduced datasets per user requirement
 - **CHART DISPLAY PERIOD UPDATED**: Changed graph display period from 2 years (730 days) to 1.5 years (547 days) per user request for more focused analysis
 - **CRITICAL API KEY ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API key not configured on production server
 - **Server API Diagnostics**: Production server lacks API key configuration ("API ключ: НЕ НАЙДЕН"), causing rate limit errors with only 15/50 coins loaded
@@ -268,4 +269,4 @@ The system follows a modular, event-driven architecture with separate components
 
 Preferred communication style: Simple, everyday language.
 
-**CRITICAL REQUIREMENT: Must analyze 27 selected cryptocurrencies from user's custom list. System analyzes specific coins chosen by user for Market Breadth analysis.**
+**CRITICAL REQUIREMENT: Must analyze 26 selected cryptocurrencies from user's custom list. System analyzes specific coins chosen by user for Market Breadth analysis. NO FAST TESTS - always load all coins even in testing mode.**
