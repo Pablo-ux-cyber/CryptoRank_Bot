@@ -386,8 +386,7 @@ def test_message():
             if result.returncode == 0:
                 logger.info("rnk.py выполнен успешно")
             else:
-                logger.error(f"❌ rnk.py НЕ РАБОТАЕТ! Код ошибки: {result.returncode}")
-                logger.error("❌ COINBASE ДАННЫЕ ОСТАНУТСЯ СТАРЫМИ! SensorTower API заблокирован или требует новые ключи")
+                logger.warning(f"rnk.py завершился с ошибкой (код {result.returncode})")
         except Exception as e:
             logger.warning(f"Ошибка при запуске rnk.py: {str(e)}")
         
@@ -2185,10 +2184,9 @@ def test_telegram_message():
                 if result.stdout:
                     logger.info(f"Вывод rnk.py: {result.stdout.strip()}")
             else:
-                logger.error(f"❌ rnk.py НЕ РАБОТАЕТ! Код ошибки: {result.returncode}")
+                logger.warning(f"rnk.py завершился с ошибкой (код {result.returncode})")
                 if result.stderr:
-                    logger.error(f"❌ ОШИБКА rnk.py: {result.stderr.strip()}")
-                logger.error("❌ COINBASE ДАННЫЕ ОСТАНУТСЯ СТАРЫМИ! SensorTower API заблокирован или требует новые ключи")
+                    logger.warning(f"Ошибка rnk.py: {result.stderr.strip()}")
                     
         except Exception as e:
             logger.warning(f"Ошибка при запуске rnk.py: {str(e)}")
