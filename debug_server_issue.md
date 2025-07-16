@@ -1,70 +1,58 @@
-# Диагностика проблемы с main.py на сервере
+# ДИАГНОСТИКА ПРОБЛЕМЫ С SYSTEMD
 
-## Проблема
-Сервер http://91.132.58.97:5000 недоступен после перехода на main.py
+## Анализ проблемы
 
-## Возможные причины
+**Факты:**
+1. API ключ добавлен в .env файл ✅
+2. SystemD сервис перезапущен ✅  
+3. Система все еще показывает "API ключ: НЕ НАЙДЕН" ❌
+4. Загружается только 13/50 монет ❌
 
-### 1. main.py не запускает веб-сервер
-В отличие от scheduler_standalone.py, main.py может не содержать код запуска Flask сервера.
+**Вывод:** SystemD сервис не загружает .env файл
 
-### 2. Порт 5000 не слушается
-main.py может запускать только планировщик без веб-интерфейса.
+## Причины
 
-### 3. Ошибка в main.py
-Возможна ошибка при запуске, которая приводит к краху приложения.
+1. **Отсутствует EnvironmentFile** в systemd сервисе
+2. **Неправильный путь** к .env файлу
+3. **Права доступа** к .env файлу
 
-## Команды для диагностики на сервере
+## Диагностические команды
 
 ```bash
-# 1. Проверить статус службы
+# 1. Проверить содержимое .env
+cat /root/coinbaserank_bot/.env | grep CRYPTOCOMPARE
+
+# 2. Проверить права доступа к .env
+ls -la /root/coinbaserank_bot/.env
+
+# 3. Проверить конфигурацию systemd
+sudo systemctl cat coinbasebot
+
+# 4. Проверить переменные окружения процесса
+sudo systemctl show coinbasebot --property=Environment
+
+# 5. Проверить статус сервиса
 sudo systemctl status coinbasebot
-
-# 2. Посмотреть логи службы
-sudo journalctl -u coinbasebot -n 50
-
-# 3. Проверить процессы Python
-ps aux | grep python
-
-# 4. Проверить что слушает порт 5000
-sudo netstat -tlnp | grep :5000
-# или
-sudo ss -tlnp | grep :5000
-
-# 5. Проверить содержимое main.py
-head -20 /root/coinbaserank_bot/main.py
-tail -20 /root/coinbaserank_bot/main.py
-
-# 6. Попробовать запустить main.py вручную для диагностики
-cd /root/coinbaserank_bot
-source venv/bin/activate
-python main.py
 ```
 
-## Вероятное решение
+## Ожидаемые результаты
 
-Скорее всего нужно:
+После исправления должно быть:
+- **API ключ найден:** "API ключ: 14fdb7e37c..."
+- **Монеты загружены:** 48-49/50 успешно
+- **Результат стабильный:** ~40.8% как на Replit
+- **Нет ошибок лимитов:** отсутствуют "rate limit exceeded"
 
-### Вариант 1: Использовать gunicorn с main.py
-```ini
-[Service]
-ExecStart=/root/coinbaserank_bot/venv/bin/gunicorn --bind 0.0.0.0:5000 --workers 1 main:app
-```
+## Сравнение с Replit
 
-### Вариант 2: Убедиться что main.py запускает Flask
-Добавить в конец main.py:
-```python
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
-```
+**Replit (работает):**
+- API ключ: найден ✅
+- Монеты: 49/50 ✅  
+- Market Breadth: 40.8% ✅
 
-### Вариант 3: Вернуться к scheduler_standalone.py если main.py только планировщик
-```ini
-[Service]
-ExecStart=/root/coinbaserank_bot/venv/bin/python /root/coinbaserank_bot/scheduler_standalone.py
-```
+**Сервер (не работает):**
+- API ключ: НЕ НАЙДЕН ❌
+- Монеты: 13/50 ❌
+- Market Breadth: нестабильный ❌
 
-## Быстрая проверка
-1. Посмотрите логи: `sudo journalctl -u coinbasebot -n 20`
-2. Проверьте процессы: `ps aux | grep python`
-3. Проверьте порт: `sudo netstat -tlnp | grep :5000`
+**Разница:** конфигурация загрузки переменных окружения
