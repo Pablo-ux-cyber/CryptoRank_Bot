@@ -200,7 +200,7 @@
                     // Показываем статистику
                     if (data.market_breadth_stats) {
                         document.getElementById('coins-loaded').textContent = 
-                            data.market_breadth_stats.coins_loaded + '/50';
+                            data.market_breadth_stats.coins_loaded + '/26';
                         document.getElementById('market-breadth').textContent = 
                             data.market_breadth_stats.market_breadth_value.toFixed(1) + '%';
                         document.getElementById('loading-method').textContent = 
@@ -250,7 +250,7 @@
                         <h4>✅ Успешно!</h4>
                         <p>${data.message}</p>
                         ${data.market_breadth_stats ? `
-                            <p><strong>Загружено:</strong> ${data.market_breadth_stats.coins_loaded}/50 монет</p>
+                            <p><strong>Загружено:</strong> ${data.market_breadth_stats.coins_loaded}/26 монет</p>
                             <p><strong>Market Breadth:</strong> ${data.market_breadth_stats.market_breadth_value.toFixed(1)}%</p>
                         ` : ''}
                     `;

@@ -466,7 +466,7 @@ def test_market_breadth():
         if not scheduler or not scheduler.market_breadth:
             return jsonify({"status": "error", "message": "Market breadth not initialized"}), 500
         
-        # Используем полный режим с 50 монетами как требуется
+        # Используем полный режим с 26 монетами как требуется
         logger.info("Starting Market Breadth data loading with full mode (50 coins)...")
         market_breadth_data = scheduler.market_breadth.get_market_breadth_data(fast_mode=False)
         
@@ -689,7 +689,7 @@ def market_breadth():
             'current_value': 0,
             'timestamp': 'Ready to start',
             'coins_above_ma': 'N/A',
-            'total_coins': '50',
+            'total_coins': '26',
             'cache_info': {'cache_size_mb': 0, 'cached_coins_count': 0, 'status': 'Кеширование отключено'}
         }
         
@@ -2021,7 +2021,7 @@ def create_web_interface_chart():
         analyzer = CryptoAnalyzer(cache=None)
         
         # Получение топ монет и исключение стейблкоинов
-        coins = analyzer.get_top_coins(limit=50)
+        coins = analyzer.get_top_coins(limit=26)
         if not coins:
             logger.error("Не удалось получить список монет")
             return None
@@ -2259,14 +2259,14 @@ def test_telegram_message():
             return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index", "api_status": api_status}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
-        # 3. Market Breadth с графиком (используем полный режим с 50 монетами)
+        # 3. Market Breadth с графиком (используем полный режим с 26 монетами)
         logger.info("Загрузка Market Breadth данных с API ключом...")
         market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
         if not market_breadth_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth", "api_status": api_status}), 500
             
         # Логируем результат загрузки
-        logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/50 монет загружено")
+        logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/26 монет загружено")
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
         # Создаем график и загружаем
@@ -2485,18 +2485,17 @@ def get_market_breadth_data_no_cache():
         
         # Параметры анализа
         ma_period = 200
-        history_days = 1096  # 3 года данных
+        history_days = 547  # 1.5 года данных
         
         # Получаем топ криптовалют
-        top_coins = analyzer.get_top_coins(50)
+        top_coins = analyzer.get_top_coins(26)
         if not top_coins:
             logger.error("Не удалось получить список топ криптовалют")
             return None
         
-        # Исключаем стейблкоины
-        stablecoins = ['USDT', 'USDC', 'DAI']
-        filtered_coins = [coin for coin in top_coins if coin['symbol'] not in stablecoins]
-        logger.info(f"Отфильтровано {len(filtered_coins)} монет (исключены стейблкоины)")
+        # Используем все 26 монет - стейблкоины уже исключены из списка
+        filtered_coins = top_coins
+        logger.info(f"Используем {len(filtered_coins)} монет из обновленного списка")
         
         # ПРИНУДИТЕЛЬНО загружаем свежие данные БЕЗ кеша
         total_days_needed = ma_period + history_days + 100
