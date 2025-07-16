@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 from typing import Dict, Optional
-from crypto_analyzer_cryptocompare import CryptoAnalyzer
+from crypto_analyzer_coinmarketcap import CryptoAnalyzerCMC
 
 class MarketBreadthIndicator:
     """
@@ -11,7 +11,7 @@ class MarketBreadthIndicator:
     
     def __init__(self):
         self.logger = logging.getLogger(__name__)
-        self.analyzer = CryptoAnalyzer(cache=None)  # Отключаем кеширование
+        self.analyzer = CryptoAnalyzerCMC(cache=None)  # Используем CoinMarketCap API
         
         # Параметры по умолчанию
         self.top_n = 49  # Обновленный список из 49 монет по вашему файлу (убираем дубликат NEAR)
