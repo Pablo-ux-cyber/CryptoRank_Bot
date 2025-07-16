@@ -267,9 +267,9 @@ class SensorTowerScheduler:
                 logger.error("Неверный формат данных о рейтинге")
                 return False
                 
-            # Используем метод scraper для форматирования сообщения о рейтинге
-            formatted_rankings = self.scraper.format_rankings_message(rankings_data)
-            combined_message = formatted_rankings
+            # ИСПРАВЛЕНИЕ: Копируем ТОЧНУЮ логику из рабочего test-message
+            rankings_message = self.scraper.format_rankings_message(rankings_data)
+            combined_message = rankings_message
             
             # Затем добавляем данные индекса страха и жадности, если доступны
             if fear_greed_data:
@@ -277,49 +277,35 @@ class SensorTowerScheduler:
                 fear_greed_message = self.fear_greed_tracker.format_fear_greed_message(fear_greed_data)
                 combined_message += f"\n\n{fear_greed_message}"
             
-            # ИСПРАВЛЕНИЕ: Используем ТУ ЖЕ функцию создания графика что и в Test Real Message
+            # ИСПРАВЛЕНИЕ: ТОЧНАЯ копия логики из РАБОЧЕГО /test-message
             if market_breadth_data:
                 try:
-                    # Импортируем функцию создания графика из main.py
-                    import sys
-                    import os
-                    sys.path.append(os.getcwd())
                     from main import create_quick_chart
                     from image_uploader import image_uploader
                     
-                    # Создаем график используя УЖЕ ЗАГРУЖЕННЫЕ данные (БЕЗ повторной загрузки)
-                    if chart_data:
-                        png_data = create_quick_chart(existing_data=chart_data)
-                    else:
-                        logger.warning("ИСПРАВЛЕНИЕ: chart_data недоступен, используем fallback")
-                        png_data = create_quick_chart()
+                    png_data = create_quick_chart()
                     if png_data:
-                        # Загружаем на внешний сервис
                         external_url = image_uploader.upload_chart(png_data)
-                        
                         if external_url:
-                            # Сообщение со ссылкой встроенной в статус
-                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['percentage']}%"
+                            # ТОЧНО как в рабочем test-message - ссылка встроена в статус
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{market_breadth_data['condition']}]({external_url}): {market_breadth_data['current_value']:.1f}%"
                             combined_message += f"\n\n{market_breadth_message}"
-                            logger.info(f"ИСПРАВЛЕНИЕ: Market Breadth с графиком (create_quick_chart): {market_breadth_data['signal']} - {market_breadth_data['condition']} ({market_breadth_data['percentage']}%) - {external_url}")
                         else:
-                            # Fallback без ссылки
-                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
+                            # Fallback как в рабочем test-message
+                            market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
                             combined_message += f"\n\n{market_breadth_message}"
-                            logger.warning("ИСПРАВЛЕНИЕ: График создан но загрузка не удалась")
                     else:
-                        # Fallback без ссылки
-                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
+                        # Fallback как в рабочем test-message
+                        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['current_value']:.1f}%"
                         combined_message += f"\n\n{market_breadth_message}"
-                        logger.warning("ИСПРАВЛЕНИЕ: Не удалось создать график")
-                        
                 except Exception as e:
-                    logger.error(f"ИСПРАВЛЕНИЕ: Ошибка создания графика для планировщика: {str(e)}")
-                    # Fallback без ссылки
-                    market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} {market_breadth_data['condition']}: {market_breadth_data['percentage']}%"
-                    combined_message += f"\n\n{market_breadth_message}"
+                    logger.error(f"Ошибка при создании графика для планировщика: {str(e)}")
+                    # Fallback как в рабочем test-message
+                    market_breadth_message = self.market_breadth.format_breadth_message(market_breadth_data)
+                    if market_breadth_message:
+                        combined_message += f"\n\n{market_breadth_message}"
             else:
-                logger.info("Данные индикатора ширины рынка недоступны")
+                logger.info("Данные Market Breadth недоступны")
             
             # Altcoin Season Index удален из сообщений по запросу пользователя
             # Данные по-прежнему собираются для веб-интерфейса, но не отправляются в Telegram
