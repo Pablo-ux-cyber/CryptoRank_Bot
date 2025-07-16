@@ -108,8 +108,10 @@ The system follows a modular, event-driven architecture with separate components
 - **Server Setup Script Created**: Automated solution `server_setup_api_key.sh` ready for immediate deployment to configure missing API key
 - **API Key Added to .env**: User successfully added CRYPTOCOMPARE_API_KEY to .env file but SystemD service requires restart to load new environment variables
 - **Server Restart Required**: Created `server_restart_commands.md` with instructions to restart SystemD service and load new API key
-- **SystemD Configuration Issue**: Server restart did not resolve API key detection - SystemD service lacks EnvironmentFile configuration to load .env variables
+- **SystemD Configuration Issue**: Server restart did not resolve API key detection - SystemD service lacks EnvironmentFile configuration to load .env variables  
 - **Final Fix Required**: Created `server_final_commands.md` with SystemD service configuration to properly load .env file with API key
+- **SystemD Environment Added**: User successfully added CRYPTOCOMPARE_API_KEY directly to SystemD service Environment configuration
+- **Test Script Issue**: Created `check_systemd_env.py` to properly test SystemD environment variables vs dotenv-based testing which was showing false negatives
 - **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
 - **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
 - **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service
