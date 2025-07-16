@@ -1,53 +1,45 @@
-# Команды для диагностики проблемы с планировщиком
+# ДИАГНОСТИКА ОТСУТСТВУЮЩЕГО СООБЩЕНИЯ
 
-## 1. Проверка состояния systemd сервиса
+## Проверка логов планировщика
+
+### 1. Основные логи
+```bash
+tail -50 /root/coinbaserank_bot/sensortower_bot.log
+```
+
+### 2. Логи за сегодня (16 июля)
+```bash
+grep "2025-07-16" /root/coinbaserank_bot/sensortower_bot.log
+```
+
+### 3. Поиск сообщений об отправке
+```bash
+grep -i "отправка\|sending\|telegram\|message" /root/coinbaserank_bot/sensortower_bot.log | tail -20
+```
+
+### 4. Поиск ошибок за последние 24 часа
+```bash
+grep -E "(ERROR|Exception|Failed)" /root/coinbaserank_bot/sensortower_bot.log | tail -20
+```
+
+### 5. Статус systemd сервиса
 ```bash
 sudo systemctl status coinbasebot
 ```
 
-## 2. Проверка логов systemd сервиса
+### 6. Проверка времени на сервере
 ```bash
-sudo journalctl -u coinbasebot -f --since "2025-07-15 08:00:00"
+date
+timedatectl status
 ```
 
-## 3. Проверка основных логов приложения
+### 7. Проверка работы планировщика
 ```bash
-tail -50 /root/coinbaserank-bot/sensortower_bot.log | grep -E "2025-07-15|08:01|11:01"
+ps aux | grep python
 ```
 
-## 4. Проверка логов за период утреннего запуска
-```bash
-grep -E "2025-07-15 08:0[0-5]|2025-07-15 05:0[0-5]" /root/coinbaserank-bot/sensortower_bot.log
-```
-
-## 5. Проверка процессов Python
-```bash
-ps aux | grep python | grep -v grep
-```
-
-## 6. Проверка файлов блокировки
-```bash
-ls -la /root/coinbaserank-bot/coinbasebot.lock
-```
-
-## 7. Проверка последних записей в логе
-```bash
-tail -20 /root/coinbaserank-bot/sensortower_bot.log
-```
-
-## 8. Проверка статуса планировщика
-```bash
-grep -E "Scheduler started|планировщик|scheduler" /root/coinbaserank-bot/sensortower_bot.log | tail -10
-```
-
-## 9. Проверка ошибок в логах
-```bash
-grep -E "Error|Exception|Failed" /root/coinbaserank-bot/sensortower_bot.log | tail -20
-```
-
-## 10. Проверка времени последнего изменения файлов
-```bash
-ls -la /root/coinbaserank-bot/ | grep -E "\.py$|\.log$"
-```
-
-## Выполните эти команды и пришлите результаты
+## Ожидаемое в логах:
+- Запись о запуске в 08:01:00 UTC (11:01 MSK)
+- Сбор данных (рейтинг, Fear & Greed, и т.д.)
+- Отправка сообщения в Telegram
+- Запись об успешной отправке
