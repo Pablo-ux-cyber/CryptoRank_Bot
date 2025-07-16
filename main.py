@@ -2430,34 +2430,82 @@ def quick_test_message():
         fear_greed_tracker = FearGreedIndexTracker()
         fear_greed_data = fear_greed_tracker.get_fear_greed_index()
         
-        # ИСПРАВЛЕНИЕ 2: Market Breadth БЕЗ КЕША - свежие данные
-        logger.info("ИСПРАВЛЕНИЕ: Загружаем Market Breadth БЕЗ кеша")
-        market_breadth_data = get_market_breadth_data_no_cache()  # Новая функция
+        # ИСПРАВЛЕНИЕ 2: Market Breadth БЕЗ КЕША - свежие данные - ЗАГРУЖАЕМ ОДИН РАЗ
+        logger.info("ИСПРАВЛЕНИЕ: Загружаем Market Breadth БЕЗ кеша - ОДИН РАЗ")
         
-        if market_breadth_data and market_breadth_data.get('status') == 'success':
-            breadth_condition = market_breadth_data['data']['condition']
-            breadth_percentage = market_breadth_data['data']['percentage']
-            breadth_signal = market_breadth_data['data']['signal']
-            
-            # Создаем график используя уже загруженные данные
-            existing_data = {
-                'historical_data': market_breadth_data.get('historical_data'),
-                'indicator_data': market_breadth_data.get('indicator_data')
-            }
-            chart_bytes = create_quick_chart(existing_data)
-            chart_link = None
-            if chart_bytes:
-                from image_uploader import ImageUploader
-                uploader = ImageUploader()
-                chart_link = uploader.upload_image(chart_bytes)
-            
-            # Формируем сообщение с кликабельной ссылкой на график - только 200MA кликабельно
-            if chart_link:
-                market_breadth_message = f"[Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%]({chart_link})"
-            else:
-                market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%"
-        else:
+        # Создание анализатора БЕЗ кеша
+        from crypto_analyzer_cryptocompare import CryptoAnalyzer
+        analyzer = CryptoAnalyzer(cache=None)  # НЕТ кеша!
+        
+        # Параметры анализа
+        ma_period = 200
+        history_days = 547  # 1.5 года данных
+        
+        # Получаем топ криптовалют (все 49 монет)
+        top_coins = analyzer.get_top_coins()
+        if not top_coins:
+            logger.error("Не удалось получить список топ криптовалют")
             market_breadth_message = "Market by 200MA: ⚪ Data unavailable"
+        else:
+            # Используем все 49 монет - стейблкоины уже исключены из списка
+            filtered_coins = top_coins
+            logger.info(f"Используем {len(filtered_coins)} монет из обновленного списка")
+            
+            # ПРИНУДИТЕЛЬНО загружаем свежие данные БЕЗ кеша - ОДИН РАЗ
+            total_days_needed = ma_period + history_days + 100
+            logger.info("ПРИНУДИТЕЛЬНАЯ загрузка свежих данных - кеш отключен - ОДИН РАЗ")
+            historical_data = analyzer.load_historical_data(filtered_coins, total_days_needed)
+            
+            if not historical_data:
+                logger.error("Не удалось загрузить исторические данные")
+                market_breadth_message = "Market by 200MA: ⚪ Data unavailable"
+            else:
+                # Расчет индикатора
+                indicator_data = analyzer.calculate_market_breadth(
+                    historical_data, 
+                    ma_period, 
+                    history_days
+                )
+                
+                if indicator_data.empty:
+                    logger.error("Не удалось рассчитать индикатор")
+                    market_breadth_message = "Market by 200MA: ⚪ Data unavailable"
+                else:
+                    logger.info(f"Рассчитан СВЕЖИЙ индикатор для {len(indicator_data)} дней")
+                    
+                    # Получаем последнее значение
+                    latest_percentage = float(indicator_data.iloc[-1]['percentage'])
+                    
+                    # Определяем сигнал и условие
+                    if latest_percentage >= 80:
+                        breadth_signal = "🔴"
+                        breadth_condition = "Overbought"
+                    elif latest_percentage <= 20:
+                        breadth_signal = "🟢"
+                        breadth_condition = "Oversold"
+                    else:
+                        breadth_signal = "🟡"
+                        breadth_condition = "Neutral"
+                    
+                    breadth_percentage = round(latest_percentage, 1)
+                    
+                    # Создаем график используя уже загруженные данные - НЕ ЗАГРУЖАЕМ ПОВТОРНО
+                    existing_data = {
+                        'historical_data': historical_data,
+                        'indicator_data': indicator_data
+                    }
+                    chart_bytes = create_quick_chart(existing_data)
+                    chart_link = None
+                    if chart_bytes:
+                        from image_uploader import ImageUploader
+                        uploader = ImageUploader()
+                        chart_link = uploader.upload_image(chart_bytes)
+                    
+                    # Формируем сообщение с кликабельной ссылкой на график - только 200MA кликабельно
+                    if chart_link:
+                        market_breadth_message = f"[Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%]({chart_link})"
+                    else:
+                        market_breadth_message = f"Market by 200MA: {breadth_signal} {breadth_condition}: {breadth_percentage}%"
         
         # Формирование итогового сообщения БЕЗ строки Coinbase Appstore Rank
         fear_greed_message = fear_greed_tracker.format_fear_greed_message(fear_greed_data) if fear_greed_data else "Fear & Greed: Data unavailable"
