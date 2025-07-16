@@ -14,7 +14,7 @@ class MarketBreadthIndicator:
         self.analyzer = CryptoAnalyzer(cache=None)  # Отключаем кеширование
         
         # Параметры по умолчанию
-        self.top_n = 33  # Обновленный список из 33 монет
+        self.top_n = 27  # Обновленный список из 27 монет
         self.ma_period = 200
         self.analysis_days = 30  # Возвращаем к нормальному периоду
         

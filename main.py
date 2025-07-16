@@ -709,7 +709,7 @@ def run_market_analysis():
         
         # Получение параметров из запроса
         data = request.get_json() or {}
-        top_n = data.get('top_n', 33)
+        top_n = data.get('top_n', 27)
         ma_period = data.get('ma_period', 200) 
         history_days = data.get('history_days', 547)  # 1.5 года по умолчанию
         
@@ -811,7 +811,7 @@ def run_market_analysis_plotly():
         
         # Получение параметров из запроса
         data = request.get_json() or {}
-        top_n = data.get('top_n', 33)
+        top_n = data.get('top_n', 27)
         ma_period = data.get('ma_period', 200) 
         history_days = data.get('history_days', 547)  # 1.5 года по умолчанию
         
@@ -1116,7 +1116,7 @@ def create_market_chart_screenshot():
         analyzer = CryptoAnalyzer(cache=None)
         
         # Параметры анализа
-        top_n = 33
+        top_n = 27
         ma_period = 200
         history_days = 547  # 1.5 года для Telegram графика
         
@@ -1362,7 +1362,7 @@ def create_web_ui_chart_screenshot():
         logger.info("Создание графика с параметрами веб-интерфейса...")
         
         # ТОЧНО ТЕ ЖЕ параметры что в веб-интерфейсе
-        top_n = 33
+        top_n = 27
         ma_period = 200
         history_days = 547  # 1.5 года
         
@@ -1586,7 +1586,7 @@ def create_chart_from_web_endpoint():
         logger.info("Создаем график точно как в веб-интерфейсе...")
         
         # Точные параметры веб-интерфейса
-        top_n = 33
+        top_n = 27
         ma_period = 200
         history_days = 547  # 1.5 года как в веб-интерфейсе
         
@@ -1773,7 +1773,7 @@ def create_quick_chart(existing_data=None):
         logger.info("Создаем быстрый график...")
         
         # Полные параметры как требуется пользователем
-        top_n = 33  # Обновленный список из 33 монет
+        top_n = 27  # Обновленный список из 33 монет
         ma_period = 200
         history_days = 547  # 1.5 года данных
         
