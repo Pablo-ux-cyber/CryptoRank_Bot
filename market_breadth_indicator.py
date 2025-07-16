@@ -18,6 +18,10 @@ class MarketBreadthIndicator:
         self.ma_period = 200
         self.analysis_days = 30  # Возвращаем к нормальному периоду
         
+        # Для избежания повторной загрузки данных
+        self.last_historical_data = None
+        self.last_indicator_data = None
+        
     def get_market_breadth_data(self, fast_mode: bool = False) -> Optional[Dict]:
         """
         Получает текущие данные индикатора ширины рынка
@@ -65,6 +69,10 @@ class MarketBreadthIndicator:
             
             # Получение сводной информации
             summary = self.analyzer.get_market_summary(indicator_data)
+            
+            # ИСПРАВЛЕНИЕ: Сохраняем данные для повторного использования
+            self.last_historical_data = historical_data
+            self.last_indicator_data = indicator_data
             
             # Дополнительная обработка для телеграм сообщения
             current_value = summary.get('current_value', 0)

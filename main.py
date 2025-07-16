@@ -421,7 +421,15 @@ def test_message():
         # Add Market Breadth with chart link (same logic as in scheduler)
         if market_breadth_data:
             try:
-                png_data = create_quick_chart()
+                # ИСПРАВЛЕНИЕ: Передаем уже загруженные данные чтобы избежать повторной загрузки
+                existing_data = None
+                if hasattr(scheduler.market_breadth, 'last_historical_data') and hasattr(scheduler.market_breadth, 'last_indicator_data'):
+                    existing_data = {
+                        'historical_data': scheduler.market_breadth.last_historical_data,
+                        'indicator_data': scheduler.market_breadth.last_indicator_data
+                    }
+                
+                png_data = create_quick_chart(existing_data=existing_data)
                 if png_data:
                     from image_uploader import image_uploader
                     external_url = image_uploader.upload_chart(png_data)
