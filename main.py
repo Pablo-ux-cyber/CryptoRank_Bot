@@ -1772,7 +1772,7 @@ def create_quick_chart(existing_data=None):
         history_days = 547  # 1.5 года данных
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
-        if existing_data and 'historical_data' in existing_data and 'indicator_data' in existing_data:
+        if existing_data and existing_data.get('historical_data') and existing_data.get('indicator_data'):
             logger.info("ИСПРАВЛЕНИЕ: Используем уже загруженные данные для графика")
             historical_data = existing_data['historical_data']
             indicator_data = existing_data['indicator_data']
