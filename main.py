@@ -711,7 +711,7 @@ def run_market_analysis():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 730)  # 2 года по умолчанию
+        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -813,7 +813,7 @@ def run_market_analysis_plotly():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 730)  # 2 года по умолчанию
+        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -1118,7 +1118,7 @@ def create_market_chart_screenshot():
         # Параметры анализа
         top_n = 50
         ma_period = 200
-        history_days = 730  # 2 года для Telegram графика
+        history_days = 1095  # 3 года для Telegram графика
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1364,7 +1364,7 @@ def create_web_ui_chart_screenshot():
         # ТОЧНО ТЕ ЖЕ параметры что в веб-интерфейсе
         top_n = 50
         ma_period = 200
-        history_days = 730  # 2 года
+        history_days = 1095  # 3 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -1588,7 +1588,7 @@ def create_chart_from_web_endpoint():
         # Точные параметры веб-интерфейса
         top_n = 50
         ma_period = 200
-        history_days = 730  # 2 года как в веб-интерфейсе
+        history_days = 1095  # 3 года как в веб-интерфейсе
         
         # Создаем график с точными параметрами веб-интерфейса
         return create_exact_web_interface_chart(top_n, ma_period, history_days)
@@ -1775,7 +1775,7 @@ def create_quick_chart(existing_data=None):
         # Полные параметры как требуется пользователем
         top_n = 50  # ОБЯЗАТЕЛЬНО 50 МОНЕТ как требует пользователь
         ma_period = 200
-        history_days = 730  # 2 года данных как в продакшене
+        history_days = 1095  # 3 года данных как в продакшене
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
         if existing_data and 'historical_data' in existing_data and 'indicator_data' in existing_data:
@@ -2015,7 +2015,7 @@ def create_web_interface_chart():
         # Точно такие же параметры как в веб-интерфейсе
         top_n = 47
         ma_period = 200
-        history_days = 730  # 2 года
+        history_days = 1095  # 3 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -2200,8 +2200,8 @@ def test_telegram_message():
         fear_greed = FearGreedIndexTracker()
         market_breadth = MarketBreadthIndicator()
         
-        # ИСПРАВЛЕНИЕ: Сначала запускаем rnk.py для получения свежих данных рейтинга
-        logger.info("Запуск rnk.py для получения актуальных данных рейтинга...")
+        # ИСПРАВЛЕНИЕ: Запускаем rnk.py и сразу читаем свежие данные из JSON
+        logger.info("Запуск rnk.py для получения свежих данных рейтинга...")
         try:
             import subprocess
             result = subprocess.run([
@@ -2227,11 +2227,31 @@ def test_telegram_message():
         # Собираем все данные
         logger.info("Получение данных для тестового сообщения...")
         
-        # 1. Coinbase рейтинг (теперь с СВЕЖИМИ данными)
-        rankings_data = scraper.scrape_category_rankings()
-        if not rankings_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга", "api_status": api_status}), 500
-        rankings_message = scraper.format_rankings_message(rankings_data)
+        # 1. Coinbase рейтинг - читаем напрямую из обновленного JSON
+        from json_rank_reader import get_rank_from_json, get_latest_rank_date
+        
+        fresh_rank = get_rank_from_json()
+        rank_date = get_latest_rank_date()
+        
+        if fresh_rank:
+            logger.info(f"Получен свежий рейтинг из JSON: {fresh_rank} на дату {rank_date}")
+            # Создаем данные в формате SensorTower
+            rankings_data = {
+                'coinbase_rank': fresh_rank,
+                'rank_date': rank_date,
+                'source': 'JSON после rnk.py'
+            }
+            rankings_message = f"Coinbase: #{fresh_rank}"
+        else:
+            logger.warning("Не удалось получить свежий рейтинг из JSON, используем scraper")
+            rankings_data = scraper.scrape_category_rankings()
+            if not rankings_data:
+                return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга", "api_status": api_status}), 500
+            rankings_message = scraper.format_rankings_message(rankings_data)
+        
+        # Логируем полученные данные рейтинга
+        logger.info(f"Итоговые данные рейтинга: {rankings_data}")
+        logger.info(f"Сообщение рейтинга: {rankings_message}")
         
         # 2. Fear & Greed Index
         fear_greed_data = fear_greed.get_fear_greed_index()
@@ -2239,22 +2259,20 @@ def test_telegram_message():
             return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index", "api_status": api_status}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
-        # 3. Market Breadth с графиком (используем полный режим с 50 монетами за 2 года)
-        logger.info("Загрузка Market Breadth данных с API ключом за 2 года...")
-        
-        # Используем стандартный MarketBreadthIndicator (теперь с 2-летними данными)
+        # 3. Market Breadth с графиком (используем полный режим с 50 монетами)
+        logger.info("Загрузка Market Breadth данных с API ключом...")
         market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
         if not market_breadth_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth за 2 года", "api_status": api_status}), 500
+            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth", "api_status": api_status}), 500
             
         # Логируем результат загрузки
         logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/50 монет загружено")
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
-        # Создаем график с 2-летними данными
+        # Создаем график и загружаем
         png_data = create_quick_chart()
         if not png_data:
-            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth за 2 года", "api_status": api_status}), 500
+            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth", "api_status": api_status}), 500
             
         chart_url = image_uploader.upload_chart(png_data)
         if not chart_url:
@@ -2467,7 +2485,7 @@ def get_market_breadth_data_no_cache():
         
         # Параметры анализа
         ma_period = 200
-        history_days = 1096  # 2 года данных
+        history_days = 1096  # 3 года данных
         
         # Получаем топ криптовалют
         top_coins = analyzer.get_top_coins(50)
