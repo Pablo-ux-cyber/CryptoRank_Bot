@@ -18,7 +18,7 @@ class CryptoAnalyzer:
     def __init__(self, cache=None):
         self.cryptocompare_url = "https://min-api.cryptocompare.com/data"
         self.cache = cache
-        self.request_delay = 0.2  # 200ms между запросами для скорости
+        self.request_delay = 0.1  # 100ms между запросами для скорости
         self.api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
         
         # Настройка логирования
@@ -167,10 +167,10 @@ class CryptoAnalyzer:
         successful_loads = 0
         failed_loads = 0
         
-        self.logger.info(f"Начинаем пачечную загрузку свежих данных для {total_coins} монет (пачки по 7)...")
+        self.logger.info(f"Начинаем пачечную загрузку свежих данных для {total_coins} монет (пачки по 9)...")
         
-        # Пачечная загрузка по 7 монет с паузами между пачками
-        batch_size = 7
+        # Пачечная загрузка по 9 монет с паузами между пачками
+        batch_size = 9
         for batch_start in range(0, total_coins, batch_size):
             batch_end = min(batch_start + batch_size, total_coins)
             batch_coins = coins[batch_start:batch_end]
@@ -178,7 +178,7 @@ class CryptoAnalyzer:
             self.logger.info(f"Загружаем пачку {batch_start//batch_size + 1} ({batch_start + 1}-{batch_end} из {total_coins})")
             
             # Параллельная загрузка внутри пачки
-            with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            with concurrent.futures.ThreadPoolExecutor(max_workers=9) as executor:
                 future_to_coin = {
                     executor.submit(self._load_single_coin_data, coin, days): coin 
                     for coin in batch_coins
@@ -203,7 +203,7 @@ class CryptoAnalyzer:
             
             # Пауза между пачками (но не после последней)
             if batch_end < total_coins:
-                time.sleep(1.0)  # Пауза 1 секунда между пачками
+                time.sleep(0.5)  # Пауза 0.5 секунды между пачками
                 self.logger.info("Пауза между пачками...")
         
         self.logger.info(f"Пачечная загрузка завершена: {successful_loads} успешно, {failed_loads} неудачно из {total_coins} монет")

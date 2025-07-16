@@ -107,7 +107,7 @@ The system follows a modular, event-driven architecture with separate components
 - **CRITICAL FIX**: Fixed double data loading in test_message function - now uses existing_data parameter to avoid redundant API calls
 - **STABILITY IMPROVEMENT**: Increased API request delays to 1000ms and timeouts to 30-60 seconds to prevent rate limit blocks during dual loading
 - **THREADING ISSUE RESOLVED**: Removed ThreadPoolExecutor parallel processing causing batch requests without proper delays
-- **PERFORMANCE OPTIMIZED**: Implemented batch loading system - 7 coins per batch with 3 parallel threads, 200ms delays, 1s pauses between batches
+- **PERFORMANCE OPTIMIZED**: Implemented batch loading system - 9 coins per batch with 9 parallel threads, 100ms delays, 0.5s pauses between batches
 - **CRITICAL FIX**: Fixed double data loading in test_message function - now uses existing_data parameter to avoid redundant API calls
 - **CRYPTOCURRENCY LIST UPDATED**: Changed from 26 to 49 cryptocurrencies per user request - using complete user-provided list for comprehensive analysis
 - **NEW CRYPTOCURRENCY LIST**: Updated to 49 coins from user's provided list (removed duplicate NEAR): BTC, ETH, BNB, XRP, SOL, ADA, DOGE, DOT, MATIC, LTC, LINK, BCH, XLM, ALGO, AVAX, ATOM, TRX, FIL, ICP, NEAR, VET, TON, EOS, XMR, APT, AXS, FTM, SUI, THETA, XTZ, HBAR, FLOW, CRO, OP, STX, EGLD, KLAY, CHZ, APE, AR, GRT, ZEC, MKR, ENJ, XDC, RPL, BTT, SAND, MANA
