@@ -2295,7 +2295,7 @@ def test_telegram_message():
             "Нейтральная зона": "Neutral"
         }
         english_condition = condition_map.get(market_breadth_data['condition'], market_breadth_data['condition'])
-        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%"
+        market_breadth_message = f"Market by 200MA: {market_breadth_data['signal']} [{english_condition}]({chart_url}): {market_breadth_data['current_value']:.1f}%".replace(" ]", "]").replace("[ ", "[").replace(" )", ")").replace("( ", "(")
         
         # Собираем финальное сообщение в точном формате продакшена
         # Формат: 🔼 Coinbase Appstore Rank: 126
