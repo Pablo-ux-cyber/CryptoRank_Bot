@@ -711,7 +711,7 @@ def run_market_analysis():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
+        history_days = data.get('history_days', 730)  # 2 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -813,7 +813,7 @@ def run_market_analysis_plotly():
         data = request.get_json() or {}
         top_n = data.get('top_n', 50)
         ma_period = data.get('ma_period', 200) 
-        history_days = data.get('history_days', 1095)  # 3 года по умолчанию
+        history_days = data.get('history_days', 730)  # 2 года по умолчанию
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -1118,7 +1118,7 @@ def create_market_chart_screenshot():
         # Параметры анализа
         top_n = 50
         ma_period = 200
-        history_days = 1095  # 3 года для Telegram графика
+        history_days = 730  # 2 года для Telegram графика
         
         # Получение данных
         top_coins = analyzer.get_top_coins(top_n)
@@ -1364,7 +1364,7 @@ def create_web_ui_chart_screenshot():
         # ТОЧНО ТЕ ЖЕ параметры что в веб-интерфейсе
         top_n = 50
         ma_period = 200
-        history_days = 1095  # 3 года
+        history_days = 730  # 2 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -1588,7 +1588,7 @@ def create_chart_from_web_endpoint():
         # Точные параметры веб-интерфейса
         top_n = 50
         ma_period = 200
-        history_days = 1095  # 3 года как в веб-интерфейсе
+        history_days = 730  # 2 года как в веб-интерфейсе
         
         # Создаем график с точными параметрами веб-интерфейса
         return create_exact_web_interface_chart(top_n, ma_period, history_days)
@@ -1775,7 +1775,7 @@ def create_quick_chart(existing_data=None):
         # Полные параметры как требуется пользователем
         top_n = 50  # ОБЯЗАТЕЛЬНО 50 МОНЕТ как требует пользователь
         ma_period = 200
-        history_days = 1095  # 3 года данных как в продакшене
+        history_days = 730  # 2 года данных как в продакшене
         
         # ИСПРАВЛЕНИЕ: Используем существующие данные если переданы
         if existing_data and 'historical_data' in existing_data and 'indicator_data' in existing_data:
@@ -2015,7 +2015,7 @@ def create_web_interface_chart():
         # Точно такие же параметры как в веб-интерфейсе
         top_n = 47
         ma_period = 200
-        history_days = 1095  # 3 года
+        history_days = 730  # 2 года
         
         # Инициализация без кеширования
         analyzer = CryptoAnalyzer(cache=None)
@@ -2242,11 +2242,8 @@ def test_telegram_message():
         # 3. Market Breadth с графиком (используем полный режим с 50 монетами за 2 года)
         logger.info("Загрузка Market Breadth данных с API ключом за 2 года...")
         
-        # Создаем экземпляр MarketBreadthIndicator с 2-летним периодом
-        market_breadth_2y = MarketBreadthIndicator()
-        market_breadth_2y.analysis_days = 730  # 2 года для анализа
-        
-        market_breadth_data = market_breadth_2y.get_market_breadth_data(fast_mode=False)
+        # Используем стандартный MarketBreadthIndicator (теперь с 2-летними данными)
+        market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
         if not market_breadth_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth за 2 года", "api_status": api_status}), 500
             
@@ -2255,7 +2252,7 @@ def test_telegram_message():
         logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
         
         # Создаем график с 2-летними данными
-        png_data = create_chart_2_years()
+        png_data = create_quick_chart()
         if not png_data:
             return jsonify({"success": False, "message": "Не удалось создать график Market Breadth за 2 года", "api_status": api_status}), 500
             
@@ -2470,7 +2467,7 @@ def get_market_breadth_data_no_cache():
         
         # Параметры анализа
         ma_period = 200
-        history_days = 1096  # 3 года данных
+        history_days = 1096  # 2 года данных
         
         # Получаем топ криптовалют
         top_coins = analyzer.get_top_coins(50)
