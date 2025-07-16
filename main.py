@@ -2222,7 +2222,16 @@ def test_telegram_message():
         
         # Небольшая пауза чтобы данные успели записаться
         import time
-        time.sleep(2)
+        time.sleep(3)
+        
+        # ПРИНУДИТЕЛЬНО очищаем кеш JSON файла для получения свежих данных
+        logger.info("Принудительно очищаем кеш JSON файла для получения свежих данных...")
+        try:
+            from json_rank_reader import clear_rank_cache
+            clear_rank_cache()
+            logger.info("Кеш JSON файла очищен успешно")
+        except Exception as e:
+            logger.warning(f"Ошибка очистки кеша JSON: {str(e)}")
         
         # Собираем все данные
         logger.info("Получение данных для тестового сообщения...")
@@ -2231,6 +2240,9 @@ def test_telegram_message():
         rankings_data = scraper.scrape_category_rankings()
         if not rankings_data:
             return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга", "api_status": api_status}), 500
+        
+        # Логируем полученные данные рейтинга
+        logger.info(f"Получены данные рейтинга: {rankings_data}")
         rankings_message = scraper.format_rankings_message(rankings_data)
         
         # 2. Fear & Greed Index
