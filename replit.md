@@ -99,12 +99,13 @@ The system follows a modular, event-driven architecture with separate components
 ## Recent Changes
 
 ### July 16, 2025
-- **CRITICAL API LIMIT ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API rate limits exceeded on production server
-- **Server API Diagnostics**: Production server can only load 9/50 coins due to "You are over your rate limit please upgrade your account!" errors
+- **CRITICAL API KEY ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API key not configured on production server
+- **Server API Diagnostics**: Production server lacks API key configuration ("API ключ: НЕ НАЙДЕН"), causing rate limit errors with only 15/50 coins loaded
 - **Replit Environment Stable**: Continues working perfectly with 49/50 coins loaded, producing consistent 40.8% Market Breadth results
 - **Data Inconsistency Explained**: Server results jumping from 45% to 60% caused by varying number of successfully loaded cryptocurrencies (9-20 coins vs required 50)
 - **API Limit Monitoring**: Created diagnostic tools to detect and handle rate limit exhaustion on production servers
-- **Critical Fix Required**: Production server needs API plan upgrade or rate limit recovery to restore full 50-coin analysis capability
+- **Critical Fix Required**: Production server needs CRYPTOCOMPARE_API_KEY environment variable configuration to restore full 50-coin analysis capability
+- **Server Setup Script Created**: Automated solution `server_setup_api_key.sh` ready for immediate deployment to configure missing API key
 - **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
 - **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
 - **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service
