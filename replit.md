@@ -113,6 +113,7 @@ The system follows a modular, event-driven architecture with separate components
 - **NEW CRYPTOCURRENCY LIST**: Updated to 49 coins from user's provided list (removed duplicate NEAR): BTC, ETH, BNB, XRP, SOL, ADA, DOGE, DOT, MATIC, LTC, LINK, BCH, XLM, ALGO, AVAX, ATOM, TRX, FIL, ICP, NEAR, VET, TON, EOS, XMR, APT, AXS, FTM, SUI, THETA, XTZ, HBAR, FLOW, CRO, OP, STX, EGLD, KLAY, CHZ, APE, AR, GRT, ZEC, MKR, ENJ, XDC, RPL, BTT, SAND, MANA
 - **FAST TEST MODE DISABLED**: System now always loads all coins, no fast testing with reduced datasets per user requirement
 - **CHART DISPLAY PERIOD UPDATED**: Changed graph display period from 2 years (730 days) to 1.5 years (547 days) per user request for more focused analysis
+- **ANALYSIS PERIOD FIXED**: Updated analysis_days from 30 to 547 days to match chart display period requirement
 - **DUPLICATE LOADING OPTIMIZATION**: Fixed critical issue where system was loading 49 coins twice per operation - now uses single data load with existing_data parameter for chart generation
 - **CRITICAL API KEY ISSUE IDENTIFIED**: Root cause of server data inconsistency found - CryptoCompare API key not configured on production server
 - **Server API Diagnostics**: Production server lacks API key configuration ("API ключ: НЕ НАЙДЕН"), causing rate limit errors with only 15/50 coins loaded

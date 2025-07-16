@@ -16,7 +16,7 @@ class MarketBreadthIndicator:
         # Параметры по умолчанию
         self.top_n = 49  # Обновленный список из 49 монет по вашему файлу (убираем дубликат NEAR)
         self.ma_period = 200
-        self.analysis_days = 30  # Возвращаем к нормальному периоду
+        self.analysis_days = 547  # 1.5 года данных как требуется пользователем
         
         # Для избежания повторной загрузки данных
         self.last_historical_data = None
@@ -47,7 +47,7 @@ class MarketBreadthIndicator:
             # Загрузка исторических данных
             historical_data = self.analyzer.load_historical_data(
                 top_coins, 
-                self.ma_period + self.analysis_days + 50  # Запас для расчета MA
+                self.ma_period + self.analysis_days + 100  # Запас для расчета MA (200 + 547 + 100 = 847 дней)
             )
             
             if not historical_data:
