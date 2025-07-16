@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Status - Coinbase Bot</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        .status-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #3498db;
+        }
+        .status-success {
+            border-left-color: #27ae60;
+            background: #d5f4e6;
+        }
+        .status-error {
+            border-left-color: #e74c3c;
+            background: #fdeaea;
+        }
+        .status-warning {
+            border-left-color: #f39c12;
+            background: #fef9e7;
+        }
+        .api-key-info {
+            font-family: 'Courier New', monospace;
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .test-button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s;
+        }
+        .test-button:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        .test-button:disabled {
+            background: #95a5a6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+        .result.success {
+            background: #d5f4e6;
+            border: 1px solid #27ae60;
+            color: #27ae60;
+        }
+        .result.error {
+            background: #fdeaea;
+            border: 1px solid #e74c3c;
+            color: #e74c3c;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .stat-item {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .stat-label {
+            color: #7f8c8d;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 API Status Monitor</h1>
+        
+        <div id="api-status" class="status-card">
+            <h3>Статус API ключа</h3>
+            <div id="loading" class="loading"></div>
+            <span>Проверка статуса...</span>
+        </div>
+        
+        <div class="stats" id="stats" style="display: none;">
+            <div class="stat-item">
+                <div class="stat-value" id="coins-loaded">-</div>
+                <div class="stat-label">Монет загружено</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="market-breadth">-</div>
+                <div class="stat-label">Market Breadth</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="loading-method">-</div>
+                <div class="stat-label">Метод загрузки</div>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 30px;">
+            <button class="test-button" onclick="testTelegramMessage()">
+                Тест Telegram сообщения
+            </button>
+            <button class="test-button" onclick="checkAPIStatus()">
+                Проверить API снова
+            </button>
+        </div>
+        
+        <div id="result" class="result"></div>
+    </div>
+
+    <script>
+        // Проверка API статуса при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAPIStatus();
+        });
+
+        async function checkAPIStatus() {
+            const statusDiv = document.getElementById('api-status');
+            const loadingDiv = document.getElementById('loading');
+            const statsDiv = document.getElementById('stats');
+            
+            loadingDiv.style.display = 'inline-block';
+            statusDiv.className = 'status-card';
+            
+            try {
+                const response = await fetch('/test-telegram-message', {
+                    method: 'GET'
+                });
+                
+                const data = await response.json();
+                loadingDiv.style.display = 'none';
+                
+                if (data.success) {
+                    statusDiv.className = 'status-card status-success';
+                    statusDiv.innerHTML = `
+                        <h3>✅ API ключ найден и работает</h3>
+                        <div class="api-key-info">
+                            API Key: ${data.api_status.key_preview}
+                        </div>
+                        <p><strong>Статус:</strong> ${data.api_status.will_use_key ? 'Активен' : 'Неактивен'}</p>
+                    `;
+                    
+                    // Показываем статистику
+                    if (data.market_breadth_stats) {
+                        document.getElementById('coins-loaded').textContent = 
+                            data.market_breadth_stats.coins_loaded + '/50';
+                        document.getElementById('market-breadth').textContent = 
+                            data.market_breadth_stats.market_breadth_value.toFixed(1) + '%';
+                        document.getElementById('loading-method').textContent = 
+                            data.market_breadth_stats.loading_method;
+                        statsDiv.style.display = 'grid';
+                    }
+                } else {
+                    statusDiv.className = 'status-card status-error';
+                    statusDiv.innerHTML = `
+                        <h3>❌ API ключ не найден</h3>
+                        <div class="api-key-info">
+                            API Key: ${data.api_status ? data.api_status.key_preview : 'НЕ НАЙДЕН'}
+                        </div>
+                        <p><strong>Проблема:</strong> ${data.message}</p>
+                        <p><strong>Решение:</strong> Настроить SystemD Environment переменную</p>
+                    `;
+                    statsDiv.style.display = 'none';
+                }
+                
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                statusDiv.className = 'status-card status-error';
+                statusDiv.innerHTML = `
+                    <h3>❌ Ошибка проверки API</h3>
+                    <p><strong>Ошибка:</strong> ${error.message}</p>
+                `;
+            }
+        }
+
+        async function testTelegramMessage() {
+            const button = event.target;
+            const resultDiv = document.getElementById('result');
+            
+            button.disabled = true;
+            button.innerHTML = '<div class="loading"></div> Отправка...';
+            
+            try {
+                const response = await fetch('/test-telegram-message', {
+                    method: 'POST'
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `
+                        <h4>✅ Успешно!</h4>
+                        <p>${data.message}</p>
+                        ${data.market_breadth_stats ? `
+                            <p><strong>Загружено:</strong> ${data.market_breadth_stats.coins_loaded}/50 монет</p>
+                            <p><strong>Market Breadth:</strong> ${data.market_breadth_stats.market_breadth_value.toFixed(1)}%</p>
+                        ` : ''}
+                    `;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `
+                        <h4>❌ Ошибка</h4>
+                        <p>${data.message}</p>
+                        ${data.api_status ? `
+                            <p><strong>API ключ:</strong> ${data.api_status.key_preview}</p>
+                        ` : ''}
+                    `;
+                }
+                
+                resultDiv.style.display = 'block';
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `
+                    <h4>❌ Ошибка</h4>
+                    <p>${error.message}</p>
+                `;
+                resultDiv.style.display = 'block';
+            } finally {
+                button.disabled = false;
+                button.innerHTML = 'Тест Telegram сообщения';
+            }
+        }
+    </script>
+</body>
+</html>

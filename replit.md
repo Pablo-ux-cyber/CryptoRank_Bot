@@ -116,6 +116,9 @@ The system follows a modular, event-driven architecture with separate components
 - **Server API Issue Identified**: Server timeout on /test-telegram-message indicates API key not properly passed to Python process through SystemD Environment
 - **Server API Key Not Found**: Confirmed API key missing from server environment variables - SystemD Environment configuration not working properly
 - **SystemD Fix Required**: Created `fix_systemd_env.md` with instructions to properly configure Environment variable in SystemD service
+- **Web API Status Monitor**: Created comprehensive `/api-status` web interface to monitor API key presence and cryptocurrency loading status
+- **Enhanced Test Endpoint**: Updated `/test-telegram-message` to show detailed API key status, coins loaded (X/50), and loading method information
+- **Visual Status Dashboard**: Added interactive web dashboard with real-time API key testing and Market Breadth statistics display
 - **Cache System Confirmed Removed**: Verified no caching on either environment - all data loads fresh from CryptoCompare API every time
 - **Fresh Data Verification**: Created test_real_50_coins.py showing 40.8% result with 49/50 coins successfully loaded from API when API limits allow
 - **PRODUCTION SYSTEMD MIGRATION COMPLETED**: Successfully migrated from scheduler_standalone.py to main.py with gunicorn in production systemd service

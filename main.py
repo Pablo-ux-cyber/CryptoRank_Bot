@@ -366,6 +366,11 @@ def health():
     """Health check endpoint"""
     return jsonify({"status": "ok"})
 
+@app.route('/api-status')
+def api_status():
+    """API Status monitoring page"""
+    return render_template('api_status.html')
+
 @app.route('/test-message')
 def test_message():
     """Manually send a test message with cached data to the test channel"""
@@ -2155,12 +2160,36 @@ def create_web_interface_chart():
 def test_telegram_message():
     """Отправить реальное сообщение в тестовую группу используя настоящие данные"""
     try:
+        import os
         from telegram_bot import TelegramBot
         from config import TELEGRAM_TEST_CHANNEL_ID
         from scraper import SensorTowerScraper
         from fear_greed_index import FearGreedIndexTracker
         from market_breadth_indicator import MarketBreadthIndicator
         from image_uploader import image_uploader
+        
+        # Проверяем статус API ключа в начале
+        api_key = os.environ.get('CRYPTOCOMPARE_API_KEY')
+        api_status = {
+            'found': bool(api_key),
+            'key_preview': api_key[:20] + '...' if api_key else 'НЕ НАЙДЕН',
+            'will_use_key': bool(api_key)
+        }
+        
+        logger.info(f"=== СТАТУС API КЛЮЧА ===")
+        logger.info(f"API ключ найден: {'ДА' if api_status['found'] else 'НЕТ'}")
+        logger.info(f"API ключ: {api_status['key_preview']}")
+        logger.info(f"Загрузка будет {'С КЛЮЧОМ' if api_status['will_use_key'] else 'БЕЗ КЛЮЧА'}")
+        logger.info(f"========================")
+        
+        # Если нет API ключа, возвращаем информацию об этом
+        if not api_status['found']:
+            return jsonify({
+                "success": False, 
+                "message": "API ключ не найден в переменных окружения",
+                "api_status": api_status,
+                "details": "SystemD сервис не передает CRYPTOCOMPARE_API_KEY в Python процесс"
+            }), 500
         
         # Создаем бота с тестовым каналом
         test_bot = TelegramBot()
@@ -2201,28 +2230,33 @@ def test_telegram_message():
         # 1. Coinbase рейтинг (теперь с СВЕЖИМИ данными)
         rankings_data = scraper.scrape_category_rankings()
         if not rankings_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга"}), 500
+            return jsonify({"success": False, "message": "Не удалось получить данные Coinbase рейтинга", "api_status": api_status}), 500
         rankings_message = scraper.format_rankings_message(rankings_data)
         
         # 2. Fear & Greed Index
         fear_greed_data = fear_greed.get_fear_greed_index()
         if not fear_greed_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index"}), 500
+            return jsonify({"success": False, "message": "Не удалось получить данные Fear & Greed Index", "api_status": api_status}), 500
         fear_greed_message = fear_greed.format_fear_greed_message(fear_greed_data)
         
         # 3. Market Breadth с графиком (используем полный режим с 50 монетами)
+        logger.info("Загрузка Market Breadth данных с API ключом...")
         market_breadth_data = market_breadth.get_market_breadth_data(fast_mode=False)
         if not market_breadth_data:
-            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth"}), 500
+            return jsonify({"success": False, "message": "Не удалось получить данные Market Breadth", "api_status": api_status}), 500
             
+        # Логируем результат загрузки
+        logger.info(f"Market Breadth результат: {market_breadth_data.get('total_coins', 0)}/50 монет загружено")
+        logger.info(f"Market Breadth значение: {market_breadth_data.get('current_value', 0):.1f}%")
+        
         # Создаем график и загружаем
         png_data = create_quick_chart()
         if not png_data:
-            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth"}), 500
+            return jsonify({"success": False, "message": "Не удалось создать график Market Breadth", "api_status": api_status}), 500
             
         chart_url = image_uploader.upload_chart(png_data)
         if not chart_url:
-            return jsonify({"success": False, "message": "Не удалось загрузить график на Catbox"}), 500
+            return jsonify({"success": False, "message": "Не удалось загрузить график на Catbox", "api_status": api_status}), 500
             
         # Переводим на английский для ссылки
         condition_map = {
@@ -2243,19 +2277,27 @@ def test_telegram_message():
         if success:
             return jsonify({
                 "success": True, 
-                "message": f"Реальное тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}"
+                "message": f"Реальное тестовое сообщение отправлено в {TELEGRAM_TEST_CHANNEL_ID}",
+                "api_status": api_status,
+                "market_breadth_stats": {
+                    "coins_loaded": market_breadth_data.get('total_coins', 0),
+                    "market_breadth_value": market_breadth_data.get('current_value', 0),
+                    "loading_method": "С API КЛЮЧОМ"
+                }
             })
         else:
             return jsonify({
                 "success": False, 
-                "message": "Ошибка отправки сообщения"
+                "message": "Ошибка отправки сообщения",
+                "api_status": api_status
             }), 500
             
     except Exception as e:
         logger.error(f"Ошибка тестового сообщения: {str(e)}")
         return jsonify({
             "success": False, 
-            "message": f"Ошибка: {str(e)}"
+            "message": f"Ошибка: {str(e)}",
+            "api_status": api_status if 'api_status' in locals() else {"found": False, "key_preview": "НЕ НАЙДЕН", "will_use_key": False}
         }), 500
 
 @app.route('/test-chart-telegram', methods=['POST'])
