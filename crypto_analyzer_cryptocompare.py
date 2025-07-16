@@ -25,13 +25,12 @@ class CryptoAnalyzer:
         logging.basicConfig(level=logging.INFO)
         self.logger = logging.getLogger(__name__)
         
-        # Список топ криптовалют (символы) - исключены стейблкоины USDT, USDC, DAI
+        # Список топ криптовалют (символы) - обновленный список из 33 монет
         self.top_cryptos = [
             'BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'DOGE', 'TON', 'ADA', 'SHIB', 'AVAX',
             'TRX', 'DOT', 'LINK', 'BCH', 'NEAR', 'MATIC', 'ICP', 'UNI', 'LTC', 'ETC',
-            'APT', 'STX', 'CRO', 'ATOM', 'OKB', 'FIL', 'ARB', 'IMX', 'VET', 'HBAR',
-            'MNT', 'OP', 'RNDR', 'GRT', 'ALGO', 'FLOW', 'MANA', 'SAND', 'XMR', 'THETA',
-            'EGLD', 'AXS', 'AAVE', 'FTM', 'XTZ', 'RUNE', 'KAVA', 'INJ', 'PEPE', 'WIF'
+            'APT', 'STX', 'ATOM', 'FIL', 'ARB', 'IMX', 'MNT', 'OP', 'RNDR', 'AAVE',
+            'FTM', 'INJ', 'PEPE'
         ]
     
     def _make_request(self, url: str, params: dict = None) -> Optional[dict]:
